@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29209.62
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{C600F1D6-4A5D-463B-BE2E-1C0EBD301D91}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{C6D0B80C-9B5D-4560-A519-8EE8C9CF582D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipeLine", "PipeLine\PipeLine.csproj", "{C92A4522-E7BB-4F8E-BA6F-20F2AAE329BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{298ADD14-858D-4CDD-B1D7-1FA92728B97F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C92A4522-E7BB-4F8E-BA6F-20F2AAE329BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C92A4522-E7BB-4F8E-BA6F-20F2AAE329BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C92A4522-E7BB-4F8E-BA6F-20F2AAE329BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C92A4522-E7BB-4F8E-BA6F-20F2AAE329BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{298ADD14-858D-4CDD-B1D7-1FA92728B97F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{298ADD14-858D-4CDD-B1D7-1FA92728B97F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{298ADD14-858D-4CDD-B1D7-1FA92728B97F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{298ADD14-858D-4CDD-B1D7-1FA92728B97F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C92A4522-E7BB-4F8E-BA6F-20F2AAE329BB} = {C6D0B80C-9B5D-4560-A519-8EE8C9CF582D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0EE8194A-D787-4618-A545-3F9CFB222FFE}
+	EndGlobalSection
+EndGlobal
