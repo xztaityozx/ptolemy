@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PipeLine\PipeLine.csproj" />
+    <ProjectReference Include="..\SiUnit\SiMetricPrefix.csproj" />
   </ItemGroup>
 
 </Project>
