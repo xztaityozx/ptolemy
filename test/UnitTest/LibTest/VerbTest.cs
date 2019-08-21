@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using CommandLine;
 using Ptolemy.Parameters;
 using Ptolemy.Verb;
 using Xunit;
 
-namespace UnitTest {
+namespace UnitTest.LibTest {
     public class VerbTest {
         private static TestVerb Start(IEnumerable<string> param) {
             return Parser.Default.ParseArguments<TestVerb>(param).MapResult(

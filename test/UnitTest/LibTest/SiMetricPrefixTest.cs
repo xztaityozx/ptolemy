@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Ptolemy.SiMetricPrefix;
 using Xunit;
 
-namespace UnitTest {
+namespace UnitTest.LibTest {
     public class SiMetricPrefixTest {
         [Fact]
         public void ParseDecimalTest() {

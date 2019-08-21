@@ -3,7 +3,7 @@ using System.IO;
 using Ptolemy.FilePath;
 using Xunit;
 
-namespace UnitTest {
+namespace UnitTest.LibTest {
     public class FilePathTest {
         [Fact]
         public void HomeTest() {

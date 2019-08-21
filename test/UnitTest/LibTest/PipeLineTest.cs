@@ -8,7 +8,7 @@ using Ptolemy.PipeLine;
 using Xunit;
 using Assert = Xunit.Assert;
 
-namespace UnitTest
+namespace UnitTest.LibTest
 {
     public class PipeLineTest {
         [Fact]

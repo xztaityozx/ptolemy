@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using Ptolemy.Parameters;
 using Xunit;
 
-namespace UnitTest {
+namespace UnitTest.LibTest {
     public class TransistorTest {
         [Fact]
         public void ConstructorTest1() {
