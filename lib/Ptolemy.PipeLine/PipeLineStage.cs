@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PipeLine {
+namespace Ptolemy.PipeLine {
     public delegate void OnBeginEventHandler();
     public delegate void OnIntervalEventHandler(object obj);
     public delegate void OnFinishEventHandler();

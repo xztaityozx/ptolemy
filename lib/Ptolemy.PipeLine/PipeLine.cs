@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PipeLine {
+namespace Ptolemy.PipeLine {
     public class PipeLine : IDisposable {
         public enum PipeLineStatus {
             Completed,
