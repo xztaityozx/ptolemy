@@ -33,7 +33,7 @@ namespace Ptolemy.Lupus {
         public List<string> Expressions { get; set; }
         [YamlMember(Alias = "logDir")]
         public string LogDir { get; set; }
-        [YamlMember(Alias = "ConnectionString")]
+        [YamlMember(Alias = "connection")]
         public string ConnectionString { get; set; }
 
         public LupusConfig() { }

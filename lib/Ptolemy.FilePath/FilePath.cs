@@ -15,6 +15,6 @@ namespace Ptolemy.FilePath {
 
         public static string Home => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-        public static string DotConfig => Expand("~/.config");
+        public static string DotConfig => Expand("~/.config/ptolemy");
     }
 }

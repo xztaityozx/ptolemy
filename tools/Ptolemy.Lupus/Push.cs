@@ -63,7 +63,7 @@ namespace Ptolemy.Lupus {
             }
         }
 
-        protected override void Do(CancellationToken token) {
+        protected override Exception Do(CancellationToken token) {
             InputFiles = InputFiles.Any() ? InputFiles : Directory.EnumerateFiles(TargetDirectory);
 
             Logger.Info("Vtn:");
@@ -85,12 +85,13 @@ namespace Ptolemy.Lupus {
             })) {
                 try {
                     PushFiles(token, bar);
+                    return null;
                 }
-                catch (OperationCanceledException) {
-                    Logger.Error("Canceled by user");
+                catch (OperationCanceledException e) {
+                    return e;
                 }
                 catch (Exception e) {
-                    Logger.Fatal($"Failed lupus push: InnerException --> {e}");
+                    return new AggregateException(e);
                 }
             }
         }

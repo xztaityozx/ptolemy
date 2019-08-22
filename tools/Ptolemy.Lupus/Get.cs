@@ -28,7 +28,7 @@ namespace Ptolemy.Lupus {
         [Option("out", Default = "./out.csv", HelpText = "結果を出力するCSVファイルへのパスです")]
         public string OutFile { get; set; }
 
-        private static IEnumerable<Tuple<string, long>> Push(Transistor vtn, Transistor vtp, Filter filter,
+        private static IEnumerable<Tuple<string, long>> GetFromDatabase(Transistor vtn, Transistor vtp, Filter filter,
             long sweepStart, long sweepEnd,
             long seedStart, long seedEnd) {
             var dn = Transistor.ToTableName(vtn, vtp);
@@ -43,7 +43,7 @@ namespace Ptolemy.Lupus {
             return start <= value && value <= end;
         }
 
-        protected override void Do(CancellationToken token) {
+        protected override Exception Do(CancellationToken token) {
             // SiPrefixを考慮してオプションをパース
             var sigmaRange = SigmaRange.Split(",", StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => (double) x.ParseDecimalWithSiPrefix()).ToArray();
@@ -54,7 +54,13 @@ namespace Ptolemy.Lupus {
 
             // 数え上げ用のFilterをBuild
             Logger.Info("Start build filter");
-            var filter = new Filter(LupusConfig.Instance.Conditions, LupusConfig.Instance.Expressions);
+            Filter filter;
+            try {
+                filter = new Filter(LupusConfig.Instance.Conditions, LupusConfig.Instance.Expressions);
+            }
+            catch (Exception e) {
+                return new Exception("failed build filters from config file", e);
+            }
             Logger.Info("Finished build filter");
 
             var result = new Map<string, Map<decimal, long>>();
@@ -82,51 +88,62 @@ namespace Ptolemy.Lupus {
 
             var sigmaList = new List<double>();
 
-            if (sigmaRange.Length == 0) {
-                Spinner.Start("Aggregating...", () => {
+            try {
+                if (sigmaRange.Length == 0) {
+                    Spinner.Start("Aggregating...", () => {
 
-                    // Sigmaが固定
-                    var vtn = new Transistor(VtnThreshold, VtnSigma, VtnDeviation);
-                    var vtp = new Transistor(VtpThreshold, VtpSigma, VtpDeviation);
+                        // Sigmaが固定
+                        var vtn = new Transistor(VtnThreshold, VtnSigma, VtnDeviation);
+                        var vtp = new Transistor(VtpThreshold, VtpSigma, VtpDeviation);
 
-                    sigmaList.Add(VtnSigma);
+                        sigmaList.Add(VtnSigma);
 
-                    var res = Push(vtn, vtp, filter, sweepStart, sweepEnd, seedStart, seedEnd);
-                    foreach (var (key, value) in res) {
-                        result[key][vtn.Sigma] = value;
-                    }
-                });
-            }
-            else {
-                // Sigmaを動かす
-                var sigmaStart = sigmaRange[0];
-                var sigmaStep = sigmaRange[1];
-                var sigmaStop = sigmaRange[2];
-                Logger.Info($"Range Sigma: start: {sigmaStart}, step: {sigmaStep}, stop: {sigmaStop}");
-
-                for (var s = sigmaStart; s <= sigmaStop; s += sigmaStep) sigmaList.Add(s);
-
-                using (var bar = new ProgressBar(sigmaList.Count, "Aggregating...", new ProgressBarOptions {
-                    ForegroundColor = ConsoleColor.DarkBlue,
-                    BackgroundCharacter = '-',
-                    ForegroundColorDone = ConsoleColor.Green,
-                    ProgressCharacter = '>',
-                    BackgroundColor = ConsoleColor.DarkGray
-                })) {
-                    foreach (var sigma in sigmaList) {
-                        token.ThrowIfCancellationRequested();
-
-                        var vtn = new Transistor(VtnThreshold, sigma, VtnDeviation);
-                        var vtp = new Transistor(VtpThreshold, sigma, VtpDeviation);
-
-                        var res = Push(vtn, vtp, filter, sweepStart, sweepEnd, seedStart, seedEnd);
+                        var res = GetFromDatabase(vtn, vtp, filter, sweepStart, sweepEnd, seedStart, seedEnd);
                         foreach (var (key, value) in res) {
                             result[key][vtn.Sigma] = value;
                         }
 
-                        bar.Tick();
-                    }
+                    });
+
                 }
+                else {
+                    // Sigmaを動かす
+                    var sigmaStart = sigmaRange[0];
+                    var sigmaStep = sigmaRange[1];
+                    var sigmaStop = sigmaRange[2];
+                    Logger.Info($"Range Sigma: start: {sigmaStart}, step: {sigmaStep}, stop: {sigmaStop}");
+
+                    for (var s = sigmaStart; s <= sigmaStop; s += sigmaStep) sigmaList.Add(s);
+
+                    using (var bar = new ProgressBar(sigmaList.Count, "Aggregating...", new ProgressBarOptions {
+                        ForegroundColor = ConsoleColor.DarkBlue,
+                        BackgroundCharacter = '-',
+                        ForegroundColorDone = ConsoleColor.Green,
+                        ProgressCharacter = '>',
+                        BackgroundColor = ConsoleColor.DarkGray
+                    })) {
+                        foreach (var sigma in sigmaList) {
+                            token.ThrowIfCancellationRequested();
+
+                            var vtn = new Transistor(VtnThreshold, sigma, VtnDeviation);
+                            var vtp = new Transistor(VtpThreshold, sigma, VtpDeviation);
+
+                            var res = GetFromDatabase(vtn, vtp, filter, sweepStart, sweepEnd, seedStart, seedEnd);
+                            foreach (var (key, value) in res) {
+                                result[key][vtn.Sigma] = value;
+                            }
+
+                            bar.Tick();
+                        }
+                    }
+
+                }
+            }
+            catch (OperationCanceledException e) {
+                return e;
+            }
+            catch (Exception e) {
+                return e;
             }
 
             // 出力
@@ -160,15 +177,21 @@ namespace Ptolemy.Lupus {
                 box.Add(new[] {key}.Concat(value.Select(x => $"{x.Value}")));
             }
 
-            using (var sw = new StreamWriter(OutFile)) {
-                foreach (var line in box) {
-                    var item = string.Join(",", line);
-                    sw.WriteLine(item);
-                    Console.WriteLine(item);
+            try {
+                using (var sw = new StreamWriter(OutFile)) {
+                    foreach (var line in box) {
+                        var item = string.Join(",", line);
+                        sw.WriteLine(item);
+                        Console.WriteLine(item);
+                    }
+                    sw.Flush();
                 }
-                sw.Flush();
+            }
+            catch (FileNotFoundException e) {
+                return new FileNotFoundException($"failed to open {OutFile}", e);
             }
 
+            return null;
         }
     }
 }

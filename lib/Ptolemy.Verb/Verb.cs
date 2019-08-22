@@ -14,7 +14,7 @@ namespace Ptolemy.Verb {
     public abstract class Verb : IVerb {
         protected Logger.Logger Logger;
 
-        public void Run(CancellationToken token, string logFile) {
+        public Exception Run(CancellationToken token, string logFile) {
             OnBegin?.Invoke();
 
             // init logger
@@ -25,13 +25,14 @@ namespace Ptolemy.Verb {
             Vtn = new Transistor(Bind(VtnString, (VtnThreshold, VtnSigma, VtnDeviation), Sigma));
             Vtp = new Transistor(Bind(VtpString, (VtpThreshold, VtpSigma, VtpDeviation), Sigma));
 
-            Do(token);
+            var rt = Do(token);
             OnFinish?.Invoke();
+            return rt;
         }
 
         public event OnBeginEnventHandler OnBegin;
         public event OnFinishEnventHandler OnFinish;
-        protected abstract void Do(CancellationToken token);
+        protected abstract Exception Do(CancellationToken token);
 
         protected Transistor Vtn, Vtp;
 
@@ -66,7 +67,7 @@ namespace Ptolemy.Verb {
     }
 
     public interface IVerb {
-        void Run(CancellationToken token, string logFile);
+        Exception Run(CancellationToken token, string logFile);
 
         [Option('N', "vtn", Default = ",,", HelpText = "Vtnを[閾値],[シグマ],[偏差]で指定します")]
         string VtnString { get; set; }
