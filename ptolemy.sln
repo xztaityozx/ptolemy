@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{E46422ED-13B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.PipeLine", "lib\Ptolemy.PipeLine\Ptolemy.PipeLine.csproj", "{D2ADFD86-8082-425F-86D3-8A2C55999B74}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Parameters", "lib\Ptolemy.Parameters\Ptolemy.Parameters.csproj", "{B64ED223-092D-455D-9174-298C3D2A7276}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Parameters", "lib\Ptolemy.Parameters\Ptolemy.Parameters.csproj", "{B64ED223-092D-455D-9174-298C3D2A7276}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{226F86BE-2D8F-4786-BE6E-1E0D08FEACF8}"
 EndProject
@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTest", "test\UnitTest\U
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.SiMetricPrefix", "lib\Ptolemy.SiMetricPrefix\Ptolemy.SiMetricPrefix.csproj", "{B9A5CCCE-A5D7-440E-8BE3-77E52AA66171}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Verb", "lib\Ptolemy.Verb\Ptolemy.Verb.csproj", "{531DD996-F935-4CDE-B6FF-782C80013B77}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Verb", "lib\Ptolemy.Verb\Ptolemy.Verb.csproj", "{531DD996-F935-4CDE-B6FF-782C80013B77}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Logger", "lib\Ptolemy.Logger\Ptolemy.Logger.csproj", "{F2FBBE27-BBB3-4A57-99F9-34C92625D201}"
 EndProject
@@ -24,6 +24,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.FilePath", "lib\Ptolemy.FilePath\Ptolemy.FilePath.csproj", "{89F1F2F6-2582-4D31-A321-C9DCDB6F2109}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Lupus", "tools\Ptolemy.Lupus\Ptolemy.Lupus.csproj", "{E9491EF2-83DF-4AF7-A6DA-0DB9B869F23C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Map", "lib\Ptolemy.Map\Ptolemy.Map.csproj", "{CE630AFD-0E9F-492E-9696-CAAF0977584A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,10 @@ Global
 		{E9491EF2-83DF-4AF7-A6DA-0DB9B869F23C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E9491EF2-83DF-4AF7-A6DA-0DB9B869F23C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E9491EF2-83DF-4AF7-A6DA-0DB9B869F23C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE630AFD-0E9F-492E-9696-CAAF0977584A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE630AFD-0E9F-492E-9696-CAAF0977584A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE630AFD-0E9F-492E-9696-CAAF0977584A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE630AFD-0E9F-492E-9696-CAAF0977584A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,6 +82,7 @@ Global
 		{F2FBBE27-BBB3-4A57-99F9-34C92625D201} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
 		{89F1F2F6-2582-4D31-A321-C9DCDB6F2109} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
 		{E9491EF2-83DF-4AF7-A6DA-0DB9B869F23C} = {0BE68A10-7B3B-4E90-91E9-44A8F7EAE74F}
+		{CE630AFD-0E9F-492E-9696-CAAF0977584A} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {19C6E637-BC0D-4D7F-8E43-AC22C5A894BB}

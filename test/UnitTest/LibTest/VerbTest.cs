@@ -11,7 +11,7 @@ namespace UnitTest.LibTest {
         private static TestVerb Start(IEnumerable<string> param) {
             return Parser.Default.ParseArguments<TestVerb>(param).MapResult(
                 t => {
-                    t.Run(CancellationToken.None);
+                    t.Run(CancellationToken.None, "");
                     return t;
                 },
                 e => null

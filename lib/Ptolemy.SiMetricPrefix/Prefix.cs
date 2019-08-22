@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace Ptolemy.SiMetricPrefix
@@ -35,9 +36,31 @@ namespace Ptolemy.SiMetricPrefix
             return str;
         }
 
-        public static decimal ParseDecimal(this string @this) => decimal.Parse(Replace(@this), NumberStyles.Float);
-        public static double ParseDouble(this string @this) => double.Parse(Replace(@this), NumberStyles.Float);
-        public static int ParseInt(this string @this) => (int) @this.ParseDecimal();
-        public static long ParseLong(this string @this) => (long) @this.ParseDecimal();
+        public static decimal ParseDecimalWithSiPrefix(this string @this) => decimal.Parse(Replace(@this), NumberStyles.Float);
+        public static double ParseDoubleWithSiPrefix(this string @this) => double.Parse(Replace(@this), NumberStyles.Float);
+        public static int ParseIntWithSiPrefix(this string @this) => (int) @this.ParseDecimalWithSiPrefix();
+        public static long ParseLongWithSiPrefix(this string @this) => (long) @this.ParseDecimalWithSiPrefix();
+
+        public static bool TryParseDecimalWithSiPrefix(this string @this, out decimal v) {
+            v = default;
+            try {
+                v = @this.ParseDecimalWithSiPrefix();
+                return true;
+            }
+            catch (Exception) {
+                return false;
+            }
+        }
+
+        public static bool TryParseDoubleWithSiPrefix(this string @this, out double v) {
+            v = default;
+            try {
+                v = @this.ParseDoubleWithSiPrefix();
+                return true;
+            }
+            catch (Exception) {
+                return false;
+            }
+        }
     }
 }

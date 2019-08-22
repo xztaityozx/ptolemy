@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using CommandLine;
+using Ptolemy.Logger;
 using Ptolemy.Parameters;
 using Ptolemy.SiMetricPrefix;
 
@@ -11,8 +12,14 @@ namespace Ptolemy.Verb {
     public delegate void OnFinishEnventHandler();
 
     public abstract class Verb : IVerb {
-        public void Run(CancellationToken token) {
+        protected Logger.Logger Logger;
+
+        public void Run(CancellationToken token, string logFile) {
             OnBegin?.Invoke();
+
+            // init logger
+            Logger = new Logger.Logger();
+            if(!string.IsNullOrEmpty(logFile)) Logger.AddHook(new FileHook(logFile));
 
             // Bind
             Vtn = new Transistor(Bind(VtnString, (VtnThreshold, VtnSigma, VtnDeviation), Sigma));
@@ -38,7 +45,7 @@ namespace Ptolemy.Verb {
 
             var rt = box.Zip(
                 new[] {t, s, d}, (input, value) =>
-                    string.IsNullOrEmpty(input) ? (decimal) value : input.ParseDecimal()).ToArray();
+                    string.IsNullOrEmpty(input) ? (decimal) value : input.ParseDecimalWithSiPrefix()).ToArray();
 
             return (rt[0], rt[1], rt[2]);
         }
@@ -59,7 +66,7 @@ namespace Ptolemy.Verb {
     }
 
     public interface IVerb {
-        void Run(CancellationToken token);
+        void Run(CancellationToken token, string logFile);
 
         [Option('N', "vtn", Default = ",,", HelpText = "Vtnを[閾値],[シグマ],[偏差]で指定します")]
         string VtnString { get; set; }

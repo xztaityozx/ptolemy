@@ -30,10 +30,10 @@ namespace UnitTest.LibTest {
             };
 
             foreach (var d in data) {
-                Assert.Equal(d.ept, d.src.ParseDecimal());
+                Assert.Equal(d.ept, d.src.ParseDecimalWithSiPrefix());
             }
 
-            Assert.Throws<FormatException>(() => "1e".ParseDecimal());
+            Assert.Throws<FormatException>(() => "1e".ParseDecimalWithSiPrefix());
         }
 
         [Fact]
@@ -62,10 +62,10 @@ namespace UnitTest.LibTest {
             };
 
             foreach (var d in data) {
-                Assert.Equal(d.ept, d.src.ParseDouble());
+                Assert.Equal(d.ept, d.src.ParseDoubleWithSiPrefix());
             }
 
-            Assert.Throws<FormatException>(() => "1e".ParseDouble());
+            Assert.Throws<FormatException>(() => "1e".ParseDoubleWithSiPrefix());
         }
 
         [Fact]
@@ -96,14 +96,14 @@ namespace UnitTest.LibTest {
             };
 
             foreach (var d in data) {
-                Assert.Equal(d.ept, d.src.ParseInt());
+                Assert.Equal(d.ept, d.src.ParseIntWithSiPrefix());
             }
 
             foreach (var f in fail) {
-                Assert.Throws<OverflowException>(() => f.src.ParseInt());
+                Assert.Throws<OverflowException>(() => f.src.ParseIntWithSiPrefix());
             }
 
-            Assert.Throws<FormatException>(() => "1e".ParseInt());
+            Assert.Throws<FormatException>(() => "1e".ParseIntWithSiPrefix());
         }
 
         [Fact]
@@ -134,14 +134,29 @@ namespace UnitTest.LibTest {
             };
 
             foreach (var d in data) {
-                Assert.Equal(d.ept, d.src.ParseLong());
+                Assert.Equal(d.ept, d.src.ParseLongWithSiPrefix());
             }
 
             foreach (var f in fail) {
-                Assert.Throws<OverflowException>(() => f.src.ParseLong());
+                Assert.Throws<OverflowException>(() => f.src.ParseLongWithSiPrefix());
             }
 
-            Assert.Throws<FormatException>(() => "1e".ParseLong());
+            Assert.Throws<FormatException>(() => "1e".ParseLongWithSiPrefix());
+        }
+        
+        [Fact]
+        public void TryTest() {
+            Assert.True("1Y".TryParseDecimalWithSiPrefix(out var v));
+            Assert.Equal(1E24M, v);
+
+            Assert.False("1e".TryParseDecimalWithSiPrefix(out var x));
+            Assert.Equal(0M, x);
+
+            Assert.True("1Y".TryParseDoubleWithSiPrefix(out var y));
+            Assert.Equal(1E24, y);
+
+            Assert.False("1e".TryParseDoubleWithSiPrefix(out var z));
+            Assert.Equal(0, z);
         }
     }
 }

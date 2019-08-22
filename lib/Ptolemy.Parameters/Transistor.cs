@@ -6,6 +6,7 @@ namespace Ptolemy.Parameters {
         public decimal Sigma { get; set; }
         public decimal Deviation { get; set; }
 
+        public Transistor() { }
         public Transistor(decimal t, decimal s, decimal d) => (Threshold, Sigma, Deviation) = (t, s, d);
 
         public Transistor(double t, double s, double d) : this((decimal) t, (decimal) s, (decimal) d) {}
