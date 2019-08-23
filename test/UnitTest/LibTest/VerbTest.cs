@@ -181,8 +181,8 @@ namespace UnitTest.LibTest {
 
     [Verb("test")]
     internal class TestVerb : Verb {
-        protected override void Do(CancellationToken token) {
-
+        protected override Exception Do(CancellationToken token) {
+            return null;
         }
 
         public Transistor N => Vtn;

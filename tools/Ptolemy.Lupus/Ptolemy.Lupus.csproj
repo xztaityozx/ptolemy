@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\lib\Ptolemy.Interface\Ptolemy.Interface.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Map\Ptolemy.Map.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.PipeLine\Ptolemy.PipeLine.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Verb\Ptolemy.Verb.csproj" />
