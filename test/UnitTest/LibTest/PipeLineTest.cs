@@ -84,7 +84,7 @@ namespace UnitTest.LibTest
 
         [Fact]
         public void OnIntervalTest() {
-            using(var box=new BlockingCollection<object>())
+            using (var box = new BlockingCollection<object>())
             using (var p = new PipeLine(CancellationToken.None)) {
                 var res = p.Init(Enumerable.Range(0, 100), 10, 10, i => i * i, null, null, _ => box.Add(_)).Out;
                 var status = p.Start(() => {
@@ -101,11 +101,11 @@ namespace UnitTest.LibTest
 
         [Fact]
         public void OnInnerIntervalTest() {
-            using(var box=new BlockingCollection<int>())
+            using (var box = new BlockingCollection<int>())
             using (var p = new PipeLine(CancellationToken.None)) {
                 var res = p.InitSelectMany(Enumerable.Range(0, 100), 10, 10, i => Enumerable.Range(i, 3),
                     null, null, null,
-                    _ => box.Add((int)_)).Out;
+                    _ => box.Add((int) _)).Out;
                 var status = p.Start(() => {
                     CollectionAssert.AreEquivalent(
                         Enumerable.Range(0, 100).SelectMany(i => Enumerable.Range(i, 3)).ToList(),
@@ -137,16 +137,16 @@ namespace UnitTest.LibTest
         public void ExceptionTest() {
             using (var p = new PipeLine(CancellationToken.None)) {
                 Assert.Throws<PipeLineException>(() => p.Start(() => { }));
-                Assert.Throws<PipeLineException>(() => p.Init(new[] { 1 }, 0, 1, i => i));
-                Assert.Throws<PipeLineException>(() => p.Init(new[] { 1 }, 1, 0, i => i));
-                Assert.Throws<PipeLineException>(() => p.Init(new[] { 1 }, 0, 0, i => i));
+                Assert.Throws<PipeLineException>(() => p.Init(new[] {1}, 0, 1, i => i));
+                Assert.Throws<PipeLineException>(() => p.Init(new[] {1}, 1, 0, i => i));
+                Assert.Throws<PipeLineException>(() => p.Init(new[] {1}, 0, 0, i => i));
                 var first = p.Init(new[] {1}, 1, 1, i => i);
                 Assert.Throws<PipeLineException>(() => first.Then(0, 1, i => i));
                 Assert.Throws<PipeLineException>(() => first.Then(0, 0, i => i));
                 Assert.Throws<PipeLineException>(() => first.Then(1, 0, i => i));
-                Assert.Throws<PipeLineException>(() => first.ThenSelectMany(0, 1, i => Enumerable.Repeat(i,3)));
-                Assert.Throws<PipeLineException>(() => first.ThenSelectMany(0, 0, i => Enumerable.Repeat(i,3)));
-                Assert.Throws<PipeLineException>(() => first.ThenSelectMany(1, 0, i => Enumerable.Repeat(i,3)));
+                Assert.Throws<PipeLineException>(() => first.ThenSelectMany(0, 1, i => Enumerable.Repeat(i, 3)));
+                Assert.Throws<PipeLineException>(() => first.ThenSelectMany(0, 0, i => Enumerable.Repeat(i, 3)));
+                Assert.Throws<PipeLineException>(() => first.ThenSelectMany(1, 0, i => Enumerable.Repeat(i, 3)));
             }
         }
 
@@ -154,7 +154,7 @@ namespace UnitTest.LibTest
         public void CancelTest() {
             using (var cts = new CancellationTokenSource(0)) {
                 using (var p = new PipeLine(cts.Token)) {
-                    p.Init(Enumerable.Range(0,10000), 1, 1, i => i);
+                    p.Init(Enumerable.Range(0, 10000), 1, 1, i => i);
                     Assert.Throws<TaskCanceledException>(() => p.Start(null));
                 }
             }
@@ -162,11 +162,58 @@ namespace UnitTest.LibTest
 
         [Fact]
         public void DisposeTest() {
-            var p=new PipeLine(CancellationToken.None);
+            var p = new PipeLine(CancellationToken.None);
             var res = p.Init(new[] {1}, 1, 1, i => i * i).Out;
             p.Start(null);
             p.Dispose();
             Assert.Throws<ObjectDisposedException>(() => res.ElementAt(0));
+        }
+
+        [Fact]
+        public void BufferTest() {
+            using (var p = new PipeLine(CancellationToken.None)) {
+                var res = p.Init(Enumerable.Range(0, 100), 10, 10, i => i).Buffer(10, 10).Out;
+                var status = p.Start(() => { });
+
+                var list = res.ToList();
+
+                Assert.Equal(Enumerable.Range(0, 100).Sum(), list.SelectMany(x => x).Sum());
+                Assert.Equal(10, list.Count);
+                Assert.Equal(PipeLine.PipeLineStatus.Completed, status);
+            }
+        }
+
+        [Fact]
+        public void BufferThenTest() {
+            using (var p = new PipeLine(CancellationToken.None)) {
+                var res = p.Init(Enumerable.Range(0, 100), 10, 10, i => i * 2)
+                    .Buffer(10, 10)
+                    .Then(10, 10, t => t.Sum())
+                    .Out;
+
+                var status = p.Start(null);
+
+                var list = res.ToList();
+
+                Assert.Equal(9900, list.Sum());
+                Assert.Equal(10, list.Count);
+                Assert.Equal(PipeLine.PipeLineStatus.Completed, status);
+            }
+        }
+
+        [Fact]
+        public void BufferBufferTest() {
+            using (var p = new PipeLine(CancellationToken.None)) {
+                var res = p.Init(Enumerable.Range(0, 1000), 10, 10, i => i)
+                    .Buffer(10, 10)
+                    .Buffer(10, 10).Out;
+
+                var status = p.Start(null);
+                Assert.Equal(PipeLine.PipeLineStatus.Completed, status);
+                var list = res.ToList();
+                Assert.Equal(10, list.Count);
+                Assert.All(list, x => Assert.Equal(10, x.Length));
+            }
         }
     }
 }

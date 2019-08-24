@@ -28,7 +28,7 @@ namespace UnitTest.LibTest {
         [Fact]
         public void DotConfigTest() {
             Assert.Equal(
-                Path.Combine(FilePath.Home, ".config/ptolemy"),
+                Path.Combine(FilePath.Home, ".config","ptolemy"),
                 FilePath.DotConfig
             );
         }

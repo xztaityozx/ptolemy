@@ -19,6 +19,8 @@ namespace Ptolemy.PipeLine {
         Unknown
     }
 
+
+
     public class PipeLineStage<TSource, TResult> : IPipeLineStage {
 
         internal BlockingCollection<TSource> Sources;
@@ -62,23 +64,23 @@ namespace Ptolemy.PipeLine {
         /// <typeparam name="TNextResult">Next result type</typeparam>
         /// <param name="filter"></param>
         /// <param name="workers"></param>
-        /// <param name="bufferSize"></param>
+        /// <param name="queueSize"></param>
         /// <param name="onBeginEvent"></param>
         /// <param name="onFinishEvent"></param>
         /// <param name="onIntervalEvent"></param>
         /// <returns></returns>
         public PipeLineStage<TResult, TNextResult> Then<TNextResult>(
             int workers,
-            int bufferSize,
+            int queueSize,
             Func<TResult, TNextResult> filter,
             OnBeginEventHandler onBeginEvent = null,
             OnFinishEventHandler onFinishEvent = null,
             OnIntervalEventHandler onIntervalEvent = null) {
 
             if(workers<=0) throw new PipeLineException("workers must be more than 1");
-            if(bufferSize<=0) throw new PipeLineException("bufferSize must be more than 1");
+            if(queueSize<=0) throw new PipeLineException("queueSize must be more than 1");
 
-            var rt = new PipeLineStage<TResult, TNextResult>(bufferSize) {
+            var rt = new PipeLineStage<TResult, TNextResult>(queueSize) {
                 Workers = workers,
                 Sources = Results,
                 Filter = filter,
@@ -97,7 +99,7 @@ namespace Ptolemy.PipeLine {
         /// </summary>
         /// <typeparam name="TNextResult">next result type</typeparam>
         /// <param name="workers"></param>
-        /// <param name="bufferSize"></param>
+        /// <param name="queueSize"></param>
         /// <param name="filter"></param>
         /// <param name="onBeginEvent"></param>
         /// <param name="onFinishEvent"></param>
@@ -106,7 +108,7 @@ namespace Ptolemy.PipeLine {
         /// <returns></returns>
         public PipeLineStage<TResult, TNextResult> ThenSelectMany<TNextResult>(
             int workers,
-            int bufferSize,
+            int queueSize,
             Func<TResult, IEnumerable<TNextResult>> filter,
             OnBeginEventHandler onBeginEvent = null,
             OnFinishEventHandler onFinishEvent = null, 
@@ -114,9 +116,9 @@ namespace Ptolemy.PipeLine {
             OnInnerIntervalEventHandler onInnerInterval = null) {
 
             if (workers <= 0) throw new PipeLineException("workers must be more than 1");
-            if (bufferSize <= 0) throw new PipeLineException("bufferSize must be more than 1");
+            if (queueSize <= 0) throw new PipeLineException("queueSize must be more than 1");
 
-            var rt = new PipeLineStage<TResult, TNextResult>(bufferSize) {
+            var rt = new PipeLineStage<TResult, TNextResult>(queueSize) {
                 Workers = workers,
                 Sources = Results,
                 EnumerableFilter = filter,
@@ -126,6 +128,30 @@ namespace Ptolemy.PipeLine {
             rt.OnFinish += onFinishEvent;
             rt.OnInterval += onIntervalEvent;
             rt.OnInnerInterval += onInnerInterval;
+            Next = rt;
+
+            return rt;
+        }
+
+        /// <summary>
+        /// Add buffer to this pipeline
+        /// </summary>
+        /// <param name="size"></param>
+        /// <param name="queueSize"></param>
+        /// <param name="onBeginEvent"></param>
+        /// <param name="onFinishEvent"></param>
+        /// <param name="onIntervalEvent"></param>
+        /// <returns></returns>
+        public PipeLineBuffer<TResult> Buffer(
+            int size, int queueSize,
+            OnBeginEventHandler onBeginEvent = null,
+            OnFinishEventHandler onFinishEvent = null,
+            OnIntervalEventHandler onIntervalEvent = null
+        ) {
+            var rt = new PipeLineBuffer<TResult>(Results, queueSize, size);
+            rt.OnBegin += onBeginEvent;
+            rt.OnFinish += onFinishEvent;
+            rt.OnInterval += onIntervalEvent;
             Next = rt;
 
             return rt;
