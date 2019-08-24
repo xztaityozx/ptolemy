@@ -5,11 +5,14 @@ using System.Text;
 using System.Threading;
 using CommandLine;
 using Ptolemy.Lupus.Record;
+using Ptolemy.Lupus.Repository;
+using Ptolemy.Parameters;
+using Ptolemy.PipeLine;
 using ShellProgressBar;
 
 namespace Ptolemy.Lupus
 {
-    [Verb("push")]
+    [Verb("push", HelpText = "DataBaseにデータを書き込みます")]
     public class Push : Verb.Verb {
 
         [Option('d', "directory", HelpText = "Path to directory that contains csv files",Default = "")]
@@ -32,10 +35,29 @@ namespace Ptolemy.Lupus
             var request = string.IsNullOrEmpty(Target)
                 ? new LupusPushRequest(Vtn, Vtp, Files)
                 : new LupusPushRequest(Vtn, Vtp, Directory.EnumerateFiles(Target));
-            return PushToDatabase(token, request);
+
+            //var opt = new ProgressBarOptions {
+            //    ProgressCharacter = '=',
+            //    ForegroundColor = ConsoleColor.DarkCyan
+            //};
+
+            //using (var p = new ProgressBar(5, "Master", new ProgressBarOptions {
+            //    ProgressCharacter = '>',
+            //    BackgroundCharacter = '-',
+            //    ForegroundColor = ConsoleColor.DarkGreen,
+            //    CollapseWhenFinished = false
+            //})) {
+                return PushToDatabase(token, request, null,null,null);
+            //}
         }
 
-        public Exception PushToDatabase(CancellationToken token, LupusPushRequest request) {
+        public Exception PushToDatabase(
+            CancellationToken token,
+            LupusPushRequest request,
+            OnInnerIntervalEventHandler onParse,
+            OnFinishEventHandler onFinish,
+            Action onAllPushed
+        ) {
             try {
                 token.ThrowIfCancellationRequested();
 
@@ -49,24 +71,27 @@ namespace Ptolemy.Lupus
                 Logger.Info($"\tDeviation: {VtpDeviation}");
                 Logger.Info($"Total Files: {request.FileList.Count}");
 
-                var opt = new ProgressBarOptions {
-                    BackgroundCharacter = '-',
-                    ProgressCharacter = '=',
-                    ForegroundColor = ConsoleColor.DarkCyan
-                };
 
-                using (var parent = new ProgressBar(2, "Master", new ProgressBarOptions {
-                    ProgressCharacter = '>',
-                    BackgroundCharacter = '-',
-                    CollapseWhenFinished = false
-                }))
-                using (var parse = parent.Spawn(request.FileList.Count, "parsing...", opt))
-                using (var push = parent.Spawn(1, "pushing...", opt))
+                var repo = new MssqlRepository();
+                repo.Use(Transistor.ToTableName(Vtn, Vtp));
+
                 using (var pipeline = new PipeLine.PipeLine(token)) {
-                    var first = pipeline.InitSelectMany(Files, ParseParallel, QueueBuffer, Record.Factory.Build).Out;
+                    var res = pipeline.InitSelectMany(Files, ParseParallel, QueueBuffer, Factory.Build, null, onFinish,
+                            null, onParse)
+                        .Buffer(QueueBuffer, 100, null, onFinish).Out;
+
+                    var status = pipeline.Start(() => {
+                        foreach (var rs in res) {
+                            repo.BulkUpsert(rs);
+                        }
+
+                        onAllPushed?.Invoke();
+                        onFinish?.Invoke();
+                    });
+
+                    return status == PipeLine.PipeLine.PipeLineStatus.Completed ? null : new PipeLineException($"PipeLine status was {status}");
                 }
 
-                return null;
             }
             catch (OperationCanceledException e) {
                 return new OperationCanceledException($"Canceled by User\n\t--> {e}");

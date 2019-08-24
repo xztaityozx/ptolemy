@@ -16,7 +16,7 @@ using Ptolemy.Verb;
 using ShellProgressBar;
 
 namespace Ptolemy.Lupus {
-    [Verb("get")]
+    [Verb("get", HelpText = "DataBaseからデータを取り出し、コンフィグに従って数え上げを行います")]
     public class Get : Verb.Verb {
 
         [Option('i', "sigmaRange", Default = "0.046,0.004,0.2", HelpText = "[開始値],[刻み幅],[終了値]でシグマを範囲指定します")]

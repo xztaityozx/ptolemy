@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using CommandLine;
 using Ptolemy.Interface;
-using Ptolemy.Verb;
 
 namespace Ptolemy.Lupus {
     internal class Program {
@@ -41,7 +39,14 @@ namespace Ptolemy.Lupus {
 
     public class Lupus : IPtolemyTool {
         public Exception Invoke(CancellationToken token, string[] args) {
-            return Parser.Default.ParseArguments<Get>(args).MapResult(g => g.Run(token, ""), e => null);
+
+            var logFile = Path.Combine(LupusConfig.Instance.LogDir, $"{DateTime.Now:yyyy-MM-DD-HH-mm-ss-ff}.log");
+
+            return Parser.Default.ParseArguments<Get, Push>(args).MapResult(
+                (Get g) => g.Run(token, logFile),
+                (Push p) => p.Run(token, logFile),
+                e => null
+            );
         }
 
         public IEnumerable<string> Args { get; set; }
