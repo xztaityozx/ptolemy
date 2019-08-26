@@ -9,7 +9,7 @@ using Ptolemy.Map;
 namespace Ptolemy.Lupus.Repository {
     public abstract class Repository<TEntity> where TEntity : class {
         public abstract void Use(string db);
-        public abstract void BulkUpsert(IList<TEntity> list);
+        public abstract Exception BulkUpsert(IList<TEntity> list);
         public abstract Tuple<string, long>[] Count(Func<TEntity, bool> whereFunc, Filter filter);
     }
 
@@ -20,12 +20,19 @@ namespace Ptolemy.Lupus.Repository {
             name = db;
         }
 
-        public override void BulkUpsert(IList<Record.Record> list) {
+        public override Exception BulkUpsert(IList<Record.Record> list) {
             using (var context = new Context(name)) {
-                context.Database.EnsureCreated();
-                using (var tr = context.Database.BeginTransaction()) {
-                    context.BulkInsertOrUpdate(list);
-                    tr.Commit();
+                try {
+                    context.Database.EnsureCreated();
+                    using (var tr = context.Database.BeginTransaction()) {
+                        context.BulkInsertOrUpdate(list);
+                        tr.Commit();
+                    }
+
+                    return null;
+                }
+                catch (Exception e) {
+                    return e;
                 }
             }
         }

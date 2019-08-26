@@ -12,207 +12,29 @@ namespace UnitTest.LibTest
 {
     public class PipeLineTest {
         [Fact]
-        public void ConstructTest() {
-            using (var pipeline = new PipeLine(CancellationToken.None)) {
-                Assert.NotNull(pipeline);
-            }
+        public void ConstructorTest() {
+            Assert.NotNull(new PipeLine(CancellationToken.None));
         }
 
         [Fact]
         public void InitTest() {
             using (var p = new PipeLine(CancellationToken.None)) {
-                var first = p.Init(Enumerable.Range(0, 100), 10, 20, i => i + 1);
-                Assert.Null(first.Next);
-                var status = p.Start(() => {
-                    CollectionAssert
-                        .AreEquivalent(Enumerable.Range(0, 100).Select(i => i + 1).ToList(), first.Out.ToList());
-                });
-                Assert.Equal(PipeLine.PipeLineStatus.Completed, status);
-
+                var x = p.Init(Enumerable.Range(0, 100), 10, 10, i => i);
+                Assert.NotNull(x);
+                Assert.Null(x.Next);
+                var s = p.Start(() => { Assert.Equal(4500, x.Out.Sum()); });
+                Assert.Equal(PipeLine.PipeLineStatus.Completed, s);
             }
         }
 
         [Fact]
         public void InitSelectManyTest() {
             using (var p = new PipeLine(CancellationToken.None)) {
-                var first = p.InitSelectMany(Enumerable.Range(0, 100), 10, 20, i => Enumerable.Repeat(i, 3));
-                Assert.Null(first.Next);
-                var status = p.Start(() => {
-                    var expect = Enumerable.Range(0, 100).SelectMany(i => Enumerable.Repeat(i, 3)).ToList();
-                    var actual = first.Out.ToList();
-                    CollectionAssert.AreEquivalent(expect, actual);
-                });
-                Assert.Equal(PipeLine.PipeLineStatus.Completed, status);
-
-            }
-        }
-
-        [Fact]
-        public void ThenTest() {
-            using (var p = new PipeLine(CancellationToken.None)) {
-                var first = p.Init(Enumerable.Range(0, 100), 10, 20, i => i + 1);
-                var second = first.Then(10, 20, i => $"{i}");
-                var third = second.ThenSelectMany(10, 20, i => Enumerable.Repeat(i, 3));
-                Assert.Same(first.Next, second);
-                Assert.Same(second.Next, third);
-                var status = p.Start(() => {
-                    CollectionAssert.AreEquivalent(
-                        Enumerable.Range(0, 100).Select(i => i + 1).Select(x => $"{x}")
-                            .SelectMany(x => Enumerable.Repeat(x, 3)).ToList(),
-                        third.Out.ToList()
-                    );
-                });
-                Assert.Equal(PipeLine.PipeLineStatus.Completed, status);
-            }
-        }
-
-        [Fact]
-        public void OnBeginTest() {
-            using (var p = new PipeLine(CancellationToken.None)) {
-                var onBegin = false;
-                var res = p.Init(Enumerable.Range(0, 100), 10, 10, i => i * i, () => onBegin = true).Out;
-                var status = p.Start(() => {
-                    CollectionAssert.AreEquivalent(
-                        Enumerable.Range(0, 100).Select(i => i * i).ToList(),
-                        res.ToList()
-                    );
-                });
-                Assert.True(onBegin);
-                Assert.Equal(PipeLine.PipeLineStatus.Completed, status);
-            }
-        }
-
-        [Fact]
-        public void OnIntervalTest() {
-            using (var box = new BlockingCollection<object>())
-            using (var p = new PipeLine(CancellationToken.None)) {
-                var res = p.Init(Enumerable.Range(0, 100), 10, 10, i => i * i, null, null, _ => box.Add(_)).Out;
-                var status = p.Start(() => {
-                    CollectionAssert.AreEquivalent(
-                        Enumerable.Range(0, 100).Select(i => i * i).ToList(),
-                        res.ToList()
-                    );
-                });
-                box.CompleteAdding();
-                Assert.Equal(100, box.GetConsumingEnumerable().Count());
-                Assert.Equal(PipeLine.PipeLineStatus.Completed, status);
-            }
-        }
-
-        [Fact]
-        public void OnInnerIntervalTest() {
-            using (var box = new BlockingCollection<int>())
-            using (var p = new PipeLine(CancellationToken.None)) {
-                var res = p.InitSelectMany(Enumerable.Range(0, 100), 10, 10, i => Enumerable.Range(i, 3),
-                    null, null, null,
-                    _ => box.Add((int) _)).Out;
-                var status = p.Start(() => {
-                    CollectionAssert.AreEquivalent(
-                        Enumerable.Range(0, 100).SelectMany(i => Enumerable.Range(i, 3)).ToList(),
-                        res.ToList()
-                    );
-                });
-                box.CompleteAdding();
-                Assert.Equal(300, box.GetConsumingEnumerable().Count());
-                Assert.Equal(PipeLine.PipeLineStatus.Completed, status);
-            }
-        }
-
-        [Fact]
-        public void OnFinishTest() {
-            using (var p = new PipeLine(CancellationToken.None)) {
-                var onFinish = false;
-                var res = p.Init(Enumerable.Range(0, 100), 10, 10, i => i * i, null, () => onFinish = true);
-                var status = p.Start(() => {
-                    CollectionAssert.AreEquivalent(
-                        Enumerable.Range(0, 100).Select(i => i * i).ToList(),
-                        res.Out.ToList());
-                });
-                Assert.Equal(PipeLine.PipeLineStatus.Completed, status);
-                Assert.True(onFinish);
-            }
-        }
-
-        [Fact]
-        public void ExceptionTest() {
-            using (var p = new PipeLine(CancellationToken.None)) {
-                Assert.Throws<PipeLineException>(() => p.Start(() => { }));
-                Assert.Throws<PipeLineException>(() => p.Init(new[] {1}, 0, 1, i => i));
-                Assert.Throws<PipeLineException>(() => p.Init(new[] {1}, 1, 0, i => i));
-                Assert.Throws<PipeLineException>(() => p.Init(new[] {1}, 0, 0, i => i));
-                var first = p.Init(new[] {1}, 1, 1, i => i);
-                Assert.Throws<PipeLineException>(() => first.Then(0, 1, i => i));
-                Assert.Throws<PipeLineException>(() => first.Then(0, 0, i => i));
-                Assert.Throws<PipeLineException>(() => first.Then(1, 0, i => i));
-                Assert.Throws<PipeLineException>(() => first.ThenSelectMany(0, 1, i => Enumerable.Repeat(i, 3)));
-                Assert.Throws<PipeLineException>(() => first.ThenSelectMany(0, 0, i => Enumerable.Repeat(i, 3)));
-                Assert.Throws<PipeLineException>(() => first.ThenSelectMany(1, 0, i => Enumerable.Repeat(i, 3)));
-            }
-        }
-
-        [Fact]
-        public void CancelTest() {
-            using (var cts = new CancellationTokenSource(0)) {
-                using (var p = new PipeLine(cts.Token)) {
-                    p.Init(Enumerable.Range(0, 10000), 1, 1, i => i);
-                    Assert.Throws<TaskCanceledException>(() => p.Start(null));
-                }
-            }
-        }
-
-        [Fact]
-        public void DisposeTest() {
-            var p = new PipeLine(CancellationToken.None);
-            var res = p.Init(new[] {1}, 1, 1, i => i * i).Out;
-            p.Start(null);
-            p.Dispose();
-            Assert.Throws<ObjectDisposedException>(() => res.ElementAt(0));
-        }
-
-        [Fact]
-        public void BufferTest() {
-            using (var p = new PipeLine(CancellationToken.None)) {
-                var res = p.Init(Enumerable.Range(0, 100), 10, 10, i => i).Buffer(10, 10).Out;
-                var status = p.Start(() => { });
-
-                var list = res.ToList();
-
-                Assert.Equal(Enumerable.Range(0, 100).Sum(), list.SelectMany(x => x).Sum());
-                Assert.Equal(10, list.Count);
-                Assert.Equal(PipeLine.PipeLineStatus.Completed, status);
-            }
-        }
-
-        [Fact]
-        public void BufferThenTest() {
-            using (var p = new PipeLine(CancellationToken.None)) {
-                var res = p.Init(Enumerable.Range(0, 100), 10, 10, i => i * 2)
-                    .Buffer(10, 10)
-                    .Then(10, 10, t => t.Sum())
-                    .Out;
-
-                var status = p.Start(null);
-
-                var list = res.ToList();
-
-                Assert.Equal(9900, list.Sum());
-                Assert.Equal(10, list.Count);
-                Assert.Equal(PipeLine.PipeLineStatus.Completed, status);
-            }
-        }
-
-        [Fact]
-        public void BufferBufferTest() {
-            using (var p = new PipeLine(CancellationToken.None)) {
-                var res = p.Init(Enumerable.Range(0, 1000), 10, 10, i => i)
-                    .Buffer(10, 10)
-                    .Buffer(10, 10).Out;
-
-                var status = p.Start(null);
-                Assert.Equal(PipeLine.PipeLineStatus.Completed, status);
-                var list = res.ToList();
-                Assert.Equal(10, list.Count);
-                Assert.All(list, x => Assert.Equal(10, x.Length));
+                var x = p.InitSelectMany(Enumerable.Range(0, 100), 10, 10, i => Enumerable.Repeat(i, 3));
+                Assert.NotNull(x);
+                Assert.Null(x.Next);
+                var s = p.Start(() => Assert.Equal(4500 * 3, x.Out.Sum()));
+                Assert.Equal(PipeLine.PipeLineStatus.Completed, s);
             }
         }
     }

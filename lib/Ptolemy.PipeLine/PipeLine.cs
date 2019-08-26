@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Kurukuru;
 
 namespace Ptolemy.PipeLine {
     public class PipeLine : IDisposable {
@@ -65,35 +66,34 @@ namespace Ptolemy.PipeLine {
         /// <typeparam name="TSource">Input type</typeparam>
         /// <typeparam name="TResult">Result type</typeparam>
         /// <param name="source">Source collection</param>
-        /// <param name="workers">Number of workers</param>
-        /// <param name="bufferSize">Size of result buffer</param>
+        /// <param name="workers">Number of Workers</param>
+        /// <param name="queueSize">Size of result buffer</param>
         /// <param name="filter"></param>
-        /// <param name="onBegin"></param>
         /// <param name="onFinish"></param>
         /// <param name="onInterval"></param>
+        /// <param name="onBegin"></param>
         /// <returns></returns>
-        public PipeLineStage<TSource, TResult> Init<TSource, TResult>(
+        public PipeLineSelectStage<TSource, TResult> Init<TSource, TResult>(
             IEnumerable<TSource> source,
             int workers,
-            int bufferSize,
+            int queueSize,
             Func<TSource, TResult> filter,
             OnBeginEventHandler onBegin = null,
             OnFinishEventHandler onFinish = null,
-            OnIntervalEventHandler onInterval = null) {
+            OnIntervalEventHandler onInterval = null
+            )
+        {
 
-            if (workers <= 0) throw new PipeLineException("workers must be more than 1");
-            if (bufferSize <= 0) throw new PipeLineException("bufferSize must be more than 1");
+            if (workers <= 0) throw new PipeLineException("Workers must be more than 1");
+            if (queueSize <= 0) throw new PipeLineException("QueueSize must be more than 1");
+            var s = new BlockingCollection<TSource>();
+            foreach (var item in source) {
+                s.Add(item, token);
+            }
+            s.CompleteAdding();
 
-
-            var rt = new PipeLineStage<TSource, TResult>(source, bufferSize) {
-                Workers = workers,
-                Filter = filter,
-                Mode = Mode.Select
-            };
-
-            rt.OnBegin += onBegin;
-            rt.OnInterval += onInterval;
-            rt.OnFinish += onFinish;
+            var rt = new PipeLineSelectStage<TSource, TResult>(s, workers, queueSize, filter, onBegin, onFinish,
+                onInterval);
 
             // first stage
             stages.Add(rt);
@@ -107,43 +107,32 @@ namespace Ptolemy.PipeLine {
         /// <typeparam name="TSource">Input type</typeparam>
         /// <typeparam name="TResult">Result type</typeparam>
         /// <param name="source">Source collection</param>
-        /// <param name="workers">Number of workers</param>
-        /// <param name="bufferSize">Size of result buffer</param>
+        /// <param name="workers">Number of Workers</param>
+        /// <param name="queueSize">Size of result buffer</param>
         /// <param name="filter"></param>
         /// <param name="onBegin"></param>
         /// <param name="onFinish"></param>
         /// <param name="onInterval"></param>
         /// <param name="onInnerInterval"></param>
         /// <returns></returns>
-        public PipeLineStage<TSource, TResult> InitSelectMany<TSource, TResult>(
+        public PipeLineManyStage<TSource, TResult> InitSelectMany<TSource, TResult>(
             IEnumerable<TSource> source,
             int workers,
-            int bufferSize,
+            int queueSize,
             Func<TSource, IEnumerable<TResult>> filter,
             OnBeginEventHandler onBegin = null,
             OnFinishEventHandler onFinish = null,
             OnIntervalEventHandler onInterval = null,
-            OnInnerIntervalEventHandler onInnerInterval = null) {
+            OnInnerIntervalEventHandler onInnerInterval=null) {
 
-            if (workers <= 0) throw new PipeLineException("workers must be more than 1");
-            if (bufferSize <= 0) throw new PipeLineException("bufferSize must be more than 1");
-
-            var rt = new PipeLineStage<TSource, TResult>(bufferSize) {
-                Workers = workers,
-                Sources = new BlockingCollection<TSource>(),
-                EnumerableFilter = filter,
-                Mode = Mode.SelectMany
-            };
-            foreach (var s in source) {
-                rt.Sources.Add(s, token);
+            var s = new BlockingCollection<TSource>();
+            foreach (var item in source)
+            {
+                s.Add(item, token);
             }
-
-            rt.Sources.CompleteAdding();
-            rt.OnBegin += onBegin;
-            rt.OnInterval += onInterval;
-            rt.OnFinish += onFinish;
-            rt.OnInnerInterval += onInnerInterval;
-
+            s.CompleteAdding();
+            var rt = new PipeLineManyStage<TSource, TResult>(s, workers, queueSize, filter, onBegin, onFinish,
+                onInterval, onInnerInterval);
             // first stage
             stages.Add(rt);
 
