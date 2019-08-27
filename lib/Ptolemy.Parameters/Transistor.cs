@@ -24,7 +24,7 @@ namespace Ptolemy.Parameters {
         }
 
         public override string ToString() {
-            return $"t_{Threshold:E10}_s_{Sigma:E10}_d_{Deviation:E10}";
+            return $"t_{Threshold:E5}_s_{Sigma:E5}_d_{Deviation:E5}";
         }
 
         public static string ToTableName(Transistor vtn, Transistor vtp) =>

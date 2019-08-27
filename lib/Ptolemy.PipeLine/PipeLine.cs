@@ -42,7 +42,7 @@ namespace Ptolemy.PipeLine {
             }
             catch (AggregateException e) {
                 foreach (var exception in e.InnerExceptions) {
-                    if (exception is TaskCanceledException) throw exception;
+                    if (exception is TaskCanceledException) throw new OperationCanceledException();
                 }
             }
             if (tasks.Any(t => t.IsFaulted)) return PipeLineStatus.Faulted;

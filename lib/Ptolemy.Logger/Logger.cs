@@ -85,7 +85,7 @@ namespace Ptolemy.Logger {
         }
 
         public void Write(object message, LogLevel level) {
-            File.AppendAllText(path, $"{message}");
+            File.AppendAllText(path, $"{message}\n");
         }
     }
 }

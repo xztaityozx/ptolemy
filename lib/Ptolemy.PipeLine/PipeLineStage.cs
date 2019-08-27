@@ -35,11 +35,23 @@ namespace Ptolemy.PipeLine {
         }
 
         public override void Invoke(CancellationToken token) {
-            foreach (var source in Sources.GetConsumingEnumerable()) {
-                token.ThrowIfCancellationRequested();
-                Results.Add(filter(source), token);
+            OnBegin?.Invoke();
+
+            var tasks = new List<Task>();
+            for (var i = 0; i < Workers; i++) {
+                tasks.Add(Task.Factory.StartNew(() => {
+                    foreach (var source in Sources.GetConsumingEnumerable()) {
+                        token.ThrowIfCancellationRequested();
+                        Results.Add(filter(source), token);
+                        OnInterval?.Invoke(source);
+                    }
+                }, token));
             }
+
+            Task.WaitAll(tasks.ToArray());
+
             Results.CompleteAdding();
+            OnFinish?.Invoke();
         }
     }
 

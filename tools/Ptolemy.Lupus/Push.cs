@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Disposables;
 using System.Text;
 using System.Threading;
 using CommandLine;
@@ -11,6 +13,10 @@ using Ptolemy.Lupus.Repository;
 using Ptolemy.Parameters;
 using Ptolemy.PipeLine;
 using ShellProgressBar;
+using System.Reactive.Linq;
+using System.Reactive.Threading;
+using System.Reactive.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace Ptolemy.Lupus {
     [Verb("push", HelpText = "DataBaseにデータを書き込みます")]
@@ -22,12 +28,6 @@ namespace Ptolemy.Lupus {
         [Option('f', "files", HelpText = "List of csv file's paths")]
         public IEnumerable<string> Files { get; set; }
 
-        [Option('x', "parseParallel", Default = 1, HelpText = "パースの並列数です")]
-        public int ParseParallel { get; set; }
-
-        [Option('y', "pushParallel", Default = 1, HelpText = "DBへ書き込みタスクの並列数です")]
-        public int PushParallel { get; set; }
-
         [Option('b', "buffer", Default = 50000, HelpText = "一度にDBへ書き込むレコードの数です")]
         public int QueueBuffer { get; set; }
 
@@ -37,10 +37,21 @@ namespace Ptolemy.Lupus {
                 ? new LupusPushRequest(Vtn, Vtp, Files)
                 : new LupusPushRequest(Vtn, Vtp, Directory.EnumerateFiles(Target));
 
+            Logger.Info("Vtn:");
+            Logger.Info($"\tVoltage: {VtnThreshold}");
+            Logger.Info($"\tSigma: {VtnSigma}");
+            Logger.Info($"\tDeviation: {VtnDeviation}");
+            Logger.Info("Vtp:");
+            Logger.Info($"\tVoltage: {VtpThreshold}");
+            Logger.Info($"\tSigma: {VtpSigma}");
+            Logger.Info($"\tDeviation: {VtpDeviation}");
+            Logger.Info($"Total Files: {request.FileList.Count}");
+            Logger.Info($"DatabaseName: {Transistor.ToTableName(Vtn, Vtp)}");
+
             Exception res = null;
-            Spinner.Start("Pushing...", spin => {
-                res = PushToDatabase(token, request, spin);
-                if (res == null) spin.Succeed("Finished all pipeline");
+            Spinner.Start("Pushing to database...", spin => {
+                res = PushToDatabase(token, request);
+                if (res == null) spin.Succeed("Finished");
                 else spin.Fail("some problem has occured");
             });
             return res;
@@ -48,57 +59,33 @@ namespace Ptolemy.Lupus {
 
         public Exception PushToDatabase(
             CancellationToken token,
-            LupusPushRequest request,
-            Spinner spin
+            LupusPushRequest request
         ) {
             try {
                 token.ThrowIfCancellationRequested();
-
-                Logger.Info("Vtn:");
-                Logger.Info($"\tVoltage: {VtnThreshold}");
-                Logger.Info($"\tSigma: {VtnSigma}");
-                Logger.Info($"\tDeviation: {VtnDeviation}");
-                Logger.Info("Vtp:");
-                Logger.Info($"\tVoltage: {VtpThreshold}");
-                Logger.Info($"\tSigma: {VtpSigma}");
-                Logger.Info($"\tDeviation: {VtpDeviation}");
-                Logger.Info($"Total Files: {request.FileList.Count}");
-
-
                 var repo = new MssqlRepository();
                 repo.Use(Transistor.ToTableName(Vtn, Vtp));
 
-                using (var pipeline = new PipeLine.PipeLine(token)) {
-                    var result = pipeline.InitSelectMany(
-                            request.FileList, ParseParallel, QueueBuffer, Factory.Build, () => {
-                                Console.WriteLine();
-                                Logger.Info("Begin: parsing");
-                            },
-                            () => {
-                                Console.WriteLine();
-                                Logger.Info("Finished: Parsing");
-                            },
-                            s => spin.Text = $"Parsed: {s}"
-                        ).Buffer(QueueBuffer, 100, () => {
-                            Console.WriteLine();
-                            Logger.Info("Begin: buffering");
-                        }, () => {
-                            Console.WriteLine();
-                            Logger.Info("Finished: Buffering");
-                        })
-                        .Then(PushParallel, QueueBuffer, rs => repo.BulkUpsert(rs), () => {
-                            Console.WriteLine();
-                            Logger.Info("Begin: pushing");
-                        }, () => {
-                            Console.WriteLine();
-                            Logger.Info("Finished: pushing");
-                        }).Out;
+                var cnt = 0;
+                return request.FileList.ToObservable()
+                    .SelectMany(Factory.Build)
+                    .Buffer(QueueBuffer)
+                    .Select(rs => {
+                        try {
+                            token.ThrowIfCancellationRequested();
 
-                    pipeline.Start(() => { });
+                            repo.BulkUpsert(rs);
+                        }
+                        catch (Exception e) {
+                            return e;
+                        }
 
-                    var innerExceptions = result as Exception[] ?? result.ToArray();
-                    return innerExceptions.Any() ? new AggregateException(innerExceptions) : null;
-                }
+                        Console.WriteLine();
+                        Logger.Info($"{cnt += rs.Count} records was pushed");
+                        return null;
+                    }).ToTask(token).Result;
+
+                //return null;
 
             }
             catch (OperationCanceledException e) {

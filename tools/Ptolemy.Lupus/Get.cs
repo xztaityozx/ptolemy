@@ -19,13 +19,13 @@ namespace Ptolemy.Lupus {
     [Verb("get", HelpText = "DataBaseからデータを取り出し、コンフィグに従って数え上げを行います")]
     public class Get : Verb.Verb {
 
-        [Option('i', "sigmaRange", Default = "0.046,0.004,0.2", HelpText = "[開始値],[刻み幅],[終了値]でシグマを範囲指定します")]
+        [Option('i', "sigmaRange", Default = ",,", HelpText = "[開始値],[刻み幅],[終了値]でシグマを範囲指定します")]
         public string SigmaRange { get; set; }
 
-        [Option('w', "sweepRange", Default = "1,5000", HelpText = "[開始値],[終了値]でSweepの範囲を指定します")]
+        [Option('w', "sweepRange", Default = ",", HelpText = "[開始値],[終了値]でSweepの範囲を指定します")]
         public string SweepRange { get; set; }
 
-        [Option('e', "seedRange",Default = "1,2000", HelpText = "[開始値],[終了値]でSeedの範囲を指定します")]
+        [Option('e', "seedRange",Default = ",", HelpText = "[開始値],[終了値]でSeedの範囲を指定します")]
         public string SeedRange { get; set; }
 
         [Option('o',"out", HelpText = "CSVを書き出すファイルへのパスです", Default = "./out.csv")]
@@ -91,7 +91,9 @@ namespace Ptolemy.Lupus {
 
             if (token.IsCancellationRequested) return new OperationCanceledException();
             var filter = new Filter(LupusConfig.Instance.Conditions, LupusConfig.Instance.Expressions);
-            var request = new LupusGetRequest(Vtn, Vtp,  filter, sigma, sweep, seed);
+            var request = SigmaRange.Split(',', StringSplitOptions.RemoveEmptyEntries).Length == 0
+                ? new LupusGetRequest(Vtn, Vtp, filter, sweep, seed)
+                : new LupusGetRequest(Vtn, Vtp, filter, sigma, sweep, seed);
 
             return token.IsCancellationRequested ? new OperationCanceledException() : GetFromDatabase(request, token);
         }

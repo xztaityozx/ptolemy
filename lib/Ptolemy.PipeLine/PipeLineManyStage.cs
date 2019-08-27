@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ptolemy.PipeLine
 {
@@ -28,15 +29,31 @@ namespace Ptolemy.PipeLine
         }
 
         public override void Invoke(CancellationToken token) {
-            foreach (var source in Sources.GetConsumingEnumerable()) {
+            OnBegin?.Invoke();
 
-                token.ThrowIfCancellationRequested();
+            var tasks = new List<Task>();
+            for (var i = 0; i < Workers; i++) {
+                tasks.Add(Task.Factory.StartNew(() => {
+                    foreach (var source in Sources.GetConsumingEnumerable())
+                    {
 
-                foreach (var result in filter(source)) {
-                    Results.Add(result, token);
-                }
+                        token.ThrowIfCancellationRequested();
+
+                        foreach (var result in filter(source))
+                        {
+                            Results.Add(result, token);
+                            OnInnerInterval?.Invoke(result);
+                        }
+
+                        OnInterval?.Invoke(source);
+                    }
+                }, token));
             }
+
+            Task.WaitAll(tasks.ToArray());
+
             Results.CompleteAdding();
+            OnFinish?.Invoke();
         }
     }
 }

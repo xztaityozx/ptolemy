@@ -9,7 +9,7 @@ namespace Ptolemy.PipeLine {
     public class PipeLineBuffer<TItem> : PipeLineStageBase<TItem, TItem[]> {
         internal int Size;
 
-        public PipeLineBuffer(
+        internal PipeLineBuffer(
             BlockingCollection<TItem> sources,
             int size,
             int workers,
@@ -19,6 +19,7 @@ namespace Ptolemy.PipeLine {
             OnIntervalEventHandler onInterval = null
         ) : base(sources,
             workers, queueSize) {
+            if (size <= 0) throw new PipeLineException("size must be more than one");
             Size = size;
             OnBegin += onBegin;
             OnFinish += onFinish;
@@ -26,19 +27,24 @@ namespace Ptolemy.PipeLine {
         }
 
         public override void Invoke(CancellationToken token) {
-            var box = new List<List<TItem>> {[0] = new List<TItem>()};
+            OnBegin?.Invoke();
+            var box = new List<List<TItem>> {new List<TItem>()};
             var idx = 0;
             foreach (var item in Sources.GetConsumingEnumerable()) {
                 token.ThrowIfCancellationRequested();
+                OnInterval?.Invoke(item);
 
                 box[idx].Add(item);
-                if (box[idx].Count == Size) Results.Add(box[idx].ToArray(), token);
+                if (box[idx].Count != Size)continue;
+
+                Results.Add(box[idx].ToArray(), token);
                 idx++;
-                box[idx] = new List<TItem>();
+                box.Add(new List<TItem>());
             }
 
             if (box[idx].Any()) Results.Add(box[idx].ToArray(), token);
             Results.CompleteAdding();
+            OnFinish?.Invoke();
         }
     }
 }

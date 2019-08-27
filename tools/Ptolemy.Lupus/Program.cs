@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using CommandLine;
+using Kurukuru;
 using Ptolemy.Interface;
 
 namespace Ptolemy.Lupus {
@@ -10,16 +11,20 @@ namespace Ptolemy.Lupus {
         private static void Main(string[] args) {
             using (var cts = new CancellationTokenSource()) {
                 var token = cts.Token;
+                var log = new Logger.Logger();
                 Console.CancelKeyPress += (sender, eventArgs) => {
                     eventArgs.Cancel = true;
                     cts.Cancel();
+                    Console.WriteLine();
+                    log.Warn("Waiting cancel...");
                 };
+                log.Warn("Press Ctrl+C to cancel");
+
                 var lupus = new Lupus();
                 var res = lupus.Invoke(token, args);
                 Console.ResetColor();
                 if (res == null) return;
 
-                var log = new Logger.Logger();
                 switch (res) {
                     case OperationCanceledException _:
                         log.Error("Canceled by user");
@@ -31,6 +36,7 @@ namespace Ptolemy.Lupus {
                         log.Fatal(res);
                         break;
                 }
+
                 Console.ResetColor();
                 Environment.Exit(1);
             }
@@ -40,7 +46,7 @@ namespace Ptolemy.Lupus {
     public class Lupus : IPtolemyTool {
         public Exception Invoke(CancellationToken token, string[] args) {
 
-            var logFile = Path.Combine(LupusConfig.Instance.LogDir, $"{DateTime.Now:yyyy-MM-DD-HH-mm-ss-ff}.log");
+            var logFile = Path.Combine(LupusConfig.Instance.LogDir, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss-ff}.log");
 
             return Parser.Default.ParseArguments<Get, Push>(args).MapResult(
                 (Get g) => g.Run(token, logFile),
