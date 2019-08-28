@@ -18,6 +18,9 @@ namespace Ptolemy.Lupus.Repository {
 
         public override void Use(string db) {
             name = db;
+            using (var c = new Context(name)) {
+                c.Database.EnsureCreated();
+            }
         }
 
         public override void BulkUpsert(IList<Record.Record> list) {
@@ -25,6 +28,21 @@ namespace Ptolemy.Lupus.Repository {
                 context.Database.EnsureCreated();
                 using (var tr = context.Database.BeginTransaction()) {
                     context.BulkInsertOrUpdate(list);
+                    tr.Commit();
+                }
+            }
+        }
+
+        public void BulkUpsertRange(IList<IList<Record.Record>> list) {
+            using (var context = new Context(name))
+            {
+                context.Database.EnsureCreated();
+                using (var tr = context.Database.BeginTransaction())
+                {
+                    foreach (var records in list) {
+                        context.BulkInsertOrUpdate(records);
+                        Console.WriteLine($"{records.Count} records was BulkUpsert");
+                    }
                     tr.Commit();
                 }
             }
