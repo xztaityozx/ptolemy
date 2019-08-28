@@ -17,6 +17,7 @@ using System.Reactive.Linq;
 using System.Reactive.Threading;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
+using Remotion.Linq.Clauses.Expressions;
 
 namespace Ptolemy.Lupus {
     [Verb("push", HelpText = "DataBaseにデータを書き込みます")]
@@ -49,11 +50,11 @@ namespace Ptolemy.Lupus {
             Logger.Info($"DatabaseName: {Transistor.ToTableName(Vtn, Vtp)}");
 
             Exception res = null;
-            Spinner.Start("Pushing to database...", spin => {
+            //Spinner.Start("Pushing to database...", spin => {
                 res = PushToDatabase(token, request);
-                if (res == null) spin.Succeed("Finished");
-                else spin.Fail("some problem has occured");
-            });
+                //if (res == null) spin.Succeed("Finished");
+                //else spin.Fail("some problem has occured");
+            //});
             return res;
         }
 
@@ -66,9 +67,42 @@ namespace Ptolemy.Lupus {
                 var repo = new MssqlRepository();
                 repo.Use(Transistor.ToTableName(Vtn, Vtp));
 
-                repo.BulkUpsertRange(request.FileList.ToObservable()
-                    .SelectMany(Factory.Build)
-                    .Buffer(QueueBuffer).ToEnumerable().ToList());
+                using (var parent = new ProgressBar(2, "Master", ConsoleColor.DarkBlue)) {
+                    IList<Record.Record>[] container = null;
+                    Spinner.Start("Parsing...", () =>
+                        container = request.FileList.ToObservable().SelectMany(Factory.Build).Buffer(QueueBuffer)
+                            .ToEnumerable().ToArray());
+                    parent.Tick("Finished Parsing...");
+
+                    using (var push = parent.Spawn(container.Length, "Pushing...")) {
+                        var cnt = 0;
+                        foreach (var records in container ?? throw new NullReferenceException())
+                        {
+                            token.ThrowIfCancellationRequested();
+
+                            using (var sub = push.Spawn(101, "sub")) repo.BulkUpsert(records, sub);
+                            push.Tick($"{cnt += records.Count} records was pushed");
+                        }
+                    }
+                    parent.Tick("Finished Pushing...");
+                }
+                Logger.Info($"Finished push {request.FileList.Count} files");
+
+                //using (var parent = new ProgressBar(request.FileList.Count, "Master", ConsoleColor.DarkBlue))
+                //using(var parse = parent.Spawn(request.FileList.Count, "Parse..."))
+                //using(var push = parent.Spawn(request.FileList.Count, "Push..."))
+                //{
+                //    foreach (var file in request.FileList) {
+                //        token.ThrowIfCancellationRequested();
+
+                //        var records = Factory.Build(file);
+                //        token.ThrowIfCancellationRequested();
+
+                //        parse.Tick();
+                //        using(var sub=push.Spawn(100, "sub")) repo.BulkUpsert(records, sub);
+                //        push.Tick();
+                //    }
+                //}
 
                 return null;
             }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using EFCore.BulkExtensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,17 +38,38 @@ namespace Ptolemy.Lupus.Repository {
             }
         }
 
-        public void BulkUpsertRange(IList<IList<Record.Record>> list) {
-            using (var parent = new ProgressBar(list.Count, "Pushing...", ConsoleColor.DarkCyan)) {
-                list.AsParallel().ForAll(records => {
-                    using (var c = new Context(name))
-                    using (var bar = parent.Spawn(100, "sub", ProgressBarOptions.Default))
-                    using (var t = c.Database.BeginTransaction()) {
-                        c.BulkInsertOrUpdate(records, config => { config.TrackingEntities = false; }, d => {
-                            for (var i = 0; i < (int) (d * 100); i++) bar.Tick();
-                        });
+        public void BulkUpsert(IList<Record.Record> list, IProgressBar bar)
+        {
+            using (var context = new Context(name))
+            {
+                using (var tr = context.Database.BeginTransaction())
+                {
+                    context.BulkInsertOrUpdate(list, config => config.TrackingEntities=false, d => {
+                        for (var i = 0; i < (int) (d * 100); i++) bar.Tick();
+                    });
+                    bar.Message = "Commiting transaction...";
+                    tr.Commit();
+                    bar.Tick();
+                }
+            }
+        }
+
+        public void BulkUpsert(CancellationToken token,IEnumerable<IList<Record.Record>> list, IProgressBar bar) {
+            using (var c = new Context(name)) {
+                using (var t = c.Database.BeginTransaction()) {
+                    foreach (var records in list) {
+                        token.ThrowIfCancellationRequested();
+
+
+                        using(var sub=bar.Spawn(101, "sub")) c.BulkInsertOrUpdate(records, config => config.TrackingEntities = false,
+                            d => {
+                                for(var i=0;i<(int)(d*100);i++) sub.Tick();
+                            });
+                        bar.Tick();
                     }
-                });
+
+                    t.Commit();
+                }
             }
         }
 
@@ -78,7 +100,7 @@ namespace Ptolemy.Lupus.Repository {
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
                 base.OnConfiguring(optionsBuilder);
                 optionsBuilder
-                    .UseLoggerFactory(GetLoggerFactory())
+                    //.UseLoggerFactory(GetLoggerFactory())
                     .UseSqlServer(LupusConfig.Instance.ConnectionString + $";Database={name}");
                 optionsBuilder.UseLazyLoadingProxies();
             }
