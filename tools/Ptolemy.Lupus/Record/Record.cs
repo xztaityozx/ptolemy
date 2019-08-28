@@ -1,6 +1,9 @@
-﻿namespace Ptolemy.Lupus.Record {
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Ptolemy.Lupus.Record {
     public class Record {
         public long Sweep { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Value { get; set; }
         public long Seed { get; set; }
         public string Key { get; set; }

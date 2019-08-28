@@ -66,7 +66,6 @@ namespace Ptolemy.Lupus {
                 var repo = new MssqlRepository();
                 repo.Use(Transistor.ToTableName(Vtn, Vtp));
 
-
                 repo.BulkUpsertRange(request.FileList.ToObservable()
                     .SelectMany(Factory.Build)
                     .Buffer(QueueBuffer).ToEnumerable().ToList());

@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using CommandLine;
 using Kurukuru;
 using Microsoft.SqlServer.Server;
@@ -122,11 +126,7 @@ namespace Ptolemy.Lupus {
                         repo.Use(Transistor.ToTableName(vtn, vtp));
 
                         // Aggregate
-                        foreach (var (signal, value) in repo.Count(r =>
-                                request.SweepStart <= r.Sweep && r.Sweep <= request.SweepEnd &&
-                                request.SeedStart <= r.Seed && r.Seed <= request.SeedEnd,
-                            request.Filter)) {
-
+                        foreach (var (signal, value) in repo.Count((sweep.start, sweep.stop), (seed.start, seed.stop),request.Filter)) {
                             // result[signal][indexOfSigma] = value
                             result[signal][idx] = value;
                         }
@@ -181,13 +181,30 @@ namespace Ptolemy.Lupus {
                 
                 // throw
                 token.ThrowIfCancellationRequested();
+
+                Logger.Info($"Seed:");
+                Logger.Info($"\tStart: {request.SeedStart}");
+                Logger.Info($"\tEnd: {request.SeedEnd}");
+                Logger.Info($"Sweep:");
+                Logger.Info($"\tStart: {request.SweepStart}");
+                Logger.Info($"\tEnd: {request.SweepEnd}");
+                Logger.Info($"DbName: {Transistor.ToTableName(request.Vtn, request.Vtp)}");
+
+
                 Tuple<string, long>[] result = null;
-                Spinner.Start("Aggregating...", () => {
+                Spinner.Start("Aggregating...", spin => {
+                    var timer = Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1))
+                        .Subscribe(i => spin.Text = $" {i} seconds elapsed");
+
+                    Logger.Info("connecting to db...");
+                    Logger.Info($"{request.Filter.Delegates.Count} filters");
+
                     result = repo.Count(
-                        r =>
-                            request.SweepStart <= r.Sweep && r.Sweep <= request.SweepEnd &&
-                            request.SeedStart <= r.Seed && r.Seed <= request.SeedEnd,
+                        (sweep.start, sweep.stop), (seed.start, seed.stop),
                         request.Filter);
+
+
+                    timer.Dispose();
                 });
 
                 // throw
@@ -195,11 +212,11 @@ namespace Ptolemy.Lupus {
                 var sb = new StringBuilder();
                 // Parameter Header
                 sb.AppendLine("Date");
-                sb.AppendLine($"{DateTime.Now:yyyy MMMM dd}");
+                sb.AppendLine($"{DateTime.Now}");
                 sb.AppendLine(
                     $"{nameof(VtnThreshold)},{nameof(VtnSigma)},{nameof(VtnDeviation)},{nameof(VtpThreshold)},{nameof(VtpSigma)},{nameof(VtpDeviation)}");
                 sb.AppendLine(
-                    $"{VtnThreshold},{VtnSigma},{VtnDeviation},{VtpThreshold},{VtpSigma},{VtpDeviation}");
+                    $"{request.Vtn.Threshold},{request.Vtn.Sigma},{request.Vtn.Deviation},{request.Vtp.Threshold},{request.Vtp.Sigma},{request.Vtp.Deviation}");
                 sb.AppendLine("FilterName,Value");
                 foreach (var (key, value) in result) {
                     sb.AppendLine($"{key},{value}");

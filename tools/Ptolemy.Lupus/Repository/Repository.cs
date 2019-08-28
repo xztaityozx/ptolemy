@@ -4,13 +4,16 @@ using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using EFCore.BulkExtensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Ptolemy.Map;
 
 namespace Ptolemy.Lupus.Repository {
     public abstract class Repository<TEntity> where TEntity : class {
         public abstract void Use(string db);
         public abstract void BulkUpsert(IList<TEntity> list);
-        public abstract Tuple<string, long>[] Count(Func<TEntity, bool> whereFunc, Filter filter);
+        public abstract Tuple<string, long>[] Count((long start, long end) sweep, (long start, long end) seed, Filter filter);
     }
 
     public class MssqlRepository : Repository<Record.Record> {
@@ -47,15 +50,19 @@ namespace Ptolemy.Lupus.Repository {
             }
         }
 
-        public override Tuple<string, long>[] Count(Func<Record.Record, bool> whereFunc, Filter filter) {
-            using (var context = new Context(name))
+        public override Tuple<string, long>[] Count((long start, long end) sweep, (long start, long end) seed, Filter filter) {
+            using (var context = new Context(name)) {
+                var (sweepStart, sweepEnd) = sweep;
+                var (seedStart, seedEnd) = seed;
+                var whereQuery = (from r in context.Records
+                    where sweepStart <= r.Sweep && r.Sweep <= sweepEnd && seedStart <= r.Seed && r.Seed <= seedEnd
+                    group r by new{r.Sweep, r.Seed});
+
+
                 return filter.Aggregate(
-                    context
-                        .Records
-                        .Where(whereFunc)
-                        .GroupBy(r => new {r.Sweep, r.Seed})
-                        .Select(g => g.ToMap(r => r.Key, r => r.Value)).ToList()
+                    whereQuery.Select(g => g.ToMap(r => r.Key, r => r.Value)).ToList()
                 );
+            }
         }
 
         /// <summary>
@@ -69,13 +76,26 @@ namespace Ptolemy.Lupus.Repository {
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
                 base.OnConfiguring(optionsBuilder);
-                optionsBuilder.UseSqlServer(LupusConfig.Instance.ConnectionString + $";Database={name}");
+                optionsBuilder
+                    .UseLoggerFactory(GetLoggerFactory())
+                    .UseSqlServer(LupusConfig.Instance.ConnectionString + $";Database={name}");
                 optionsBuilder.UseLazyLoadingProxies();
+            }
+            private ILoggerFactory GetLoggerFactory()
+            {
+                IServiceCollection serviceCollection = new ServiceCollection();
+                serviceCollection.AddLogging(builder =>
+                    builder.AddConsole()
+                        .AddFilter(DbLoggerCategory.Database.Command.Name,
+                            LogLevel.Information));
+                return serviceCollection.BuildServiceProvider()
+                    .GetService<ILoggerFactory>();
             }
 
             protected override void OnModelCreating(ModelBuilder modelBuilder) {
                 base.OnModelCreating(modelBuilder);
                 modelBuilder.Entity<Record.Record>().HasKey(e => new {e.Sweep, e.Key, e.Seed});
+                modelBuilder.Entity<Record.Record>().HasIndex(e => new {e.Sweep, e.Seed});
             }
         }
     }
