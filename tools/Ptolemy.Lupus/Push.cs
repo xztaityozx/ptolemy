@@ -66,27 +66,39 @@ namespace Ptolemy.Lupus {
                 var repo = new MssqlRepository();
                 repo.Use(Transistor.ToTableName(Vtn, Vtp));
 
-                var cnt = 0;
-                return request.FileList.ToObservable()
-                    .SelectMany(Factory.Build)
-                    .Buffer(QueueBuffer)
-                    .Select(rs => {
-                        try {
-                            token.ThrowIfCancellationRequested();
+                //var cnt = 0;
 
-                            repo.BulkUpsert(rs);
+                //request.FileList.ToObservable()
+                //    .Select(Factory.Build)
+                //    //.SelectMany(Factory.Build)
+                //    //.Buffer(QueueBuffer)
+                //    .Subscribe(rs => {
+                //        token.ThrowIfCancellationRequested();
+                //        repo.BulkUpsert(rs);
+                //        Console.WriteLine();
+                //        Logger.Info($"{cnt+=rs.Length} records was pushed");
+                //    }, e => throw e);
+
+                using (var pipeline = new PipeLine.PipeLine(token)) {
+                    var x = pipeline.InitSelectMany(request.FileList, 10, QueueBuffer, Factory.Build).Out;
+                    pipeline.Start(() => {
+                        var list = new List<Record.Record>();
+                        foreach (var record in x) {
+                            list.Add(record);
+                            if(list.Count!=QueueBuffer) continue;
+
+                            repo.BulkUpsert(list);
+                            Logger.Info($"{list.Count} records was pushed");
                         }
-                        catch (Exception e) {
-                            return e;
-                        }
 
-                        Console.WriteLine();
-                        Logger.Info($"{cnt += rs.Count} records was pushed");
-                        return null;
-                    }).ToTask(token).Result;
+                        if (!list.Any()) return;
+                        repo.BulkUpsert(list);
+                        Logger.Info($"{list.Count} records was pushed");
+                    });
+                    return null;
+                }
 
-                //return null;
-
+                return null;
             }
             catch (OperationCanceledException e) {
                 return new OperationCanceledException($"Canceled by User\n\t--> {e}");
