@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using Ptolemy.Map;
+using ShellProgressBar;
 
 namespace Ptolemy.Lupus.Repository {
     public abstract class Repository<TEntity> where TEntity : class {
@@ -37,16 +38,16 @@ namespace Ptolemy.Lupus.Repository {
         }
 
         public void BulkUpsertRange(IList<IList<Record.Record>> list) {
-            var cnt = 0;
-            using (var context = new Context(name)) {
-                using (var tr = context.Database.BeginTransaction()) {
-                    foreach (var records in list) {
-                        context.BulkInsertOrUpdate(records);
-                        Console.WriteLine($" [RepositoryInfo][{DateTime.Now}]{records.Count} records was BulkUpsert(total: {cnt+=records.Count})");
+            using (var parent = new ProgressBar(list.Count, "Pushing...", ConsoleColor.DarkCyan)) {
+                list.AsParallel().ForAll(records => {
+                    using (var c = new Context(name))
+                    using (var bar = parent.Spawn(100, "sub", ProgressBarOptions.Default))
+                    using (var t = c.Database.BeginTransaction()) {
+                        c.BulkInsertOrUpdate(records, config => { config.TrackingEntities = false; }, d => {
+                            for (var i = 0; i < (int) (d * 100); i++) bar.Tick();
+                        });
                     }
-
-                    tr.Commit();
-                }
+                });
             }
         }
 
