@@ -34,15 +34,14 @@ namespace Ptolemy.Lupus.Repository {
         }
 
         public void BulkUpsertRange(IList<IList<Record.Record>> list) {
-            using (var context = new Context(name))
-            {
-                context.Database.EnsureCreated();
-                using (var tr = context.Database.BeginTransaction())
-                {
+            var cnt = 0;
+            using (var context = new Context(name)) {
+                using (var tr = context.Database.BeginTransaction()) {
                     foreach (var records in list) {
                         context.BulkInsertOrUpdate(records);
-                        Console.WriteLine($"{records.Count} records was BulkUpsert");
+                        Console.WriteLine($" [RepositoryInfo][{DateTime.Now}]{records.Count} records was BulkUpsert(total: {cnt+=records.Count})");
                     }
+
                     tr.Commit();
                 }
             }

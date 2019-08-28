@@ -66,32 +66,10 @@ namespace Ptolemy.Lupus {
                 var repo = new MssqlRepository();
                 repo.Use(Transistor.ToTableName(Vtn, Vtp));
 
-                var cnt = 0;
 
                 repo.BulkUpsertRange(request.FileList.ToObservable()
-                    //.Select(Factory.Build)
                     .SelectMany(Factory.Build)
                     .Buffer(QueueBuffer).ToEnumerable().ToList());
-
-                //using (var pipeline = new PipeLine.PipeLine(token)) {
-                //    var x = pipeline.InitSelectMany(request.FileList, 10, QueueBuffer*10, Factory.Build).Out;
-                //    pipeline.Start(() => {
-                //        var list = new List<Record.Record>();
-                //        foreach (var record in x) {
-                //            list.Add(record);
-                //            if(list.Count < QueueBuffer) continue;
-
-                //            repo.BulkUpsert(list);
-                //            Logger.Info($"{cnt+=list.Count} records was pushed");
-                //            list = new List<Record.Record>();
-                //        }
-
-                //        if (!list.Any()) return;
-                //        repo.BulkUpsert(list);
-                //        Logger.Info($"{list.Count} records was pushed");
-                //    });
-                //    return null;
-                //}
 
                 return null;
             }
