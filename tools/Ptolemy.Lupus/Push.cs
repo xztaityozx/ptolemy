@@ -39,23 +39,17 @@ namespace Ptolemy.Lupus {
                 : new LupusPushRequest(Vtn, Vtp, Directory.EnumerateFiles(Target));
 
             Logger.Info("Vtn:");
-            Logger.Info($"\tVoltage: {VtnThreshold}");
-            Logger.Info($"\tSigma: {VtnSigma}");
-            Logger.Info($"\tDeviation: {VtnDeviation}");
+            Logger.Info($"\tVoltage: {request.Vtn.Threshold}");
+            Logger.Info($"\tSigma: {request.Vtn.Sigma}");
+            Logger.Info($"\tDeviation: {request.Vtn.Deviation}");
             Logger.Info("Vtp:");
-            Logger.Info($"\tVoltage: {VtpThreshold}");
-            Logger.Info($"\tSigma: {VtpSigma}");
-            Logger.Info($"\tDeviation: {VtpDeviation}");
+            Logger.Info($"\tVoltage: {request.Vtp.Threshold}");
+            Logger.Info($"\tSigma: {request.Vtp.Sigma}");
+            Logger.Info($"\tDeviation: {request.Vtp.Deviation}");
             Logger.Info($"Total Files: {request.FileList.Count}");
             Logger.Info($"DatabaseName: {Transistor.ToTableName(Vtn, Vtp)}");
 
-            Exception res = null;
-            //Spinner.Start("Pushing to database...", spin => {
-                res = PushToDatabase(token, request);
-                //if (res == null) spin.Succeed("Finished");
-                //else spin.Fail("some problem has occured");
-            //});
-            return res;
+            return PushToDatabase(token, request); 
         }
 
         public Exception PushToDatabase(
@@ -80,29 +74,13 @@ namespace Ptolemy.Lupus {
                         {
                             token.ThrowIfCancellationRequested();
 
-                            using (var sub = push.Spawn(101, "sub")) repo.BulkUpsert(records, sub);
+                            using (var sub = push.Spawn(100, "sub")) repo.BulkUpsert (token, records, sub);
                             push.Tick($"{cnt += records.Count} records was pushed");
                         }
                     }
                     parent.Tick("Finished Pushing...");
                 }
                 Logger.Info($"Finished push {request.FileList.Count} files");
-
-                //using (var parent = new ProgressBar(request.FileList.Count, "Master", ConsoleColor.DarkBlue))
-                //using(var parse = parent.Spawn(request.FileList.Count, "Parse..."))
-                //using(var push = parent.Spawn(request.FileList.Count, "Push..."))
-                //{
-                //    foreach (var file in request.FileList) {
-                //        token.ThrowIfCancellationRequested();
-
-                //        var records = Factory.Build(file);
-                //        token.ThrowIfCancellationRequested();
-
-                //        parse.Tick();
-                //        using(var sub=push.Spawn(100, "sub")) repo.BulkUpsert(records, sub);
-                //        push.Tick();
-                //    }
-                //}
 
                 return null;
             }
