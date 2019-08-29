@@ -61,23 +61,41 @@ namespace Ptolemy.Lupus {
                 var repo = new MssqlRepository();
                 repo.Use(Transistor.ToTableName(Vtn, Vtp));
 
-                using (var parent = new ProgressBar(2, "Master", ConsoleColor.DarkBlue)) {
+                using (var parent = new ProgressBar(2, "Master", new ProgressBarOptions {
+                    BackgroundCharacter = '-',
+                    ProgressCharacter = '>',
+                    BackgroundColor = ConsoleColor.DarkGray,
+                    ForegroundColor = ConsoleColor.DarkGreen
+                })) {
+                    var opt =new ProgressBarOptions {
+                        ProgressCharacter = '=',
+                        ForegroundColor = ConsoleColor.DarkCyan
+                    };
                     IList<Record.Record>[] container = null;
                     Spinner.Start("Parsing...", () =>
                         container = request.FileList.ToObservable().SelectMany(Factory.Build).Buffer(QueueBuffer)
                             .ToEnumerable().ToArray());
                     parent.Tick("Finished Parsing...");
 
-                    using (var push = parent.Spawn(container.Length, "Pushing...")) {
+                    using (var push = parent.Spawn(container.Length, "Pushing...", opt)) {
                         var cnt = 0;
-                        foreach (var records in container ?? throw new NullReferenceException())
-                        {
+                        foreach (var records in container ?? throw new NullReferenceException()) {
                             token.ThrowIfCancellationRequested();
 
-                            using (var sub = push.Spawn(100, "sub")) repo.BulkUpsert (token, records, sub);
+                            for (var i = 0; i < 10; i++) {
+                                try {
+                                    using (var sub = push.Spawn(101, "sub", opt)) repo.BulkUpsert(token, records, sub);
+                                    break;
+                                }
+                                catch (AggregateException) {
+                                    push.Message = "Failed Push to database. retrying...";
+                                }
+                            }
+
                             push.Tick($"{cnt += records.Count} records was pushed");
                         }
                     }
+
                     parent.Tick("Finished Pushing...");
                 }
                 Logger.Info($"Finished push {request.FileList.Count} files");

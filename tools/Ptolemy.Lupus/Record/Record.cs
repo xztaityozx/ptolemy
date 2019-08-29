@@ -1,7 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Ptolemy.Lupus.Record {
     public class Record {
+        //[Key]
+        //public Guid Id { get; set; }
         public long Sweep { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public decimal Value { get; set; }
@@ -9,9 +13,10 @@ namespace Ptolemy.Lupus.Record {
         public string Key { get; set; }
 
         public Record() {
+            //Id = Guid.NewGuid();
         }
 
-        public Record(long sweep, long seed, string signal, decimal time, decimal value) {
+        public Record(long sweep, long seed, string signal, decimal time, decimal value) : this() {
             Sweep = sweep;
             Seed = seed;
             Key = EncodeKey(signal, time);

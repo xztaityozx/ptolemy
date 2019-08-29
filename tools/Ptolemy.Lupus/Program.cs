@@ -45,8 +45,8 @@ namespace Ptolemy.Lupus {
 
     public class Lupus : IPtolemyTool {
         public Exception Invoke(CancellationToken token, string[] args) {
-            args = @"push --vtn 1,2,3 --vtp 1,2,3 -d C:\Users\xztaityozx\source\repos\xztaityozx\taa\UnitTest\file".Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            //args = @"get -e 1,2000 --vtn ,0.046, --vtp ,0.046,".Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            //args = @"push --vtn 1,2,3 --vtp 1,2,3 -b 300000 -d C:\Users\xztaityozx\Documents\testData".Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            args = @"get -e 1,2000 --vtn 1,2,3 --vtp 1,2,3".Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var logFile = Path.Combine(LupusConfig.Instance.LogDir, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss-ff}.log");
 
             return Parser.Default.ParseArguments<Get, Push>(args).MapResult(

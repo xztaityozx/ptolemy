@@ -42,10 +42,14 @@ namespace Ptolemy.Lupus.Repository {
         public void BulkUpsert(CancellationToken token, IList<Record.Record> list, IProgressBar bar) {
             Task.WaitAll(Task.Factory.StartNew(() => {
                 using (var context = new Context(name)) {
-                    context.BulkInsertOrUpdate(list,
-                        config => config.TrackingEntities = false, d => {
-                            for (var i = 0; i < (int) (d * 100); i++) bar.Tick();
-                        });
+                        context.BulkInsertOrUpdate(list,
+                            config => config.TrackingEntities = false, d => {
+                                for (var i = bar.CurrentTick; i < (int) (d * 100); i++) bar.Tick($"{d:F2}/1.0");
+                            });
+                    
+
+                    bar.Message = "Write to database...";
+                    bar.Tick();
                 }
             }, token));
         }
@@ -94,8 +98,8 @@ namespace Ptolemy.Lupus.Repository {
 
             protected override void OnModelCreating(ModelBuilder modelBuilder) {
                 base.OnModelCreating(modelBuilder);
-                modelBuilder.Entity<Record.Record>().HasKey(e => new {e.Sweep, e.Key, e.Seed});
-                modelBuilder.Entity<Record.Record>().HasIndex(e => new {e.Sweep, e.Seed});
+                modelBuilder.Entity<Record.Record>().HasKey(e => new { e.Sweep, e.Key, e.Seed });
+                modelBuilder.Entity<Record.Record>().HasIndex(e => new { e.Sweep, e.Seed });
             }
         }
     }

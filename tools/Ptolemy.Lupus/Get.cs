@@ -182,10 +182,10 @@ namespace Ptolemy.Lupus {
                 // throw
                 token.ThrowIfCancellationRequested();
 
-                Logger.Info($"Seed:");
+                Logger.Info("Seed:");
                 Logger.Info($"\tStart: {request.SeedStart}");
                 Logger.Info($"\tEnd: {request.SeedEnd}");
-                Logger.Info($"Sweep:");
+                Logger.Info("Sweep:");
                 Logger.Info($"\tStart: {request.SweepStart}");
                 Logger.Info($"\tEnd: {request.SweepEnd}");
                 Logger.Info($"DbName: {Transistor.ToTableName(request.Vtn, request.Vtp)}");
