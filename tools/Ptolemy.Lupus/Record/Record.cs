@@ -7,7 +7,7 @@ namespace Ptolemy.Lupus.Record {
         //[Key]
         //public Guid Id { get; set; }
         public long Sweep { get; set; }
-        [Column(TypeName = "decimal(18,2)")]
+        [Column(TypeName = "decimal(24,24)")]
         public decimal Value { get; set; }
         public long Seed { get; set; }
         public string Key { get; set; }

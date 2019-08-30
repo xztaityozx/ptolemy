@@ -54,6 +54,40 @@ namespace Ptolemy.Lupus.Repository {
             }, token));
         }
 
+        public void BulkInsert(CancellationToken token, IList<Record.Record> list, IProgressBar bar) {
+            Task.WaitAll(Task.Factory.StartNew(() => {
+                using (var context = new Context(name)) {
+                    context.BulkInsertOrUpdate(list,
+                        config => config.TrackingEntities = false, d => {
+                            for (var i = bar.CurrentTick; i < (int) (d * 100); i++) bar.Tick($"{d:F2}/1.0");
+                        });
+
+
+                    bar.Message = "Write to database...";
+                    bar.Tick();
+                }
+            }, token));
+        }
+
+        public void Distinct() {
+            using (var context = new Context(name)) {
+                context.BulkDelete(
+                    context.Records
+                        .GroupBy(r => new {r.Sweep, r.Key, r.Seed})
+                        .Where(g => g.Count() != 1)
+                        .SelectMany(g => g.Skip(1)).ToList());
+            }
+        }
+
+        public IList<Record.Record> BulkRead(IList<Record.Record> targets) {
+            using (var ctx = new Context(name)) {
+                ctx.BulkRead(targets, config => config.UpdateByProperties = new List<string> {
+                    nameof(Record.Record.Sweep), nameof(Record.Record.Seed)
+                });
+                return targets;
+            }
+        }
+
         public override Tuple<string, long>[] Count((long start, long end) sweep, (long start, long end) seed, Filter filter) {
             using (var context = new Context(name)) {
                 var (sweepStart, sweepEnd) = sweep;

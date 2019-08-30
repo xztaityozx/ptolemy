@@ -49,6 +49,7 @@ namespace Ptolemy.Lupus {
             Logger.Info($"Total Files: {request.FileList.Count}");
             Logger.Info($"DatabaseName: {Transistor.ToTableName(Vtn, Vtp)}");
 
+
             return PushToDatabase(token, request); 
         }
 
@@ -98,6 +99,7 @@ namespace Ptolemy.Lupus {
 
                     parent.Tick("Finished Pushing...");
                 }
+
                 Logger.Info($"Finished push {request.FileList.Count} files");
 
                 return null;

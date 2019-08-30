@@ -45,9 +45,11 @@ namespace Ptolemy.Lupus.Record {
         }
 
         public static IEnumerable<Record[]> Build(IReadOnlyList<string> list) {
-            foreach (var path in list) {
-                yield return Build(path);
-            }
+            return list.Select(Build);
+        }
+
+        public static IEnumerable<long> Range(long start, long end) {
+            for (var l = start; l <= end; l++) yield return l;
         }
     }
 }

@@ -125,9 +125,18 @@ namespace Ptolemy.Lupus {
                         // select database table
                         repo.Use(Transistor.ToTableName(vtn, vtp));
 
-                        // Aggregate
-                        foreach (var (signal, value) in repo.Count((sweep.start, sweep.stop), (seed.start, seed.stop),request.Filter)) {
-                            // result[signal][indexOfSigma] = value
+                        var targets = Factory.Range(sweep.start, sweep.stop)
+                            .SelectMany(sw => {
+                                return Factory.Range(seed.start, seed.stop)
+                                    .Select(se => new Record.Record {
+                                        Sweep = sw,
+                                        Seed = se
+                                    });
+                            }).ToList();
+
+                        foreach (var (signal, value) in request.Filter.Aggregate(repo.BulkRead(targets)
+                            .GroupBy(b => new {b.Sweep, b.Seed}).Select(s => s.ToMap(g => g.Key, g => g.Value))
+                            .ToList())) {
                             result[signal][idx] = value;
                         }
 
