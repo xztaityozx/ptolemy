@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ptolemy.FilePath\Ptolemy.FilePath.csproj" />
+    <ProjectReference Include="..\Ptolemy.Logger\Ptolemy.Logger.csproj" />
+    <ProjectReference Include="..\Ptolemy.Parameters\Ptolemy.Parameters.csproj" />
+    <ProjectReference Include="..\Ptolemy.SiMetricPrefix\Ptolemy.SiMetricPrefix.csproj" />
+  </ItemGroup>
+
+</Project>
