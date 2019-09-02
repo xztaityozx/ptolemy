@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\lib\Ptolemy.PipeLine\Ptolemy.PipeLine.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.SiMetricPrefix\Ptolemy.SiMetricPrefix.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Verb\Ptolemy.Verb.csproj" />
+    <ProjectReference Include="..\..\tools\Ptolemy.Hydra\Ptolemy.Hydra.csproj" />
     <ProjectReference Include="..\..\tools\Ptolemy.Lupus\Ptolemy.Lupus.csproj" />
   </ItemGroup>
 
