@@ -159,7 +159,7 @@ namespace Ptolemy.Hydra.HydraXML {
         }
 
         public static HydraXmlRoot GenerateResultsMapXml(string netListDir) {
-            var saResultsMap = "saResultsMap";
+            const string saResultsMap = "saResultsMap";
             return new HydraXmlRoot {
                 Version = "1",
                 Name = saResultsMap,
