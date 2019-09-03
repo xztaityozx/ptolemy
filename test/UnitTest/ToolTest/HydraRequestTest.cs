@@ -2,7 +2,7 @@ using System;
 using Ptolemy.Hydra;
 using Xunit;
 
-namespace UnitTest.VerbTest {
+namespace UnitTest.ToolTest{
     public class HydraRequestTest {
         [Fact]
         public void HydraDirectoryConstructTest() {

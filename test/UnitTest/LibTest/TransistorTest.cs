@@ -46,7 +46,7 @@ namespace UnitTest.LibTest {
 
         [Fact]
         public void ToStringTest() {
-            var expect = $"t_{0.6M:E10}_s_{0.046M:E10}_d_{1.0M:E10}";
+            var expect = $"t_{0.6M:E5}_s_{0.046M:E5}_d_{1.0M:E5}";
             var actual = new Transistor(0.6M, 0.046M, 1.0M).ToString();
             Assert.Equal(expect, actual);
         }
