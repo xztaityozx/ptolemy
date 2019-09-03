@@ -7,6 +7,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\lib\Ptolemy.FilePath\Ptolemy.FilePath.csproj" />
+      <ProjectReference Include="..\..\lib\Ptolemy.Logger\Ptolemy.Logger.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="YamlDotNet.Signed" Version="6.0.0" />
     </ItemGroup>
 
 </Project>
