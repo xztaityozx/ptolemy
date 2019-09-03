@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Xunit;
+﻿using Xunit;
 
-namespace UnitTest.VerbTest {
+namespace UnitTest.ToolTest {
     public class RecordTest {
         [Fact]
         public void ConstructorTest() {

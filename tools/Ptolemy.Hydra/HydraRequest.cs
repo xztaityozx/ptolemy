@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using YamlDotNet.Serialization;
@@ -35,4 +36,26 @@ namespace Ptolemy.Hydra {
         public bool ExistAll() => new[] {Simulation, NetList, Result}.All(Directory.Exists);
     }
 
+    public class HydraParameters {
+        [YamlMember(Alias = "vtn")]
+        public Parameters.Transistor Vtn { get; set; }
+        [YamlMember(Alias = "vtp")]
+        public Parameters.Transistor Vtp { get; set; }
+        [YamlMember(Alias = "seed")]
+        public long Seed { get; set; }
+        [YamlMember(Alias = "sweeps")]
+        public long Sweeps { get; set; }
+        [YamlMember(Alias = "model")]
+        public string ModelFile { get; set; }
+        [YamlMember(Alias = "vdd")]
+        public decimal VddVoltage { get; set; }
+        [YamlMember(Alias = "gnd")]
+        public decimal GndVoltage { get; set; }
+        [YamlMember(Alias = "icCommand")]
+        public List<string> IcCommand { get; set; }
+        [YamlMember(Alias = "netListFile")]
+        public string NetListFile { get; set; }
+        [YamlMember(Alias = "sweepStart")]
+        public long SweepStart { get; set; }
+    }
 }

@@ -63,7 +63,7 @@ namespace Ptolemy.Hydra.Simulation {
         [YamlMember(Alias = "path")] public string Path { get; set; }
         [YamlMember(Alias = "options")] public List<string> Options { get; set; } = new List<string>();
 
-        public string GetCommand(string spiPath) => $"{Path} {string.Join(" ", Options)} -i {spiPath} &> ./hspice.log";
+        public string GetCommand(string spiPath) => $"{Path} {string.Join(" ", Options)} -i {spiPath} -o ./hspice &> ./hspice.log";
     }
 
     public class WaveView {

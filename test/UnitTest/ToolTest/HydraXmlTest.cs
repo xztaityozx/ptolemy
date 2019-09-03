@@ -1,11 +1,9 @@
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Ptolemy.Hydra.HydraXML;
 using Xunit;
-using Ptolemy.Hydra.HydraXML;
 
-namespace UnitTest.VerbTest {
+namespace UnitTest.ToolTest {
     public class HydraXmlTest {
         [Fact]
         public void GenerateResultsXmlTest() {
@@ -14,7 +12,7 @@ namespace UnitTest.VerbTest {
             // Root
             Assert.Equal("saResults", res.Name);
             Assert.Equal("1.0", res.Version);
-            Assert.Equal(1, res.Objects.Length);
+            Assert.Single(res.Objects);
 
             // root Object
             var obj = res.Objects[0];
@@ -32,7 +30,7 @@ namespace UnitTest.VerbTest {
                 new[] {"name", "netlistDir", "resultsDir", "runTime", "simulator", "version"},
                 obj.Attributes.Select(x => x.Name).ToList()
             );
-            Assert.Equal(1, obj.Collections.Length);
+            Assert.Single(obj.Collections);
             
             // top collection
             var col = obj.Collections[0];
@@ -63,7 +61,7 @@ namespace UnitTest.VerbTest {
                     subAttributes.Select(x => x.Name).ToList()
                 );
             }
-            Assert.Equal(1, col.Objects[0].Collections.Length);
+            Assert.Single(col.Objects[0].Collections);
             
             // itr collection
             var itr = col.Objects[0].Collections[0];
@@ -102,7 +100,7 @@ namespace UnitTest.VerbTest {
             var doc = HydraXML.GenerateResultsMapXml("/tmp");
             Assert.Equal("1", doc.Version);
             Assert.Equal("saResultsMap", doc.Name);
-            Assert.Equal(1, doc.Objects.Length);
+            Assert.Single(doc.Objects);
 
             var obj = doc.Objects[0];
             Assert.Equal("1", obj.Version);
@@ -120,10 +118,10 @@ namespace UnitTest.VerbTest {
                 attr.Select(x=>x.Name).ToList()
             );
             
-            Assert.Equal(1, obj.Collections.Length);
+            Assert.Single(obj.Collections);
             var col = obj.Collections[0];
             Assert.Equal("resultsInfo", col.Name);
-            Assert.Equal(1, col.Objects.Length);
+            Assert.Single(col.Objects);
 
             var sub = col.Objects[0];
             Assert.Equal("1", sub.Version);

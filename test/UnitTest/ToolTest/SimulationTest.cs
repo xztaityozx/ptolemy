@@ -2,17 +2,17 @@ using System.Linq;
 using Ptolemy.Hydra.Simulation;
 using Xunit;
 
-namespace UnitTest.VerbTest {
+namespace UnitTest.ToolTest {
     public class SimulationTest {
         [Fact]
         public void HspiceGetCommandTest() {
             var data = new[] {
                 new {
-                    expect = "/path/to/hspice option -i spi &> ./hspice.log", path = "/path/to/hspice",
+                    expect = "/path/to/hspice option -i spi -o ./hspice &> ./hspice.log", path = "/path/to/hspice",
                     opt = new[] {"option"}, spi = "spi"
                 },
                 new {
-                    expect = "h a b c -i s &> ./hspice.log", path = "h",
+                    expect = "h a b c -i s -o ./hspice &> ./hspice.log", path = "h",
                     opt = new[]{"a","b","c"}, spi = "s"
                 }
             };
