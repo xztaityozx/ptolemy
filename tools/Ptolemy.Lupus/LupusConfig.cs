@@ -44,7 +44,7 @@ namespace Ptolemy.Lupus {
                 if (config != null) return config;
 
                 // parse from json or yml
-                var yml = Path.Combine(FilePath.FilePath.DotConfig, "lupus.yml");
+                var yml = Path.Combine(FilePath.FilePath.DotConfig, "lupus.yaml");
                 var json = Path.Combine(FilePath.FilePath.DotConfig, "lupus.json");
 
                 var path = File.Exists(yml) ? yml :
@@ -130,15 +130,18 @@ namespace Ptolemy.Lupus {
             return string.Join("\n", filterList);
         }
 
-        private static string Value(string value) {
+        private string Value(string value) {
             return value.TryParseDecimalWithSiPrefix(out var x) ? $"{x}M" : Signal(value);
         }
 
-        private static string Signal(string value) {
+        private string Signal(string value) {
             var box = value.Split(new[] {"[", "]"}, StringSplitOptions.RemoveEmptyEntries);
             var signal = box[0];
+            SignalList.Add(signal);
             var time = box[1].ParseDecimalWithSiPrefix();
             return $"map[\"{Record.Record.EncodeKey(signal, time)}\"]";
         }
+
+        public List<string> SignalList = new List<string>();
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -8,67 +9,168 @@ using System.Threading.Tasks;
 using YamlDotNet.Serialization;
 
 namespace Ptolemy.Hydra.Simulation {
-    public class SimulationRequest {
-        public Hspice Hspice { get; }
-        public WaveView WaveView { get; }
-        public string SimulationDir { get; }
-        public bool KeepCsv { get; }
-        public bool AutoRemove { get; }
-        public string SpiScript { get; }
-        public string AceScript { get; }
-        public string ResultDir { get; }
+    using ArgumentsBuilder = Func<string>;
+    public class SimulationTool :IDisposable {
+        private readonly CancellationToken token;
+        private Process process;
+        public StreamReader StdOut => process.StandardOutput;
+        public StreamReader StdError => process.StandardError;
 
-        public SimulationRequest() {}
+        public SimulationTool(CancellationToken token, string path) =>
+            (this.token, this.path) = (token, path);
 
-        public SimulationRequest(Hspice h, WaveView w, string sd, string rd, string spi, string ace, bool keep,
-            bool remove) =>
-            (Hspice, WaveView, SimulationDir, ResultDir, SpiScript, AceScript, KeepCsv, AutoRemove) =
-            (h, w, sd, rd, spi, ace, keep, remove);
-    }
-    public class Simulation : IHydraStage {
-        private readonly SimulationRequest request;
+        private readonly string path;
 
-        public Simulation(SimulationRequest req) => request = req;
-
-        public void Run(CancellationToken token, Logger.Logger logger) {
-            foreach (var process in new[] {request.Hspice.GetCommand(request.SpiScript), request.WaveView.GetCommand(request.AceScript)}.Select(
-                cmd => new Process {
-                    StartInfo = new ProcessStartInfo {
-                        FileName = "bash",
-                        Arguments = "-c " + cmd
-                    }
+        public int Run(string arguments) {
+            process = new Process {
+                StartInfo = new ProcessStartInfo {
+                    FileName = Environment.OSVersion.ToString().StartsWith("Unix") ? "/bin/sh" : "powershell.exe",
+                    ArgumentList = {"-c", $"{path} {arguments}"},
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
                 }
-            )) {
-                token.ThrowIfCancellationRequested();
+            };
+            if (!process.Start()) return 1;
+            token.Register(process.Kill);
+            process.WaitForExit();
 
-                token.Register(() => process.Kill());
-                
-                var result = process.Start();
-                if (!result) {
-                    throw new HydraException("failed command");
-                }
-            }
+            return process.ExitCode;
+        }
 
-            if (request.AutoRemove || request.KeepCsv) {
-                Directory.Delete(request.SimulationDir, true);
-            }
-
-            if (request.AutoRemove) {
-                Directory.Delete(request.ResultDir, true);
-            }
+        public void Dispose() {
+            process?.Dispose();
         }
     }
 
-    public class Hspice {
-        [YamlMember(Alias = "path")] public string Path { get; set; }
-        [YamlMember(Alias = "options")] public List<string> Options { get; set; } = new List<string>();
+    public class Simulation : IHydraStage {
+        private readonly CancellationToken token;
+        private readonly SimulationTool hspice;
+        private readonly SimulationTool waveView;
 
-        public string GetCommand(string spiPath) => $"{Path} {string.Join(" ", Options)} -i {spiPath} -o ./hspice &> ./hspice.log";
-    }
+        public Simulation(CancellationToken token, SimulationTool h, SimulationTool w) =>
+            (this.token, hspice, waveView) = (token, h, w);
 
-    public class WaveView {
-        [YamlMember(Alias = "path")] public string Path { get; set; }
+        public void Run(HydraRequest request) {
+            CreateDirectories(request);
+            CreateSymbolicLink(request);
+            token.ThrowIfCancellationRequested();
+            var spi = CreateSpiScriptFile(request);
 
-        public string GetCommand(string aceScript) => $"{Path} -k -ace_no_gui {aceScript} &> ./wv.log";
+            
+        }
+
+        private void CreateDirectories(HydraRequest request) {
+            foreach (var requestDirectory in request.Directories) {
+                try {
+                    token.ThrowIfCancellationRequested();
+                    Directory.CreateDirectory(requestDirectory);
+                    Directory.Exists(requestDirectory);
+                }
+                catch (OperationCanceledException) {
+                    throw;
+                }
+                catch (Exception e) {
+                    throw new HydraException($"failed create directory\n\t-->{e}");
+                }
+            }
+
+        }
+
+        private void CreateSymbolicLink(HydraRequest request) {
+            var cel = request.Parameters.CelDirectory;
+            foreach (var (from, to) in new[] {
+                Tuple.Create(
+                    Path.Combine(cel, "HSPICE", "nominal", "netlist", "netlist"),
+                    Path.Combine(request.Directories.NetList)
+                ),
+                Tuple.Create(
+                    Path.Combine(cel, "HSPICE", "nominal", "netlist", "cnl"),
+                    Path.Combine(request.Directories.NetList)
+                )
+            }) {
+                token.ThrowIfCancellationRequested();
+
+                using (var process = new Process {
+                    StartInfo = new ProcessStartInfo {
+                        FileName = "ln",
+                        ArgumentList = {"-s", from, to}
+                    }
+                }) {
+                    if (!process.Start())
+                        throw new HydraException(
+                            $"failed create symbolic link\n\t-->{char.ConvertFromUtf32(0x2717)} {from} ==> {to}");
+                }
+            }
+        }
+
+        private static string CreateSpiScriptFile(HydraRequest request) {
+            var path = Path.Combine(request.Directories.NetList, "input.spi");
+
+            string netlist;
+            try {
+                // read base netlist file
+                using (var sr = new StreamReader(Path.Combine(request.Directories.NetList, "netlist")))
+                    netlist = sr.ReadToEnd();
+            }
+            catch (FileNotFoundException e) {
+                throw new HydraException($"base netlist file not found: {e.FileName}");
+            }
+
+            if(string.IsNullOrEmpty(netlist)) throw new HydraException("netlist file can not be null or empty");
+
+            try {
+                using (var sw = new StreamWriter(path)) {
+                    // write to input.spi
+                    var param = request.Parameters;
+
+                    sw.WriteLine("* Generate for HSPICE");
+                    sw.WriteLine("* Generated by Ptolemy.Hydra");
+                    sw.WriteLine($"* Generated at {DateTime.Now}");
+                    sw.WriteLine(".option MCBRIEF=2");
+                    sw.WriteLine(
+                        $".param vtn=AGAUSS({param.Vtn.Threshold},{param.Vtn.Sigma},{param.Vtn.Deviation}) vtp=AGAUSS({param.Vtp.Threshold},{param.Vtp.Sigma},{param.Vtp.Deviation})");
+                    sw.WriteLine(".option PARHIER = LOCAL");
+                    sw.WriteLine($".option SEED={param.Seed}");
+                    sw.WriteLine($"VDD VDD! 0 0 {param.VddVoltage}");
+                    sw.WriteLine($"VGND GND! 0 0 {param.GndVoltage}");
+                    sw.WriteLine($".IC {string.Join(" ", param.IcCommand)}");
+                    sw.WriteLine(".option ARTIST=2 PSF=2");
+                    sw.WriteLine(".temp 25");
+                    sw.WriteLine($".include '{param.ModelFile}'");
+                    sw.Flush();
+
+                    sw.WriteLine(netlist);
+                    sw.Flush();
+
+                    sw.WriteLine(
+                        $".tran {param.Time.Step} {param.Time.Stop} start={param.Time.Start} uic sweep monte={param.Sweeps} firstrun={param.SweepStart}");
+                    sw.WriteLine(".option opfile=1 split_dp=2");
+                    sw.WriteLine(".end");
+                }
+            }catch(Exception e)
+            {
+                throw new HydraException($"failed create spi script\n\t-->{e}");
+            }
+
+            return path;
+        }
+
+        private static string CreateExtractScripts(IEnumerable<string> signals, HydraRequest request) {
+            var path = Path.Combine(request.Directories.Simulation, "ace");
+
+            using (var sw = new StreamWriter(path)) {
+                sw.AutoFlush = true;
+                sw.WriteLine("set xml [ sx_open_wdf \"resultsMap.xml\" ]");
+                sw.WriteLine("sx_current_sim_file $xml");
+                sw.WriteLine($"set www [ sx_signal \"{string.Join(" ", signals)}\" ]");
+                sw.WriteLine("sx_export_csv on");
+                var pp = request.Parameters.PlotPoint;
+                sw.WriteLine($"sx_export_range {pp.Start} {pp.Stop} {pp.Step}");
+                sw.WriteLine($"sx_export_data \"{Path.Combine(request.Directories.Result, $"{request.Parameters.Seed}")}\" $www");
+            }
+
+            return path;
+        }
     }
 }
+

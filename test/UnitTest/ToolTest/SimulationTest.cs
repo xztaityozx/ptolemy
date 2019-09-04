@@ -1,48 +1,42 @@
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Ptolemy.Hydra;
 using Ptolemy.Hydra.Simulation;
+using Ptolemy.Parameters;
 using Xunit;
 
 namespace UnitTest.ToolTest {
     public class SimulationTest {
         [Fact]
-        public void HspiceGetCommandTest() {
-            var data = new[] {
-                new {
-                    expect = "/path/to/hspice option -i spi -o ./hspice &> ./hspice.log", path = "/path/to/hspice",
-                    opt = new[] {"option"}, spi = "spi"
-                },
-                new {
-                    expect = "h a b c -i s -o ./hspice &> ./hspice.log", path = "h",
-                    opt = new[]{"a","b","c"}, spi = "s"
-                }
-            };
-            foreach (var d in data) {
-                Assert.Equal(d.expect, new Hspice{Path = d.path, Options = d.opt.ToList()}.GetCommand(d.spi));
+        public void SimulationToolTest1()
+        {
+            using (var st = new SimulationTool(CancellationToken.None, "echo"))
+            {
+                Assert.NotNull(st);
+                Assert.Equal("echo", st.path);
+                Assert.Equal(0, st.Run("abc"));
+                Assert.Equal("abc", st.StdOut.ReadToEnd().TrimEnd());
+                Assert.Equal("", st.StdError.ReadToEnd().TrimEnd());
             }
         }
 
         [Fact]
-        public void WaveViewGetCommandTest() {
-            var data = new[] {
-                new {expect = "/path/to/wv -k -ace_no_gui ace &> ./wv.log", path = "/path/to/wv", ace = "ace"}
-            };
-
-            foreach (var d in data) {
-                Assert.Equal(d.expect, new WaveView{Path = d.path}.GetCommand(d.ace));
+        public void SimulationToolCancelTest() {
+            using (var cts = new CancellationTokenSource(5))
+            using (var st = new SimulationTool(cts.Token, "sleep")) {
+                Assert.NotNull(st);
+                Assert.Equal("sleep", st.path);
+                Assert.Equal(-1, st.Run("500"));
             }
         }
 
         [Fact]
-        public void SimulationRequestTest() {
-            var actual = new SimulationRequest(new Hspice{Path = "hspice"}, new WaveView{Path = "wv"}, "sd", "rd", "spi", "ace", false, true);
-            Assert.Equal("hspice", actual.Hspice.Path);
-            Assert.Equal("wv", actual.WaveView.Path);
-            Assert.Equal("rd", actual.ResultDir);
-            Assert.Equal("sd", actual.SimulationDir);
-            Assert.Equal("spi", actual.SpiScript);
-            Assert.Equal("ace", actual.AceScript);
-            Assert.False(actual.KeepCsv);
-            Assert.True(actual.AutoRemove);
+        public void SimulationToolCommandNotFoundTest() {
+            using (var st = new SimulationTool(CancellationToken.None, "HydraTest_CommandNotFound")) {
+                Assert.NotNull(st);
+                Assert.Equal(1, st.Run(""));
+            }
         }
     }
 }
