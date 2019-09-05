@@ -1,56 +1,72 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Ptolemy.Hydra;
+using System.IO;
+using System.Text;
+using Ptolemy.Hydra.Server;
 using Ptolemy.Parameters;
 using Xunit;
 
-namespace UnitTest.ToolTest{
+namespace UnitTest.ToolTest {
     public class HydraRequestTest {
         [Fact]
-        public void HydraDirectoryConstructTest() {
-            var a = new HydraDirectories("sim","net", "res");
-            Assert.Equal("sim", a.Simulation);
-            Assert.Equal("net", a.NetList);
-            Assert.Equal("res", a.Result);
+        public void SerializeDeserializeTest() {
+            var req = new HydraRequest
+            {
+                Vtn = new Transistor(1.0, 2.0, 3.0),
+                Vtp = new Transistor(4.0, 5.0, 6.0),
+                Seed = new Range<long>
+                {
+                    Start = 1,
+                    Stop = 20,
+                    Step = 1
+                },
+                SweepSplitOption = SweepSplitOption.SplitBySeed,
+                SweepSplitSize = 5000,
+                Sigma = new Range<decimal> {
+                    Start = 0.046M,
+                    Step = 0.004M,
+                    Stop = 0.17M
+                },
+                Time = new Range<decimal> {
+                    Start = 0,
+                    Step = 100E-12M,
+                    Stop = 20E-9M
+                },
+                PlotPoint = new Range<decimal> {
+                    Start = 2.5E-9M,
+                    Step = 7.5E-9M,
+                    Stop = 17.5E-9M
+                },
+                Id = Guid.NewGuid(),
+                KeepCsv = false,
+                NotifyToSlackOnFinished = false,
+                Signals = new List<string> { "A", "B", "C"},
+                SlackUserName = "testUser",
+                TargetCel = "user/cir/cel",
+                TotalSweeps = (long)10E6,
+                UseDatabase = false
+            };
+
+            var json = req.ToJson();
+            var res = HydraRequest.FromJson(json);
+            Assert.Equal($"{res}",$"{req}");
+
+            using (var sr = new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes(json)), Encoding.UTF8)) {
+                Assert.Equal($"{res}", $"{HydraRequest.FromJson(sr)}");
+            }
         }
 
         [Fact]
-        public void HydraRequestConstructTest() {
-            var a = new HydraRequest("self", "result", new HydraDirectories("sim", "net", "res"), new HydraParameters {
-                Seed = 1,
-                Vtn = new Transistor(2M,3M,4M),
-                Vtp = new Transistor(5M,6M,7M),
-                SweepStart = 8,
-                CelDirectory = "/path/to/cel",
-                GndVoltage = 9,
-                IcCommand = new List<string> { "icCommand" },
-                ModelFile = "/path/to/modelfile",
-                Sweeps = 10,
-                VddVoltage = 11
-            });
-            Assert.NotNull(a);
-            Assert.NotEqual(Guid.Empty, a.RequestId);
-            Assert.Equal("self", a.SelfPath);
-            Assert.Equal("result", a.ResultFile);
-            Assert.Equal("sim", a.Directories.Simulation);
-            Assert.Equal("net", a.Directories.NetList);
-            Assert.Equal("res", a.Directories.Result);
-            var param = a.Parameters;
-            Assert.Equal(1, param.Seed);
-            Assert.Equal(2M, param.Vtn.Threshold);
-            Assert.Equal(3M, param.Vtn.Sigma);
-            Assert.Equal(4M, param.Vtn.Deviation);
-            Assert.Equal(5M, param.Vtp.Threshold);
-            Assert.Equal(6M, param.Vtp.Sigma);
-            Assert.Equal(7M, param.Vtp.Deviation);
-            Assert.Equal(8, param.SweepStart);
-            Assert.Equal("/path/to/cel", param.CelDirectory);
-            Assert.Single(param.IcCommand);
-            Assert.Equal("icCommand", param.IcCommand[0]);
-            Assert.Equal("/path/to/modelfile", param.ModelFile);
-            Assert.Equal(10, param.Sweeps);
-            Assert.Equal(11, param.VddVoltage);
-        }
+        public void SweepSplitOptionTest() {
+            var data = new[] {
+                new{json="{\"SweepSplitOption\":0}",exp=SweepSplitOption.NoSplit},
+                new{json="{\"SweepSplitOption\":1}",exp=SweepSplitOption.SplitBySweep},
+                new{json="{\"SweepSplitOption\":2}",exp=SweepSplitOption.SplitBySeed}
+            };
 
+            foreach (var d in data) {
+                Assert.Equal(d.exp, HydraRequest.FromJson(d.json).SweepSplitOption);
+            }
+        }
     }
 }
