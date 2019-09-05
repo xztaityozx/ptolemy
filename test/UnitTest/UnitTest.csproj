@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\lib\Ptolemy.Exec\Ptolemy.Exec.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.FilePath\Ptolemy.FilePath.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Map\Ptolemy.Map.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Parameters\Ptolemy.Parameters.csproj" />

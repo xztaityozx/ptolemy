@@ -36,6 +36,8 @@ namespace Ptolemy.Lupus {
         [YamlMember(Alias = "connection")]
         public string ConnectionString { get; set; }
 
+        [YamlIgnore] public static string ConfigFile { get; set; } = Path.Combine(FilePath.FilePath.DotConfig, "lupus.yaml");
+
         public LupusConfig() { }
 
         private static LupusConfig config;
@@ -43,20 +45,12 @@ namespace Ptolemy.Lupus {
             get {
                 if (config != null) return config;
 
-                // parse from json or yml
-                var yml = Path.Combine(FilePath.FilePath.DotConfig, "lupus.yaml");
-                var json = Path.Combine(FilePath.FilePath.DotConfig, "lupus.json");
-
-                var path = File.Exists(yml) ? yml :
-                    File.Exists(json) ? json :
-                    throw new FileNotFoundException(
-                        $"There is no lupus.yml or lupus.json under {FilePath.FilePath.DotConfig}"
-                    );
-
                 try {
-                    string str;
-                    using (var sr = new StreamReader(path)) str = sr.ReadToEnd();
-                    config = new Deserializer().Deserialize<LupusConfig>(str);
+                    using (var sr = new StreamReader(ConfigFile))
+                        config = new Deserializer().Deserialize<LupusConfig>(sr);
+                }
+                catch (FileNotFoundException) {
+                    throw new FileNotFoundException($"There are no config file: {ConfigFile}");
                 }
                 catch (Exception e) {
                     throw new AggregateException("Failed to parse config file", e);
