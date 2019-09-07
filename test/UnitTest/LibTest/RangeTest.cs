@@ -26,7 +26,7 @@ namespace UnitTest.LibTest
 
                 Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert.AreEquivalent(
                     expected,
-                    first.ToList()
+                    first.ToEnumerable().ToList()
                 );
 
 
@@ -37,7 +37,7 @@ namespace UnitTest.LibTest
 
                 Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert.AreEquivalent(
                     expected,
-                    second.ToList()
+                    second.ToEnumerable().ToList()
                 );
             }
         }

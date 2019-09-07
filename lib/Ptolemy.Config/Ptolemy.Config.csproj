@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ptolemy.ArgoRequest\Ptolemy.ArgoRequest.csproj" />
+    <ProjectReference Include="..\Ptolemy.ArgoRequest\Ptolemy.Argo.Request.csproj" />
     <ProjectReference Include="..\Ptolemy.FilePath\Ptolemy.FilePath.csproj" />
   </ItemGroup>
 

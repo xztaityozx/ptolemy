@@ -33,11 +33,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Interface", "lib\Pt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Exec", "lib\Ptolemy.Exec\Ptolemy.Exec.csproj", "{31B5882E-F965-457D-AF83-005A4CEA9AB8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Config", "lib\Ptolemy.Config\Ptolemy.Config.csproj", "{2E562B9C-8F01-4A29-A23B-BADDA2A2F8E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Config", "lib\Ptolemy.Config\Ptolemy.Config.csproj", "{2E562B9C-8F01-4A29-A23B-BADDA2A2F8E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Argo", "tools\Ptolemy.Argo\Ptolemy.Argo.csproj", "{211D307F-1F79-4EEE-A5B8-C501105323D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Argo", "tools\Ptolemy.Argo\Ptolemy.Argo.csproj", "{211D307F-1F79-4EEE-A5B8-C501105323D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.ArgoRequest", "lib\Ptolemy.ArgoRequest\Ptolemy.ArgoRequest.csproj", "{E272DF45-EA4C-4CAA-B292-E548E2B71CB9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Argo.Request", "lib\Ptolemy.ArgoRequest\Ptolemy.Argo.Request.csproj", "{E272DF45-EA4C-4CAA-B292-E548E2B71CB9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

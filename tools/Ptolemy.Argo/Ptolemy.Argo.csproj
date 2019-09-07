@@ -10,6 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\lib\Ptolemy.ArgoRequest\Ptolemy.Argo.Request.csproj" />
+    <ProjectReference Include="..\..\lib\Ptolemy.Exec\Ptolemy.Exec.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Parameters\Ptolemy.Parameters.csproj" />
   </ItemGroup>
 

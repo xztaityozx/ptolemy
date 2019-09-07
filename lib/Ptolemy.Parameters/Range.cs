@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Ptolemy.Parameters
 {
-    public class Range : IEnumerable<decimal> {
+    public class Range {
         public decimal Start { get; set; }
         public decimal Step { get; set; }
         public decimal Stop { get; set; }
@@ -15,12 +15,8 @@ namespace Ptolemy.Parameters
         public Range((decimal start, decimal step, decimal stop) values) => (Start, Step, Stop) = values;
         public Range(decimal start, decimal step, decimal stop) : this((start, step, stop)) { }
 
-        public IEnumerator<decimal> GetEnumerator() {
+        public IEnumerable<decimal> ToEnumerable() {
             for (var d = Start; d <= Stop; d += Step) yield return d;
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() {
-            return GetEnumerator();
         }
     }
 
