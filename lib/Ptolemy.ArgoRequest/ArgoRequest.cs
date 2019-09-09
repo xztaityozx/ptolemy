@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using Ptolemy.Parameters;
 
 namespace Ptolemy.Argo.Request {
@@ -20,5 +21,9 @@ namespace Ptolemy.Argo.Request {
         public string ModelFilePath { get; set; }
         public decimal Vdd { get; set; }
         public decimal Gnd { get; set; }
+
+        public static ArgoRequest FromJson(string json) => JsonConvert.DeserializeObject<ArgoRequest>(json);
+
+        public string ToJson() => JsonConvert.SerializeObject(this);
     }
 }
