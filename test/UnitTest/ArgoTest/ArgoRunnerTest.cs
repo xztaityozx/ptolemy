@@ -23,7 +23,8 @@ namespace UnitTest.ArgoTest {
             BaseDirectory = WorkingDir,
             GroupId = Guid.NewGuid(),
             HspiceOptions = new List<string>(),
-            HspicePath = "echo",
+            HspicePath = Environment.OSVersion.ToString().StartsWith("Unix") ?
+                "seq 100 | xargs -I{} touch hspice.tr0@{} #" : "1..100|%{touch \"hspice.tr0@$_\"} #",
             IcCommands = new List<string>{"V(N1)=0.8V","V(N2)=0V"},
             SweepStart = 1,
             TargetCircuit = "path/to/circuit",
@@ -38,18 +39,24 @@ namespace UnitTest.ArgoTest {
         [Fact]
         public void RunSuccessTest() {
             var runner = new Runner(CancellationToken.None, request, WorkingDir);
-            Action<string> tryMkdir = (p) => {
+
+            void TryMkdir(string p) {
                 p = FilePath.Expand(p);
-                if(!Directory.Exists(p)) Directory.CreateDirectory(p);
-            };
+                if (!Directory.Exists(p)) Directory.CreateDirectory(p);
+            }
 
 
-            tryMkdir(Path.Combine(WorkingDir, "path", "to", "circuit", "HSPICE", "nominal", "netlist", "cnl"));
+            TryMkdir(Path.Combine(WorkingDir, "path", "to", "circuit", "HSPICE", "nominal", "netlist", "cnl"));
 
-            File.CreateText(request.ModelFilePath).WriteLine("\nthis is model file for ArgoTest\n");
-            File.CreateText(
-                    Path.Combine(WorkingDir, "path", "to", "circuit", "HSPICE", "nominal", "netlist", "netlist"))
-                .WriteLine("\nthis is netlist file for ArgoTest\n");
+            using (var sw = File.CreateText(request.ModelFilePath)) {
+                sw.WriteLine("\nthis is model file for ArgoTest\n");
+                sw.Flush();
+            }
+            using (var sw = File.CreateText(
+                Path.Combine(WorkingDir, "path", "to", "circuit", "HSPICE", "nominal", "netlist", "netlist"))) {
+                sw.WriteLine("\nthis is netlist file for ArgoTest\n");
+                sw.Flush();
+            }
 
             runner.Run();
 
@@ -58,7 +65,7 @@ namespace UnitTest.ArgoTest {
             Assert.True(Directory.Exists(Path.Combine(wkr, "result")));
             Assert.True(Directory.Exists(Path.Combine(wkr, "netlist")));
             
-            Directory.Delete(WorkingDir);
+            Directory.Delete(WorkingDir, true);
         }
     }
 }

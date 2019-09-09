@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,8 +13,13 @@ namespace Ptolemy.Exec {
         private readonly CancellationTokenSource cts;
 
         public Exec(CancellationToken token) =>
-            (this.cts) = CancellationTokenSource.CreateLinkedTokenSource(token);
+            cts = CancellationTokenSource.CreateLinkedTokenSource(token);
 
+        /// <summary>
+        /// Run command
+        /// </summary>
+        /// <param name="command"></param>
+        /// <exception cref="Exception"></exception>
         public void Run(string command) {
             process = new Process {
                 StartInfo = new ProcessStartInfo {
@@ -34,10 +35,24 @@ namespace Ptolemy.Exec {
             process.WaitForExit();
         }
 
+        /// <summary>
+        /// Run command
+        /// </summary>
+        /// <param name="command">command string</param>
+        /// <param name="onStdOut">invoke on data received from stdout</param>
+        /// <param name="combineOutput">combine stdout and stderr</param>
         public void Run(string command, Action<string> onStdOut, bool combineOutput = false) => Run(command,
             onStdOut,
             s => { }, combineOutput);
-        
+       
+        /// <summary>
+        /// Run command
+        /// </summary>
+        /// <param name="command">command string</param>
+        /// <param name="onStdOut">invoke on data received from stdout</param>
+        /// <param name="onStdErr">invoke on data received from stderr</param>
+        /// <param name="combineOutput">combine stderr and stdout</param>
+        /// <exception cref="Exception"></exception>
         public void Run(string command, Action<string> onStdOut, Action<string> onStdErr, bool combineOutput) {
             process = new Process {
                 StartInfo = new ProcessStartInfo {
@@ -52,7 +67,6 @@ namespace Ptolemy.Exec {
 
             process.Exited += (sender, args) => cts.Cancel();
             if (!process.Start()) throw new Exception($"failed start command: {Shell} -c {command}");
-            // cts.Token.Register(process.Kill);
             
             var stderr = combineOutput ? onStdOut : onStdErr;
             
@@ -73,10 +87,17 @@ namespace Ptolemy.Exec {
             );
         }
 
+        /// <summary>
+        /// Throw exception if exit code is non zero
+        /// </summary>
+        /// <exception cref="Exception"></exception>
         public void ThrowIfNonZeroExitCode() {
-            if (process.ExitCode != 0) throw new Exception($"exit status {process.ExitCode}");
+            if (process.ExitCode != 0) throw new Exception($"exit status {process.ExitCode}\n\tcommand-->{Shell} {process.StartInfo.Arguments}");
         }
 
+        /// <summary>
+        /// Get exit code this execution
+        /// </summary>
         public int ExitCode => process.ExitCode;
 
         public void Dispose() {
@@ -84,5 +105,4 @@ namespace Ptolemy.Exec {
             cts?.Dispose();
         }
     }
-
 }

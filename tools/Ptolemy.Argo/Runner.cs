@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Kurukuru;
 using Ptolemy.Argo.Request;
 
 namespace Ptolemy.Argo {
@@ -64,6 +65,7 @@ namespace Ptolemy.Argo {
                     exec.Run(command);
                     exec.ThrowIfNonZeroExitCode();
                 }
+                CheckResultsFiles();
             }
             catch (ArgoException) {
                 throw;
@@ -71,6 +73,22 @@ namespace Ptolemy.Argo {
             catch (Exception e) {
                 throw new ArgoException("unknown error has occured\n\t-->" + e);
             }
+            
+
+            return request.GroupId;
+        }
+
+        /// <summary>
+        /// Run command with shell spinner
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="ArgoException"></exception>
+        public Guid RunWithSpinner() {
+                Spinner.Start("simulating...",spin => {
+                    using (var exec = new Exec.Exec(token)) {
+                        Run();
+                    }
+                });
 
             return request.GroupId;
         }
@@ -123,7 +141,6 @@ namespace Ptolemy.Argo {
             foreach (var dir in new[]{simDir, resultDir,netlistDir}) {
                 token.ThrowIfCancellationRequested();
 
-
                 if(Directory.Exists(dir)) continue;
                 try {
                     Directory.CreateDirectory(dir);
@@ -134,6 +151,12 @@ namespace Ptolemy.Argo {
             }
         }
 
+        private void CheckResultsFiles() {
+            if(Directory.GetFiles(simDir, "*.tr0@*").Length != request.Sweep) 
+                throw new ArgoException("not enough simulation result files(*.tr0@*)");
+            
+        }
+        
         private void CreateSymbolicLink() {
             foreach (var target in new[] {"cnl", "netlist"}) {
                 token.ThrowIfCancellationRequested();
@@ -146,12 +169,12 @@ namespace Ptolemy.Argo {
                     if(Directory.Exists(to)) continue;
                     
                     using (var ex = new Exec.Exec(token)) {
-                        ex.Run($"ln -s {from} {to}");
-//                        var output = string.Join("\n", ex.StdOutPipe);
+                        var output = "";
+                        ex.Run($"ln -s {from} {to}", s => output += s, true);
 
                         if (ex.ExitCode != 0)
                             throw new ArgoException(
-                                $"Failed create symbolic link: {from} ==> {to}");
+                                $"Failed create symbolic link: {from} ==> {to}\n\t-->command output: {output}");
                     }
                 }
                 catch (Exception e) {
