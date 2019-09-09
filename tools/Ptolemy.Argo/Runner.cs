@@ -19,7 +19,8 @@ namespace Ptolemy.Argo {
             this.request = request;
             id = Guid.NewGuid();
             this.token = token;
-
+            circuitRoot = FilePath.FilePath.Expand(circuitRoot);
+            
             // create directories
             var workingRoot = Path.Combine(
                 request.BaseDirectory,
@@ -37,14 +38,32 @@ namespace Ptolemy.Argo {
 
         }
 
+        /// <summary>
+        /// Run command async
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="AggregateException"></exception>
         public async Task<Guid> RunAsync() {
-
+            var exp = await Task.Factory.StartNew(Run, token).ContinueWith(t => t.Exception, token);
+            if (exp != null) throw exp;
+            
             return request.GroupId;
         }
 
+        /// <summary>
+        /// Run command sync
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="ArgoException"></exception>
         public Guid Run() {
             try {
+                BuildEnvironment();
+                token.ThrowIfCancellationRequested();
 
+                using (var exec = new Exec.Exec(token)) {
+                    exec.Run(command);
+                    exec.ThrowIfNonZeroExitCode();
+                }
             }
             catch (ArgoException) {
                 throw;
@@ -60,6 +79,7 @@ namespace Ptolemy.Argo {
             CreateDirectories();
             CreateSymbolicLink();
             CreateDirectories();
+            CreateSpiScript();
         }
 
         private void CreateSpiScript() {
@@ -84,7 +104,9 @@ namespace Ptolemy.Argo {
                     sw.WriteLine(".option ARTIST=2 PSF=2");
                     sw.WriteLine($".temp {request.Temperature}");
                     sw.WriteLine($".include {request.ModelFilePath}");
+                    
                     sw.WriteLine(baseNetList);
+                    
                     sw.WriteLine(
                         $".tran {request.Time.Step:E} {request.Time.Stop:E} start={request.Time.Start:E} sweep monte={request.Sweep:E} firstrun={request.SweepStart:E}");
                     sw.WriteLine(".option opfile=1 split_dp=2");
@@ -119,13 +141,17 @@ namespace Ptolemy.Argo {
                 try {
                     var from = Path.Combine(circuitDir,target);
                     var to = Path.Combine(netlistDir, target);
-                    using (var ex = new Exec.Exec(token, true)) {
-                        ex.Start($"ln -s {from} {to}");
-                        var output = string.Join("\n", ex.StdOutPipe);
+                    
+                    if(File.Exists(to)) continue;
+                    if(Directory.Exists(to)) continue;
+                    
+                    using (var ex = new Exec.Exec(token)) {
+                        ex.Run($"ln -s {from} {to}");
+//                        var output = string.Join("\n", ex.StdOutPipe);
 
                         if (ex.ExitCode != 0)
                             throw new ArgoException(
-                                $"Failed create symbolic link: {from} ==> {to}\n\tcommand outputs-->{output}");
+                                $"Failed create symbolic link: {from} ==> {to}");
                     }
                 }
                 catch (Exception e) {
