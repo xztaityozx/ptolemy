@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -9,9 +10,19 @@ namespace Ptolemy.Argo {
     public class Argo {
         private readonly ArgoRequest request;
         private readonly string circuitRoot;
+        private readonly Logger.Logger log;
 
         public Guid Run(CancellationToken token) {
-            return new Runner(token, request, circuitRoot).RunWithSpinner();
+            var sw = new Stopwatch();
+            sw.Start();
+            
+            var res = new Runner(token, request, circuitRoot).RunWithSpinner();
+            sw.Stop();
+
+            log?.Info($"Elapsed time {sw.Elapsed}");
+            log?.Info($"Simulation result files were output to {res.ResultDir}");
+
+            return res.GroupId;
         }
 
         private static string Expand(string name,string p) {
@@ -23,8 +34,7 @@ namespace Ptolemy.Argo {
             }
         }
 
-        public Argo(Options o, Logger.Logger log) {
-
+        public Argo(Options o) {
             o.CircuitRoot = o.CircuitRoot ?? Environment.GetEnvironmentVariable("ARGO_CIRCUIT_ROOT");
             o.Hspice = o.Hspice ?? Environment.GetEnvironmentVariable("ARGO_HSPICE");
             o.TargetCircuit = o.TargetCircuit ?? Environment.GetEnvironmentVariable("ARGO_TARGET_CIRCUIT");
@@ -33,33 +43,25 @@ namespace Ptolemy.Argo {
             o.CircuitRoot = Expand(nameof(o.CircuitRoot), o.CircuitRoot);
             o.ModelFile = Expand(nameof(o.ModelFile), o.ModelFile);
             o.Hspice = Expand(nameof(o.Hspice), o.Hspice);
-            
+
             if (string.IsNullOrEmpty(o.CircuitRoot)) {
                 throw new ArgoException(
                     "circuit root is not set. please check env:ARGO_CIRCUIT_ROOT or -r,--root option");
             }
-
             circuitRoot = o.CircuitRoot;
-
             if (string.IsNullOrEmpty(o.Hspice)) {
                 throw new ArgoException(
                     $"hspice is not set. please check env:ARGO_HSPICE or -h,--hspice option");
             }
-
             if (string.IsNullOrEmpty(o.TargetCircuit)) {
                 throw new ArgoException(
                     $"target circuit is not set. please check env:ARGO_TARGET_CIRCUIT or -t,--target option");
             }
-
             if (string.IsNullOrEmpty(o.ModelFile)) {
                 throw new ArgoException(
                     $"model file is not set. please check env:ARGO_MODEL_FILE or -m,--model option");
             }
-            
-
-            log.Info($"circuit root: {o.CircuitRoot}");
             if (!string.IsNullOrEmpty(o.JsonFile)) {
-                log.Info($"use json request: file--> {o.JsonFile}");
                 if (!File.Exists(o.JsonFile)) {
                     throw new ArgoException($"Ptolemy.Argo cannot find {o.JsonFile}");
                 }
@@ -72,7 +74,6 @@ namespace Ptolemy.Argo {
                     throw new ArgoException($"Failed to parse json to ArgoRequest\n\tinnerException-->{e}");
                 }
 
-                log.Info($"Success parse json to request\n{request}");
             }
             else {
                 (decimal, decimal, decimal) Bind(string def, string input) {
@@ -82,9 +83,6 @@ namespace Ptolemy.Argo {
                         .ToList();
                     return (box[0], box[1], box[2]);
                 }
-
-                log.Info("Building request from cli options");
-
                 try {
                     request = new ArgoRequest {
                         TargetCircuit = o.TargetCircuit,
@@ -109,10 +107,21 @@ namespace Ptolemy.Argo {
                     throw new ArgoException(
                         $"Failed to build request from cli options\n\tinnerException-->{e}");
                 }
-
-                log.Info($"Success parse request:{request}");
-
             }
+        }
+
+        public Argo(Options o, Logger.Logger log) : this(o) {
+            this.log = log;
+            log.Info($"Circuit Root: {o.CircuitRoot}");
+            log.Info($"Target Circuit: {o.TargetCircuit}");
+            log.Info($"Model File: {o.ModelFile}");
+            log.Info($"hspice: {request.HspicePath}");
+            log.Info("Parameters");
+            log.Info($"\tVtn: {request.Vtn}");
+            log.Info($"\tVtp: {request.Vtp}");
+            log.Info($"\tSweeps: {request.Sweep}");
+            log.Info($"\tSeed: {request.Seed}");
+            log.Info("Ptolemy.Argo generated request");
         }
     }
 }

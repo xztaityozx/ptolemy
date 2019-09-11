@@ -63,10 +63,7 @@ namespace Ptolemy.Argo {
         
         [Option("sweepStart", Default = 1L, HelpText = "Sweepの開始値です", SetName = NonJson)]
         public long SweepStart { get; set; }
-        
-        [Option("generateJson", SetName = NonJson, Default = false, HelpText = "指定されたパラメータをもとにJSONを作成し、stdoutに出力します")]
-        public bool GenerateJson { get; set; }
-        
+
         [Option("json", SetName = Json, HelpText = "シミュレーションを記述したJSONをもとに実行します")]
         public string JsonFile { get; set; }
     }

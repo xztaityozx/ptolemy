@@ -1,13 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Kurukuru;
 using Ptolemy.Argo.Request;
 
 namespace Ptolemy.Argo {
+    public class ArgoResult {
+        public Guid GroupId { get; set; }
+        public string ResultDir { get; set; }
+    }
+
     public class Runner {
         private readonly string command;
         private readonly string simDir, resultDir;
@@ -40,23 +42,11 @@ namespace Ptolemy.Argo {
         }
 
         /// <summary>
-        /// Run command async
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="AggregateException"></exception>
-        public async Task<Guid> RunAsync() {
-            var exp = await Task.Factory.StartNew(Run, token).ContinueWith(t => t.Exception, token);
-            if (exp != null) throw exp;
-            
-            return request.GroupId;
-        }
-
-        /// <summary>
         /// Run command sync
         /// </summary>
         /// <returns></returns>
         /// <exception cref="ArgoException"></exception>
-        public Guid Run() {
+        public ArgoResult Run() {
             try {
                 BuildEnvironment();
                 token.ThrowIfCancellationRequested();
@@ -73,9 +63,12 @@ namespace Ptolemy.Argo {
             catch (Exception e) {
                 throw new ArgoException("unknown error has occured\n\t-->" + e);
             }
-            
 
-            return request.GroupId;
+
+            return new ArgoResult {
+                GroupId = request.GroupId,
+                ResultDir = simDir
+            };
         }
 
         /// <summary>
@@ -83,12 +76,14 @@ namespace Ptolemy.Argo {
         /// </summary>
         /// <returns></returns>
         /// <exception cref="ArgoException"></exception>
-        public Guid RunWithSpinner() {
-                Spinner.Start("simulating...",spin => {
-                    Run();
-                });
+        public ArgoResult RunWithSpinner() {
+            ArgoResult res = null;
+            Spinner.Start("simulating...", spin => {
+                res = Run();
+                spin.Info("Finished simulation");
+            });
 
-            return request.GroupId;
+            return res;
         }
 
         private void BuildEnvironment() {
