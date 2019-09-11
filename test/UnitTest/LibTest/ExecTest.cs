@@ -15,23 +15,6 @@ namespace UnitTest.LibTest {
         }
 
         [Fact]
-        public void StartTest() {
-            using (var e = new Exec(CancellationToken.None)) {
-                e.Start("echo abc");
-                e.Wait();
-                Assert.Equal(0, e.ExitCode);
-            }
-        }
-
-        [Fact]
-        public async Task RunAsyncTest() {
-            using (var e = new Exec(CancellationToken.None)) {
-                await e.RunAsync("echo abc");
-                Assert.Equal(0, e.ExitCode);
-            }
-        }
-
-        [Fact]
         public void RunTest() {
             using (var e = new Exec(CancellationToken.None)) {
                 e.Run("echo abc");
@@ -40,47 +23,32 @@ namespace UnitTest.LibTest {
         }
 
         [Fact]
-        public void StdoutPipeTest() {
+        public void RunWithStdOutTest() {
             using (var e = new Exec(CancellationToken.None)) {
-                e.Start("echo abc");
-                var box = e.StdOutPipe.Select(x => x.TrimEnd()).ToList();
-
-                Assert.Single(box);
-                Assert.Equal("abc", box[0]);
+                e.Run("echo abc", s => Assert.Equal("abc", s.TrimEnd()));
+                Assert.Equal(0, e.ExitCode);
             }
         }
 
         [Fact]
-        public void StderrPipeTest() {
+        public void RunWithStdErrTest() {
             using (var e = new Exec(CancellationToken.None)) {
-                e.Start("echo abc");
-                Assert.Empty(e.StdErrPipe);
+                e.Run("EXEC_TEST_NOT_FOUND", s => { }, Assert.NotNull, false);
             }
         }
 
         [Fact]
-        public void TimeoutTest() {
+        public void RunCombineOutput() {
             using (var e = new Exec(CancellationToken.None)) {
-                e.Start("sleep 1000");
-                Assert.False(e.Wait(100));
-            }
-        }
-
-        [Fact]
-        public void CombineOutputTest() {
-            using (var e = new Exec(CancellationToken.None, true)) {
-                e.Start("echo abc;HYDRA_TEST_NOT_FOUND");
-                Assert.NotEmpty(e.StdOutPipe);
-                Assert.Empty(e.StdErrPipe);
+                e.Run("echo abc; EXEC_TEST_NOT_FOUND", Assert.NotNull, true);
             }
         }
 
         [Fact]
         public void CancelTest() {
-            using (var cts = new CancellationTokenSource()) {
-                cts.Cancel();
+            using (var cts = new CancellationTokenSource(100)) {
                 using (var e = new Exec(cts.Token)) {
-                    e.Run("sleep 1000");
+                    e.Run("sleep 10000");
                     Assert.NotEqual(0, e.ExitCode);
                 }
             }
