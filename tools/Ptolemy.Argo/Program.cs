@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
-using CommandLine.Text;
-using YamlDotNet.Core.Events;
 
 namespace Ptolemy.Argo {
     internal static class Program {

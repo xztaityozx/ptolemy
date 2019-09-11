@@ -8,15 +8,13 @@ using Ptolemy.Parameters;
 namespace Ptolemy.Argo {
     public class Argo {
         private readonly ArgoRequest request;
-        private readonly Logger.Logger log;
         private readonly string circuitRoot;
 
         public Guid Run(CancellationToken token) {
-            return new Runner(token, request, circuitRoot).Run();
+            return new Runner(token, request, circuitRoot).RunWithSpinner();
         }
 
         public Argo(Options o, Logger.Logger log) {
-            this.log = log;
 
             o.CircuitRoot = o.CircuitRoot ?? Environment.GetEnvironmentVariable("ARGO_CIRCUIT_ROOT");
             o.Hspice = o.Hspice ?? Environment.GetEnvironmentVariable("ARGO_HSPICE");
