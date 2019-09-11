@@ -14,6 +14,15 @@ namespace Ptolemy.Argo {
             return new Runner(token, request, circuitRoot).RunWithSpinner();
         }
 
+        private static string Expand(string name,string p) {
+            try {
+                return FilePath.FilePath.Expand(p);
+            }
+            catch (Exception ) {
+                throw new ArgoException($"Failed expand path:{name}={p}");
+            }
+        }
+
         public Argo(Options o, Logger.Logger log) {
 
             o.CircuitRoot = o.CircuitRoot ?? Environment.GetEnvironmentVariable("ARGO_CIRCUIT_ROOT");
@@ -21,12 +30,11 @@ namespace Ptolemy.Argo {
             o.TargetCircuit = o.TargetCircuit ?? Environment.GetEnvironmentVariable("ARGO_TARGET_CIRCUIT");
             o.ModelFile = o.ModelFile ?? Environment.GetEnvironmentVariable("ARGO_MODEL_FILE");
 
-            o.BaseDir = FilePath.FilePath.Expand(o.BaseDir);
-            o.CircuitRoot = FilePath.FilePath.Expand(o.CircuitRoot);
-            o.ModelFile = FilePath.FilePath.Expand(o.ModelFile);
-            o.Hspice = FilePath.FilePath.Expand(o.Hspice);
-            o.JsonFile = FilePath.FilePath.Expand(o.JsonFile);
-
+            o.CircuitRoot = Expand(nameof(o.CircuitRoot), o.CircuitRoot);
+            o.ModelFile = Expand(nameof(o.ModelFile), o.ModelFile);
+            o.Hspice = Expand(nameof(o.Hspice), o.Hspice);
+            o.JsonFile = Expand(nameof(o.JsonFile), o.JsonFile);
+            
             if (string.IsNullOrEmpty(o.CircuitRoot)) {
                 throw new ArgoException(
                     "circuit root is not set. please check env:ARGO_CIRCUIT_ROOT or -r,--root option");
