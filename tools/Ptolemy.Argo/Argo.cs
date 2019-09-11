@@ -12,17 +12,9 @@ namespace Ptolemy.Argo {
         private readonly string circuitRoot;
         private readonly Logger.Logger log;
 
-        public Guid Run(CancellationToken token) {
-            var sw = new Stopwatch();
-            sw.Start();
-            
+        public ArgoResult Run(CancellationToken token) {
             var res = new Runner(token, request, circuitRoot).RunWithSpinner();
-            sw.Stop();
-
-            log?.Info($"Elapsed time {sw.Elapsed}");
-            log?.Info($"Simulation result files were output to {res.ResultDir}");
-
-            return res.GroupId;
+            return res;
         }
 
         private static string Expand(string name,string p) {

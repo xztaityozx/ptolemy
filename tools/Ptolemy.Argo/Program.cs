@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Ptolemy.Argo {
@@ -7,6 +8,9 @@ namespace Ptolemy.Argo {
             var log = new Logger.Logger();
             try {
                 using (var cts = new CancellationTokenSource()) {
+                    log.Info("[Ptolemy.Argo] Welcome to Ptolemy.Argo CLI");
+                    log.Warn("Press Ctrl+C to cancel");
+
                     Console.CancelKeyPress += (sender, eventArgs) => {
                         eventArgs.Cancel = true;
                         cts.Cancel();
@@ -14,7 +18,14 @@ namespace Ptolemy.Argo {
 
                     var opt = Options.Parse(args);
                     var argo = new Argo(opt, log);
-                    argo.Run(cts.Token);
+                    var sw = new Stopwatch();
+                    sw.Start();
+                    var res = argo.Run(cts.Token);
+                    sw.Stop();
+
+                    log.Info($"Elapsed time {sw.Elapsed}");
+                    log.Info($"Simulation result files were output to {res.ResultDir}");
+
                 }
             }
             catch (ArgoParseFailedException e) {

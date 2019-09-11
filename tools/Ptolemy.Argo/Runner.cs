@@ -15,12 +15,11 @@ namespace Ptolemy.Argo {
         private readonly string simDir, resultDir;
         private readonly string circuitDir, netlistDir, spiFile;
         private readonly ArgoRequest request;
-        private readonly Guid id;
         private readonly CancellationToken token;
 
-        public Runner(CancellationToken token,ArgoRequest request, string circuitRoot) {
+        public Runner(CancellationToken token, ArgoRequest request, string circuitRoot) {
             this.request = request;
-            id = Guid.NewGuid();
+            var id = Guid.NewGuid();
             this.token = token;
             circuitRoot = FilePath.FilePath.Expand(circuitRoot);
             
