@@ -33,533 +33,437 @@ namespace UnitTest.ArgoTest {
         public void ArgoConstructorTest() {
             var log = new Logger();
             var data = new[] {
+                new {throws = Throws.ArgoException, args = "", env = ",,,"},
+                new {throws = Throws.ArgoException, args = "", env = ",,,ARGO_MODEL_FILE:model"},
+                new {throws = Throws.ArgoException, args = "", env = ",,ARGO_TARGET_CIRCUIT:target,"},
                 new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "", env = ",,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "", env = ",ARGO_CIRCUIT_ROOT:root,,"},
+                new {throws = Throws.ArgoException, args = "", env = ",ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"},
+                new {
+                    throws = Throws.ArgoException, args = "",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
+                    throws = Throws.ArgoException, args = "",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "", env = "ARGO_HSPICE:hspice,,,"},
+                new {throws = Throws.ArgoException, args = "", env = "ARGO_HSPICE:hspice,,,ARGO_MODEL_FILE:model"},
+                new {throws = Throws.ArgoException, args = "", env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,"},
+                new {
+                    throws = Throws.ArgoException, args = "",
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "", env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,"},
+                new {
+                    throws = Throws.ArgoException, args = "",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"
+                    throws = Throws.None, args = "",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "--model=m", env = ",,,"},
+                new {throws = Throws.ArgoException, args = "--model=m", env = ",,,ARGO_MODEL_FILE:model"},
+                new {throws = Throws.ArgoException, args = "--model=m", env = ",,ARGO_TARGET_CIRCUIT:target,"},
+                new {
+                    throws = Throws.ArgoException, args = "--model=m",
+                    env = ",,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "--model=m", env = ",ARGO_CIRCUIT_ROOT:root,,"},
+                new {
+                    throws = Throws.ArgoException, args = "--model=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "--model=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"
+                    throws = Throws.ArgoException, args = "--model=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "--model=m", env = "ARGO_HSPICE:hspice,,,"},
+                new {
+                    throws = Throws.ArgoException, args = "--model=m",
+                    env = "ARGO_HSPICE:hspice,,,ARGO_MODEL_FILE:model"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = "--target=t --model=m", env = "ARGO_HSPICE:hspice,,,"},
-                new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "--model=m",
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
+                    throws = Throws.ArgoException, args = "--model=m",
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = ",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "--model=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,"
                 },
-                new {throws = Throws.ArgoException, args = "--target=t --model=m", env = ",ARGO_MODEL_FILE:model,,"},
                 new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = ",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "--model=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
                 },
-                new {throws = Throws.ArgoException, args = "--target=t --model=m", env = ",,ARGO_CIRCUIT_ROOT:root,"},
                 new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m", env = ",,,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.None, args = "--model=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
                 },
-                new {throws = Throws.ArgoException, args = "--target=t --model=m", env = ",,,"},
+                new {
+                    throws = Throws.None, args = "--model=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "--target=t ", env = ",,,"},
+                new {throws = Throws.ArgoException, args = "--target=t ", env = ",,,ARGO_MODEL_FILE:model"},
+                new {throws = Throws.ArgoException, args = "--target=t ", env = ",,ARGO_TARGET_CIRCUIT:target,"},
                 new {
                     throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    env = ",,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "--target=t ", env = ",ARGO_CIRCUIT_ROOT:root,,"},
+                new {
+                    throws = Throws.ArgoException, args = "--target=t ",
+                    env = ",ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
                 },
                 new {
                     throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
                     throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"
-                },
-                new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"
-                },
-                new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
                 },
                 new {throws = Throws.ArgoException, args = "--target=t ", env = "ARGO_HSPICE:hspice,,,"},
                 new {
                     throws = Throws.ArgoException, args = "--target=t ",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    env = "ARGO_HSPICE:hspice,,,ARGO_MODEL_FILE:model"
                 },
                 new {
                     throws = Throws.ArgoException, args = "--target=t ",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
                     throws = Throws.ArgoException, args = "--target=t ",
-                    env = ",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
                 },
-                new {throws = Throws.ArgoException, args = "--target=t ", env = ",ARGO_MODEL_FILE:model,,"},
                 new {
                     throws = Throws.ArgoException, args = "--target=t ",
-                    env = ",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = "--target=t ", env = ",,ARGO_CIRCUIT_ROOT:root,"},
-                new {throws = Throws.ArgoException, args = "--target=t ", env = ",,,ARGO_TARGET_CIRCUIT:target"},
-                new {throws = Throws.ArgoException, args = "--target=t ", env = ",,,"},
-                new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
+                    throws = Throws.None, args = "--target=t ",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
                 },
                 new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "--target=t ",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"
+                    throws = Throws.None, args = "--target=t ",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
                 },
+                new {throws = Throws.ArgoException, args = "--target=t --model=m", env = ",,,"},
+                new {throws = Throws.ArgoException, args = "--target=t --model=m", env = ",,,ARGO_MODEL_FILE:model"},
                 new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"
-                },
-                new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = " --model=m", env = "ARGO_HSPICE:hspice,,,"},
-                new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
-                },
-                new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = ",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = " --model=m", env = ",ARGO_MODEL_FILE:model,,"},
-                new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = ",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = " --model=m", env = ",,ARGO_CIRCUIT_ROOT:root,"},
-                new {throws = Throws.ArgoException, args = " --model=m", env = ",,,ARGO_TARGET_CIRCUIT:target"},
-                new {throws = Throws.ArgoException, args = " --model=m", env = ",,,"},
-                new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
-                },
-                new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = " ", env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"},
-                new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = " ", env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"},
-                new {
-                    throws = Throws.ArgoException, args = " ", env = "ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = " ", env = "ARGO_HSPICE:hspice,,,"},
-                new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = " ", env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-                new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = ",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = " ", env = ",ARGO_MODEL_FILE:model,,"},
-                new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = ",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = " ", env = ",,ARGO_CIRCUIT_ROOT:root,"},
-                new {throws = Throws.ArgoException, args = " ", env = ",,,ARGO_TARGET_CIRCUIT:target"},
-                new {throws = Throws.ArgoException, args = " ", env = ",,,"},
-                new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "--target=t --model=m", env = ",,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
                     throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
+                    env = ",,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "--target=t --model=m", env = ",ARGO_CIRCUIT_ROOT:root,,"},
+                new {
+                    throws = Throws.ArgoException, args = "--target=t --model=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
                 },
                 new {
                     throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
                     throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"
-                },
-                new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"
-                },
-                new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = "ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
                 },
                 new {throws = Throws.ArgoException, args = "--target=t --model=m", env = "ARGO_HSPICE:hspice,,,"},
                 new {
                     throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    env = "ARGO_HSPICE:hspice,,,ARGO_MODEL_FILE:model"
                 },
                 new {
                     throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
                     throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = ",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = "--target=t --model=m", env = ",ARGO_MODEL_FILE:model,,"},
-                new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m",
-                    env = ",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = "--target=t --model=m", env = ",,ARGO_CIRCUIT_ROOT:root,"},
-                new {
-                    throws = Throws.ArgoException, args = "--target=t --model=m", env = ",,,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = "--target=t --model=m", env = ",,,"},
-                new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
+                    throws = Throws.None, args = "--target=t --model=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.None, args = "--target=t --model=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"
+                    throws = Throws.None, args = "--target=t --model=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.None, args = "--target=t --model=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "--target=t -m=m", env = ",,,"},
+                new {throws = Throws.ArgoException, args = "--target=t -m=m", env = ",,,ARGO_MODEL_FILE:model"},
+                new {throws = Throws.ArgoException, args = "--target=t -m=m", env = ",,ARGO_TARGET_CIRCUIT:target,"},
+                new {
+                    throws = Throws.ArgoException, args = "--target=t -m=m",
+                    env = ",,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "--target=t -m=m", env = ",ARGO_CIRCUIT_ROOT:root,,"},
+                new {
+                    throws = Throws.ArgoException, args = "--target=t -m=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"
+                    throws = Throws.ArgoException, args = "--target=t -m=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = "ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "--target=t -m=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
                 },
-                new {throws = Throws.ArgoException, args = "--target=t ", env = "ARGO_HSPICE:hspice,,,"},
+                new {throws = Throws.ArgoException, args = "--target=t -m=m", env = "ARGO_HSPICE:hspice,,,"},
                 new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
+                    throws = Throws.ArgoException, args = "--target=t -m=m",
+                    env = "ARGO_HSPICE:hspice,,,ARGO_MODEL_FILE:model"
                 },
                 new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = ",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = "--target=t ", env = ",ARGO_MODEL_FILE:model,,"},
-                new {
-                    throws = Throws.ArgoException, args = "--target=t ",
-                    env = ",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = "--target=t ", env = ",,ARGO_CIRCUIT_ROOT:root,"},
-                new {throws = Throws.ArgoException, args = "--target=t ", env = ",,,ARGO_TARGET_CIRCUIT:target"},
-                new {throws = Throws.ArgoException, args = "--target=t ", env = ",,,"},
-                new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "--target=t -m=m",
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
+                    throws = Throws.ArgoException, args = "--target=t -m=m",
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
                 },
                 new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.None, args = "--target=t -m=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"
+                    throws = Throws.None, args = "--target=t -m=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
                 },
                 new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.None, args = "--target=t -m=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"
+                    throws = Throws.None, args = "--target=t -m=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "-m=m", env = ",,,"},
+                new {throws = Throws.ArgoException, args = "-m=m", env = ",,,ARGO_MODEL_FILE:model"},
+                new {throws = Throws.ArgoException, args = "-m=m", env = ",,ARGO_TARGET_CIRCUIT:target,"},
+                new {
+                    throws = Throws.ArgoException, args = "-m=m",
+                    env = ",,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "-m=m", env = ",ARGO_CIRCUIT_ROOT:root,,"},
+                new {
+                    throws = Throws.ArgoException, args = "-m=m", env = ",ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
                 },
                 new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = "ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = " --model=m", env = "ARGO_HSPICE:hspice,,,"},
-                new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "-m=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
+                    throws = Throws.ArgoException, args = "-m=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "-m=m", env = "ARGO_HSPICE:hspice,,,"},
+                new {throws = Throws.ArgoException, args = "-m=m", env = "ARGO_HSPICE:hspice,,,ARGO_MODEL_FILE:model"},
+                new {
+                    throws = Throws.ArgoException, args = "-m=m",
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = ",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "-m=m",
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
                 },
-                new {throws = Throws.ArgoException, args = " --model=m", env = ",ARGO_MODEL_FILE:model,,"},
+                new {throws = Throws.ArgoException, args = "-m=m", env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,"},
                 new {
-                    throws = Throws.ArgoException, args = " --model=m",
-                    env = ",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
-                },
-                new {throws = Throws.ArgoException, args = " --model=m", env = ",,ARGO_CIRCUIT_ROOT:root,"},
-                new {throws = Throws.ArgoException, args = " --model=m", env = ",,,ARGO_TARGET_CIRCUIT:target"},
-                new {throws = Throws.ArgoException, args = " --model=m", env = ",,,"},
-                new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "-m=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
                 },
                 new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"
+                    throws = Throws.None, args = "-m=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
                 },
                 new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.None, args = "-m=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
                 },
-                new {throws = Throws.ArgoException, args = " ", env = "ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"},
+                new {throws = Throws.ArgoException, args = "-t=t ", env = ",,,"},
+                new {throws = Throws.ArgoException, args = "-t=t ", env = ",,,ARGO_MODEL_FILE:model"},
+                new {throws = Throws.ArgoException, args = "-t=t ", env = ",,ARGO_TARGET_CIRCUIT:target,"},
                 new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "-t=t ",
+                    env = ",,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
                 },
-                new {throws = Throws.ArgoException, args = " ", env = "ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"},
+                new {throws = Throws.ArgoException, args = "-t=t ", env = ",ARGO_CIRCUIT_ROOT:root,,"},
                 new {
-                    throws = Throws.ArgoException, args = " ", env = "ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "-t=t ",
+                    env = ",ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
                 },
-                new {throws = Throws.ArgoException, args = " ", env = "ARGO_HSPICE:hspice,,,"},
                 new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "-t=t ",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
                 },
-                new {throws = Throws.ArgoException, args = " ", env = ",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
                 new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = ",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "-t=t ",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
                 },
-                new {throws = Throws.ArgoException, args = " ", env = ",ARGO_MODEL_FILE:model,,"},
+                new {throws = Throws.ArgoException, args = "-t=t ", env = "ARGO_HSPICE:hspice,,,"},
+                new {throws = Throws.ArgoException, args = "-t=t ", env = "ARGO_HSPICE:hspice,,,ARGO_MODEL_FILE:model"},
                 new {
-                    throws = Throws.ArgoException, args = " ",
-                    env = ",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"
+                    throws = Throws.ArgoException, args = "-t=t ",
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,"
                 },
-                new {throws = Throws.ArgoException, args = " ", env = ",,ARGO_CIRCUIT_ROOT:root,"},
-                new {throws = Throws.ArgoException, args = " ", env = ",,,ARGO_TARGET_CIRCUIT:target"},
-                new {throws = Throws.ArgoException, args = " ", env = ",,,"},
-                new{throws=Throws.FailedParse,args="--target --model",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target --model",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="--target --model",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target --model",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args="--target --model",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target --model",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="--target --model",env="ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target --model",env="ARGO_HSPICE:hspice,,,"},
-new{throws=Throws.FailedParse,args="--target --model",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target --model",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="--target --model",env=",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target --model",env=",ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args="--target --model",env=",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target --model",env=",,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="--target --model",env=",,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target --model",env=",,,"},
-new{throws=Throws.FailedParse,args="--target -m",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target -m",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="--target -m",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target -m",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args="--target -m",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target -m",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="--target -m",env="ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target -m",env="ARGO_HSPICE:hspice,,,"},
-new{throws=Throws.FailedParse,args="--target -m",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target -m",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="--target -m",env=",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target -m",env=",ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args="--target -m",env=",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target -m",env=",,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="--target -m",env=",,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target -m",env=",,,"},
-new{throws=Throws.FailedParse,args="--target ",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target ",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="--target ",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target ",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args="--target ",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target ",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="--target ",env="ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target ",env="ARGO_HSPICE:hspice,,,"},
-new{throws=Throws.FailedParse,args="--target ",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target ",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="--target ",env=",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target ",env=",ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args="--target ",env=",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target ",env=",,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="--target ",env=",,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="--target ",env=",,,"},
-new{throws=Throws.FailedParse,args="-t --model",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t --model",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="-t --model",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t --model",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args="-t --model",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t --model",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="-t --model",env="ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t --model",env="ARGO_HSPICE:hspice,,,"},
-new{throws=Throws.FailedParse,args="-t --model",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t --model",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="-t --model",env=",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t --model",env=",ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args="-t --model",env=",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t --model",env=",,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="-t --model",env=",,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t --model",env=",,,"},
-new{throws=Throws.FailedParse,args="-t -m",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t -m",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="-t -m",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t -m",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args="-t -m",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t -m",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="-t -m",env="ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t -m",env="ARGO_HSPICE:hspice,,,"},
-new{throws=Throws.FailedParse,args="-t -m",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t -m",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="-t -m",env=",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t -m",env=",ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args="-t -m",env=",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t -m",env=",,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="-t -m",env=",,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t -m",env=",,,"},
-new{throws=Throws.FailedParse,args="-t ",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t ",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="-t ",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t ",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args="-t ",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t ",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="-t ",env="ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t ",env="ARGO_HSPICE:hspice,,,"},
-new{throws=Throws.FailedParse,args="-t ",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t ",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="-t ",env=",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t ",env=",ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args="-t ",env=",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t ",env=",,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args="-t ",env=",,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args="-t ",env=",,,"},
-new{throws=Throws.FailedParse,args=" --model",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" --model",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args=" --model",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" --model",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args=" --model",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" --model",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args=" --model",env="ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" --model",env="ARGO_HSPICE:hspice,,,"},
-new{throws=Throws.FailedParse,args=" --model",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" --model",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args=" --model",env=",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" --model",env=",ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args=" --model",env=",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" --model",env=",,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args=" --model",env=",,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" --model",env=",,,"},
-new{throws=Throws.FailedParse,args=" -m",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" -m",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args=" -m",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" -m",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args=" -m",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" -m",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args=" -m",env="ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" -m",env="ARGO_HSPICE:hspice,,,"},
-new{throws=Throws.FailedParse,args=" -m",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" -m",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args=" -m",env=",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" -m",env=",ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args=" -m",env=",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" -m",env=",,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args=" -m",env=",,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" -m",env=",,,"},
-new{throws=Throws.FailedParse,args=" ",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" ",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args=" ",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" ",env="ARGO_HSPICE:hspice,ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args=" ",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" ",env="ARGO_HSPICE:hspice,,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args=" ",env="ARGO_HSPICE:hspice,,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" ",env="ARGO_HSPICE:hspice,,,"},
-new{throws=Throws.FailedParse,args=" ",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" ",env=",ARGO_MODEL_FILE:model,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args=" ",env=",ARGO_MODEL_FILE:model,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" ",env=",ARGO_MODEL_FILE:model,,"},
-new{throws=Throws.FailedParse,args=" ",env=",,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" ",env=",,ARGO_CIRCUIT_ROOT:root,"},
-new{throws=Throws.FailedParse,args=" ",env=",,,ARGO_TARGET_CIRCUIT:target"},
-new{throws=Throws.FailedParse,args=" ",env=",,,"},
-
+                new {
+                    throws = Throws.ArgoException, args = "-t=t ",
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {
+                    throws = Throws.ArgoException, args = "-t=t ", env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,"
+                },
+                new {
+                    throws = Throws.None, args = "-t=t ",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
+                },
+                new {
+                    throws = Throws.ArgoException, args = "-t=t ",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
+                },
+                new {
+                    throws = Throws.None, args = "-t=t ",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "-t=t --model=m", env = ",,,"},
+                new {throws = Throws.ArgoException, args = "-t=t --model=m", env = ",,,ARGO_MODEL_FILE:model"},
+                new {throws = Throws.ArgoException, args = "-t=t --model=m", env = ",,ARGO_TARGET_CIRCUIT:target,"},
+                new {
+                    throws = Throws.ArgoException, args = "-t=t --model=m",
+                    env = ",,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "-t=t --model=m", env = ",ARGO_CIRCUIT_ROOT:root,,"},
+                new {
+                    throws = Throws.ArgoException, args = "-t=t --model=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
+                },
+                new {
+                    throws = Throws.ArgoException, args = "-t=t --model=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
+                },
+                new {
+                    throws = Throws.ArgoException, args = "-t=t --model=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "-t=t --model=m", env = "ARGO_HSPICE:hspice,,,"},
+                new {
+                    throws = Throws.ArgoException, args = "-t=t --model=m",
+                    env = "ARGO_HSPICE:hspice,,,ARGO_MODEL_FILE:model"
+                },
+                new {
+                    throws = Throws.ArgoException, args = "-t=t --model=m",
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,"
+                },
+                new {
+                    throws = Throws.ArgoException, args = "-t=t --model=m",
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {
+                    throws = Throws.None, args = "-t=t --model=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,"
+                },
+                new {
+                    throws = Throws.None, args = "-t=t --model=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
+                },
+                new {
+                    throws = Throws.None, args = "-t=t --model=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
+                },
+                new {
+                    throws = Throws.None, args = "-t=t --model=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "-t=t -m=m", env = ",,,"},
+                new {throws = Throws.ArgoException, args = "-t=t -m=m", env = ",,,ARGO_MODEL_FILE:model"},
+                new {throws = Throws.ArgoException, args = "-t=t -m=m", env = ",,ARGO_TARGET_CIRCUIT:target,"},
+                new {
+                    throws = Throws.ArgoException, args = "-t=t -m=m",
+                    env = ",,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "-t=t -m=m", env = ",ARGO_CIRCUIT_ROOT:root,,"},
+                new {
+                    throws = Throws.ArgoException, args = "-t=t -m=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
+                },
+                new {
+                    throws = Throws.ArgoException, args = "-t=t -m=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
+                },
+                new {
+                    throws = Throws.ArgoException, args = "-t=t -m=m",
+                    env = ",ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {throws = Throws.ArgoException, args = "-t=t -m=m", env = "ARGO_HSPICE:hspice,,,"},
+                new {
+                    throws = Throws.ArgoException, args = "-t=t -m=m",
+                    env = "ARGO_HSPICE:hspice,,,ARGO_MODEL_FILE:model"
+                },
+                new {
+                    throws = Throws.ArgoException, args = "-t=t -m=m",
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,"
+                },
+                new {
+                    throws = Throws.ArgoException, args = "-t=t -m=m",
+                    env = "ARGO_HSPICE:hspice,,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new {
+                    throws = Throws.None, args = "-t=t -m=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,"
+                },
+                new {
+                    throws = Throws.None, args = "-t=t -m=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,,ARGO_MODEL_FILE:model"
+                },
+                new {
+                    throws = Throws.None, args = "-t=t -m=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,"
+                },
+                new {
+                    throws = Throws.None, args = "-t=t -m=m",
+                    env = "ARGO_HSPICE:hspice,ARGO_CIRCUIT_ROOT:root,ARGO_TARGET_CIRCUIT:target,ARGO_MODEL_FILE:model"
+                },
+                new{throws=Throws.FailedParse,args="--target --model",env=""},
+                new{throws=Throws.FailedParse,args="--target -m",env=""},
+                new{throws=Throws.FailedParse,args="--target ",env=""},
+                new{throws=Throws.FailedParse,args="-t --model",env=""},
+                new{throws=Throws.FailedParse,args="-t -m",env=""},
+                new{throws=Throws.FailedParse,args="-t ",env=""},
+                new{throws=Throws.FailedParse,args=" --model",env=""},
+                new{throws=Throws.FailedParse,args=" -m",env=""},
             };
-
             foreach (var d in data) {
                 var envList = d.env.Split(',', StringSplitOptions.RemoveEmptyEntries)
                     .Select(s => s.Split(':')).Select(e => Tuple.Create(e[0], e[1])).ToList();
-
                 foreach (var (key,value) in envList) {
                     Environment.SetEnvironmentVariable(key,value);
                 }
