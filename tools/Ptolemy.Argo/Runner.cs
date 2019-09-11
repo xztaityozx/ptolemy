@@ -62,7 +62,7 @@ namespace Ptolemy.Argo {
                 token.ThrowIfCancellationRequested();
 
                 using (var exec = new Exec.Exec(token)) {
-                    exec.Run(command);
+                    exec.Run(command, s => { }, true);
                     exec.ThrowIfNonZeroExitCode();
                 }
                 CheckResultsFiles();
@@ -85,9 +85,7 @@ namespace Ptolemy.Argo {
         /// <exception cref="ArgoException"></exception>
         public Guid RunWithSpinner() {
                 Spinner.Start("simulating...",spin => {
-                    using (var exec = new Exec.Exec(token)) {
-                        Run();
-                    }
+                    Run();
                 });
 
             return request.GroupId;

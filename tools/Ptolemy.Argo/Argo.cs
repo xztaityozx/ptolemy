@@ -33,7 +33,6 @@ namespace Ptolemy.Argo {
             o.CircuitRoot = Expand(nameof(o.CircuitRoot), o.CircuitRoot);
             o.ModelFile = Expand(nameof(o.ModelFile), o.ModelFile);
             o.Hspice = Expand(nameof(o.Hspice), o.Hspice);
-            o.JsonFile = Expand(nameof(o.JsonFile), o.JsonFile);
             
             if (string.IsNullOrEmpty(o.CircuitRoot)) {
                 throw new ArgoException(
