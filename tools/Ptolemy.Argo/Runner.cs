@@ -118,7 +118,7 @@ namespace Ptolemy.Argo {
                     sw.WriteLine(baseNetList);
                     
                     sw.WriteLine(
-                        $".tran {request.Time.Step:E} {request.Time.Stop:E} start={request.Time.Start:E} sweep monte={request.Sweep:E} firstrun={request.SweepStart:E}");
+                        $".tran {request.Time.Step:E} {request.Time.Stop:E} start={request.Time.Start:E} uic sweep monte={request.Sweep:E} firstrun={request.SweepStart:E}");
                     sw.WriteLine(".option opfile=1 split_dp=2");
                     sw.WriteLine(".end");
                 }
