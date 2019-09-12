@@ -8,9 +8,8 @@ namespace UnitTest.ToolTest
     public class LupusXmlTest
     {
         [Fact]
-        public void GenerateResultsXmlTest()
-        {
-            var res = LupusXml.GenerateResultsXml("/tmp", 100);
+        public void GenerateResultsXmlTest() {
+            var res = LupusXml.GenerateResultsXml("/tmp", Enumerable.Range(1, 100).Select(l => (long) l).ToList());
 
             // Root
             Assert.Equal("saResults", res.Name);

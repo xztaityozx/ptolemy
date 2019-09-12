@@ -15,25 +15,7 @@ namespace Ptolemy {
                     cts.Cancel();
                 };
                 var token = cts.Token;
-                var tool = Parser.Default.ParseArguments<Lupus.Lupus>(args)
-                    .MapResult<Lupus.Lupus, IPtolemyTool>(
-                        (Lupus.Lupus l) => l,
-                        e => new Errors(e)
-                    );
-                var res = tool.Invoke(token, tool.Args.ToArray());
-                if (res == null) {
-                    Console.ResetColor();
-                    return;
-                }
-                var log=new Logger.Logger();
-                switch (res) {
-                    case OperationCanceledException e:
-                        log.Fatal("Canceled by user");
-                        break;
-                    default:
-                        log.Error(res);
-                        break;
-                }
+                
             }
         }
     }

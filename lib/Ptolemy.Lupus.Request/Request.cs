@@ -14,7 +14,6 @@ namespace Ptolemy.Lupus.Request {
         public string ResultFileName { get; set; }
         public Guid GroupId { get; set; }
 
-
         public string ToJson() => JsonConvert.SerializeObject(this);
         public static LupusRequest FromJson(string doc) => JsonConvert.DeserializeObject<LupusRequest>(doc);
     }
