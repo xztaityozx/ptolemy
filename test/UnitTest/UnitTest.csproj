@@ -21,13 +21,14 @@
     <ProjectReference Include="..\..\lib\Ptolemy.Config\Ptolemy.Config.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Exec\Ptolemy.Exec.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.FilePath\Ptolemy.FilePath.csproj" />
+    <ProjectReference Include="..\..\lib\Ptolemy.Lupus.Request\Ptolemy.Lupus.Request.csproj" />
+    <ProjectReference Include="..\..\lib\Ptolemy.Lupus.Xml\Ptolemy.Lupus.Xml.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Map\Ptolemy.Map.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Parameters\Ptolemy.Parameters.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.PipeLine\Ptolemy.PipeLine.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.SiMetricPrefix\Ptolemy.SiMetricPrefix.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Verb\Ptolemy.Verb.csproj" />
     <ProjectReference Include="..\..\tools\Ptolemy.Argo\Ptolemy.Argo.csproj" />
-    <ProjectReference Include="..\..\tools\Ptolemy.Lupus\Ptolemy.Lupus.csproj" />
   </ItemGroup>
 
 </Project>

@@ -38,6 +38,7 @@ namespace UnitTest.ArgoTest {
 
         [Fact]
         public void RunSuccessTest() {
+            if(!Environment.OSVersion.ToString().StartsWith("Unix")) return;
             var runner = new Runner(CancellationToken.None, request, WorkingDir);
 
             void TryMkdir(string p) {
