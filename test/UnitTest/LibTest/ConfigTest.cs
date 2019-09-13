@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Ptolemy.Argo.Request;
 using Ptolemy.Config;
 using Ptolemy.FilePath;
+using Ptolemy.Lupus.Request;
 using Ptolemy.Parameters;
 using Xunit;
 using YamlDotNet.Serialization;
@@ -33,6 +33,15 @@ namespace UnitTest.LibTest {
                 ModelFilePath = "/path/to/model",
                 TargetCircuit = "/path/to/target",
                 Vdd = 45.67M
+            },
+            LupusDefault = new LupusRequest {
+                GroupId = Guid.NewGuid(),
+                PlotPoint = new Range(2.5E-9M,7.5E-9M,17.5E-9M),
+                TargetDirectory = "/path/to/argoResult",
+                Signals = new[] {"A","BB","CC"}.ToList(),
+                ResultFileName = "/path/to/lupus/resultFile",
+                WaveViewOptions = new[] {"-a","-b","-c"}.ToList(),
+                WaveViewPath = "/path/to/wv",
             }
         };
 

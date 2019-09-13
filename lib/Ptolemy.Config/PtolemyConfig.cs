@@ -4,13 +4,15 @@ using System.Runtime.Serialization;
 using System.Text;
 using Newtonsoft.Json;
 using Ptolemy.Argo.Request;
+using Ptolemy.Lupus.Request;
 using YamlDotNet.Serialization;
 
 namespace Ptolemy.Config
 {
     public class Config {
-        [YamlMember]
-        public ArgoRequest ArgoDefault { get; set; }
+        [YamlMember] public ArgoRequest ArgoDefault { get; set; }
+        [YamlMember] public LupusRequest LupusDefault { get; set; }
+
 
         private static Config instance = null;
         [YamlIgnore]
