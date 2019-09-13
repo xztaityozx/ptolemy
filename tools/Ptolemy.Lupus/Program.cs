@@ -1,61 +1,51 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
 using System.Threading;
 using CommandLine;
-using Kurukuru;
-using Ptolemy.Interface;
 
 namespace Ptolemy.Lupus {
     internal class Program {
         private static void Main(string[] args) {
-            using (var cts = new CancellationTokenSource()) {
-                var token = cts.Token;
-                var log = new Logger.Logger();
-                Console.CancelKeyPress += (sender, eventArgs) => {
-                    eventArgs.Cancel = true;
-                    cts.Cancel();
-                    Console.WriteLine();
-                    log.Warn("Waiting cancel...");
-                };
-                log.Warn("Press Ctrl+C to cancel");
+            var log = new Logger.Logger();
+            try {
+                log.Info("welcome to Ptolemy.Lupus");
+                using (var cts = new CancellationTokenSource()) {
+                    Console.CancelKeyPress += (sender, eventArgs) => {
+                        eventArgs.Cancel = true;
+                        cts.Cancel();
+                    };
 
-                var lupus = new Lupus();
-                var res = lupus.Invoke(token, args);
-                Console.ResetColor();
-                if (res == null) return;
-
-                switch (res) {
-                    case OperationCanceledException _:
-                        log.Error("Canceled by user");
-                        break;
-                    case AggregateException ae:
-                        log.Fatal($"Failed lupus command\n\t-->${ae}");
-                        break;
-                    default:
-                        log.Fatal(res);
-                        break;
+                    var sw = new Stopwatch();
+                    sw.Start();
+                    var request = Parser.Default.ParseArguments<Options>(args)
+                        .MapResult(o => o.BuildLupusResult(), e => throw new LupusException(""));
+                    var lupus = new Lupus(request);
+                    cts.Token.ThrowIfCancellationRequested();
+                    var result = lupus.Run(cts.Token);
+                    sw.Stop();
+                    if (result.Exception != null) {
+                        log.Error("Failed Ptolemy.Lupus");
+                        log.Error($"Last command: {result.ExecutedCommand}");
+                        log.Error($"Error message: {result.Message}");
+                    }
+                    else {
+                        log.Info("Finished Ptolemy.Lupus");
+                        log.Info($"Elapsed time {sw.Elapsed}");
+                    }
                 }
-
-                Console.ResetColor();
-                Environment.Exit(1);
+            }
+            catch (LupusException e) {
+                log.Error($"[Ptolemy.Lupus] {e}");
+                Environment.ExitCode = 1;
+            }
+            catch (OperationCanceledException) {
+                log.Error("Canceled by user");
+                Environment.ExitCode = 1;
+            }
+            catch (Exception e) {
+                log.Error($"[Ptolemy.Lupus] unknown error has occured\n\t-->{e}");
+                Environment.ExitCode = 1;
             }
         }
-    }
-
-    public class Lupus : IPtolemyTool {
-        public Exception Invoke(CancellationToken token, string[] args) {
-            //args = @"push --vtn 1,2,3 --vtp 1,2,3 -b 300000 -d C:\Users\xztaityozx\Documents\testData".Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            args = @"get -e 1,2000 --vtn 1,2,3 --vtp 1,2,3".Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            var logFile = Path.Combine(LupusConfig.Instance.LogDir, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss-ff}.log");
-
-            return Parser.Default.ParseArguments<Get, Push>(args).MapResult(
-                (Get g) => g.Run(token, logFile),
-                (Push p) => p.Run(token, logFile),
-                e => null
-            );
-        }
-
-        public IEnumerable<string> Args { get; set; }
     }
 }

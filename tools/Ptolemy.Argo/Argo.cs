@@ -26,6 +26,9 @@ namespace Ptolemy.Argo {
             }
         }
 
+        public Argo(ArgoRequest request, string circuitRoot) =>
+            (this.request, this.circuitRoot) = (request, circuitRoot);
+
         public Argo(Options o) {
             o.CircuitRoot = o.CircuitRoot ?? Environment.GetEnvironmentVariable("ARGO_CIRCUIT_ROOT");
             o.Hspice = o.Hspice ?? Environment.GetEnvironmentVariable("ARGO_HSPICE");
