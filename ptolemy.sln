@@ -37,11 +37,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Argo", "tools\Ptole
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Argo.Request", "lib\Ptolemy.ArgoRequest\Ptolemy.Argo.Request.csproj", "{E272DF45-EA4C-4CAA-B292-E548E2B71CB9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Lupus", "tools\Ptolemy.Lupus\Ptolemy.Lupus.csproj", "{C03433AC-0C65-48E2-BFDD-F55E47358D46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Lupus", "tools\Ptolemy.Lupus\Ptolemy.Lupus.csproj", "{C03433AC-0C65-48E2-BFDD-F55E47358D46}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Lupus.Request", "lib\Ptolemy.Lupus.Request\Ptolemy.Lupus.Request.csproj", "{BBB53D0F-9991-478C-ADD2-87A82EB4C9A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Lupus.Request", "lib\Ptolemy.Lupus.Request\Ptolemy.Lupus.Request.csproj", "{BBB53D0F-9991-478C-ADD2-87A82EB4C9A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Lupus.Xml", "lib\Ptolemy.Lupus.Xml\Ptolemy.Lupus.Xml.csproj", "{C9D89E38-9E11-49C8-B5C9-BB8492557F9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Lupus.Xml", "lib\Ptolemy.Lupus.Xml\Ptolemy.Lupus.Xml.csproj", "{C9D89E38-9E11-49C8-B5C9-BB8492557F9E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Draco.Request", "lib\Ptolemy.Draco.Request\Ptolemy.Draco.Request.csproj", "{27AB4307-2A2B-4907-9877-572A72EDE175}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Repository", "lib\Ptolemy.Repository\Ptolemy.Repository.csproj", "{B539F39B-D14A-4B1E-B689-F829E8EDF44D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -117,6 +121,14 @@ Global
 		{C9D89E38-9E11-49C8-B5C9-BB8492557F9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9D89E38-9E11-49C8-B5C9-BB8492557F9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9D89E38-9E11-49C8-B5C9-BB8492557F9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27AB4307-2A2B-4907-9877-572A72EDE175}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27AB4307-2A2B-4907-9877-572A72EDE175}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27AB4307-2A2B-4907-9877-572A72EDE175}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27AB4307-2A2B-4907-9877-572A72EDE175}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B539F39B-D14A-4B1E-B689-F829E8EDF44D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B539F39B-D14A-4B1E-B689-F829E8EDF44D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B539F39B-D14A-4B1E-B689-F829E8EDF44D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B539F39B-D14A-4B1E-B689-F829E8EDF44D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -139,6 +151,8 @@ Global
 		{C03433AC-0C65-48E2-BFDD-F55E47358D46} = {0BE68A10-7B3B-4E90-91E9-44A8F7EAE74F}
 		{BBB53D0F-9991-478C-ADD2-87A82EB4C9A4} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
 		{C9D89E38-9E11-49C8-B5C9-BB8492557F9E} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
+		{27AB4307-2A2B-4907-9877-572A72EDE175} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
+		{B539F39B-D14A-4B1E-B689-F829E8EDF44D} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {19C6E637-BC0D-4D7F-8E43-AC22C5A894BB}
