@@ -19,7 +19,7 @@ namespace Ptolemy.Lupus {
         [Option('w', "wv", HelpText = "WaveViewへのパスです。指定しない場合環境変数 `LUPUS_WAVEVIEW` が使われます")]
         public string WaveView { get; set; }
         [Option("wvOptions", HelpText = "WaveViewへ渡すオプションです。カンマ区切りです", Separator = ',')]
-        public IEnumerable<string> WaveViewOptions { get; set; }
+        public IEnumerable<string> WaveViewOptions { get; set; } = new List<string>();
 
         public LupusRequest BuildLupusResult() {
             var rt = new LupusRequest();
