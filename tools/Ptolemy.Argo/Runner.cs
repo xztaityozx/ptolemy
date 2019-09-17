@@ -78,7 +78,6 @@ namespace Ptolemy.Argo {
                         }
                     }
                 }
-                CheckResultsFiles();
             }
             catch (ArgoException) {
                 throw;
@@ -168,11 +167,6 @@ namespace Ptolemy.Argo {
             }
         }
 
-        private void CheckResultsFiles() {
-            if(Directory.GetFiles(simDir, "*.tr0@*").Length != request.Sweep) 
-                throw new ArgoException("not enough simulation result files(*.tr0@*)");
-            
-        }
         
         private void CreateSymbolicLink() {
             foreach (var target in new[] {"cnl", "netlist"}) {
