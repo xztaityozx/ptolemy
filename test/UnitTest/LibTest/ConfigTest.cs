@@ -32,17 +32,10 @@ namespace UnitTest.LibTest {
                 IcCommands = new List<string> { "Command1", "Command2"},
                 ModelFilePath = "/path/to/model",
                 TargetCircuit = "/path/to/target",
-                Vdd = 45.67M
+                Vdd = 45.67M,
+                Signals = new List<string>{ "A","B","C" },
+                ResultFile = "/path/to/result"
             },
-            LupusDefault = new LupusRequest {
-                GroupId = Guid.NewGuid(),
-                PlotPoint = new Range(2.5E-9M,7.5E-9M,17.5E-9M),
-                TargetDirectory = "/path/to/argoResult",
-                Signals = new[] {"A","BB","CC"}.ToList(),
-                ResultFileName = "/path/to/lupus/resultFile",
-                WaveViewOptions = new[] {"-a","-b","-c"}.ToList(),
-                WaveViewPath = "/path/to/wv",
-            }
         };
 
         private readonly string yamlDoc = new Serializer().Serialize(Config);

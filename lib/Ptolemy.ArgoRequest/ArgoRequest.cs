@@ -22,6 +22,9 @@ namespace Ptolemy.Argo.Request {
         public decimal Vdd { get; set; }
         public decimal Gnd { get; set; }
 
+        public List<string> Signals { get; set; }
+        public string ResultFile { get; set; }
+
         public static ArgoRequest FromJson(string json) => JsonConvert.DeserializeObject<ArgoRequest>(json);
 
         public string ToJson() => JsonConvert.SerializeObject(this);

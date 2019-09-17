@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using Kurukuru;
 using Ptolemy.Argo.Request;
@@ -36,7 +39,7 @@ namespace Ptolemy.Argo {
             netlistDir = Path.Combine(workingRoot, "netlist");
             spiFile = Path.Combine(netlistDir, id + ".spi");
             command =
-                $"cd {simDir} && {request.HspicePath} {string.Join(" ", request.HspiceOptions)} -i {spiFile} -o ./hspice";
+                $"cd {simDir} && {request.HspicePath} {string.Join(" ", request.HspiceOptions)} -i {spiFile}";
 
         }
 
@@ -51,8 +54,29 @@ namespace Ptolemy.Argo {
                 token.ThrowIfCancellationRequested();
 
                 using (var exec = new Exec.Exec(token)) {
-                    exec.Run(command, s => { }, true);
+                    var isResult = false;
+                    var box = new List<StringBuilder>();
+                    exec.Run(command, s => {
+                        if (s.StartsWith(" time")) {
+                            isResult = true;
+                            box.Add(new StringBuilder());
+                        } else if (s == "y") {
+                            isResult = false;
+                        }
+
+                        if (isResult) {
+                            box.Last().AppendLine(s);
+                        }
+                    }, s => { }, false);
                     exec.ThrowIfNonZeroExitCode();
+
+                    using (var sw = new StreamWriter(request.ResultFile)) {
+                        foreach (var stringBuilder in box) {
+                            sw.WriteLine(stringBuilder.ToString());
+                            sw.WriteLine();
+                            sw.Flush();
+                        }
+                    }
                 }
                 CheckResultsFiles();
             }
@@ -111,7 +135,7 @@ namespace Ptolemy.Argo {
                     sw.WriteLine($"VDD VDD! 0 0 {request.Vdd}");
                     sw.WriteLine($"VGND GND! 0 0 {request.Gnd}");
                     sw.WriteLine($".IC {string.Join(" ", request.IcCommands)}");
-                    sw.WriteLine(".option ARTIST=2 PSF=2");
+                    sw.WriteLine(".option ARTIST=2 PSF=2 POST=2");
                     sw.WriteLine($".temp {request.Temperature}");
                     sw.WriteLine($".include {request.ModelFilePath}");
                     
@@ -120,6 +144,7 @@ namespace Ptolemy.Argo {
                     sw.WriteLine(
                         $".tran {request.Time.Step:E} {request.Time.Stop:E} start={request.Time.Start:E} uic sweep monte={request.Sweep:E} firstrun={request.SweepStart:E}");
                     sw.WriteLine(".option opfile=1 split_dp=2");
+                    sw.WriteLine($".print {string.Join(" ", request.Signals)}");
                     sw.WriteLine(".end");
                 }
             }
@@ -162,7 +187,7 @@ namespace Ptolemy.Argo {
                     
                     using (var ex = new Exec.Exec(token)) {
                         var output = "";
-                        ex.Run($"ln -s {from} {to}", s => output += s, true);
+                        ex.Run($"ln -s {from} {to}", s => output += s,  false);
 
                         if (ex.ExitCode != 0)
                             throw new ArgoException(

@@ -38,6 +38,7 @@ namespace Ptolemy.Argo {
             o.CircuitRoot = Expand(nameof(o.CircuitRoot), o.CircuitRoot);
             o.ModelFile = Expand(nameof(o.ModelFile), o.ModelFile);
             o.Hspice = Expand(nameof(o.Hspice), o.Hspice);
+            o.ResultFile = Expand("ResultFile", o.ResultFile);
 
             if (string.IsNullOrEmpty(o.CircuitRoot)) {
                 throw new ArgoException(
@@ -95,7 +96,8 @@ namespace Ptolemy.Argo {
                         Vtn = new Transistor(Bind(Options.VtnDefault, o.VtnString)),
                         Vtp = new Transistor(Bind(Options.VtpDefault, o.VtpString)),
                         HspicePath = o.Hspice ?? Environment.GetEnvironmentVariable("ARGO_HSPICE"),
-                        GroupId = Guid.NewGuid()
+                        GroupId = Guid.NewGuid(),
+                        ResultFile = o.ResultFile
                     };
                 }
                 catch (Exception e) {
