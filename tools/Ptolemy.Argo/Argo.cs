@@ -97,7 +97,8 @@ namespace Ptolemy.Argo {
                         Vtp = new Transistor(Bind(Options.VtpDefault, o.VtpString)),
                         HspicePath = o.Hspice ?? Environment.GetEnvironmentVariable("ARGO_HSPICE"),
                         GroupId = Guid.NewGuid(),
-                        ResultFile = o.ResultFile
+                        ResultFile = o.ResultFile,
+                        Signals = o.Signals.ToList()
                     };
                 }
                 catch (Exception e) {
