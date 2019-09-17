@@ -4,21 +4,23 @@ using System.Runtime.Serialization;
 using System.Text;
 using Newtonsoft.Json;
 using Ptolemy.Argo.Request;
-using Ptolemy.Lupus.Request;
+using Ptolemy.Interface;
 using YamlDotNet.Serialization;
 
-namespace Ptolemy.Config
-{
+namespace Ptolemy.Config {
     public class Config {
         [YamlMember] public ArgoRequest ArgoDefault { get; set; }
-        [YamlMember] public LupusRequest LupusDefault { get; set; }
 
 
         private static Config instance = null;
+
         [YamlIgnore]
         public static string ConfigFile { get; set; } = Path.Combine(FilePath.FilePath.DotConfig, "config.yaml");
 
 
+        /// <summary>
+        /// Load config file
+        /// </summary>
         public static void Load() {
             string doc;
 
@@ -37,7 +39,7 @@ namespace Ptolemy.Config
                 instance = new Deserializer().Deserialize<Config>(doc);
                 return;
             }
-            catch (Exception ) {
+            catch (Exception) {
                 instance = null;
             }
 
@@ -52,4 +54,5 @@ namespace Ptolemy.Config
             }
         }
     }
+
 }

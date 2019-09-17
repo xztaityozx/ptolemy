@@ -12,8 +12,7 @@ namespace Ptolemy.Argo.Request {
         public long Sweep { get; set; }
         public long SweepStart { get; set; }
         public decimal Temperature { get; set; }
-        public Transistor Vtn { get; set; }
-        public Transistor Vtp { get; set; }
+        public TransistorPair Transistors { get; set; }
         public Range Time { get; set; }
         public List<string> IcCommands { get; set; }
         public string TargetCircuit { get; set; }

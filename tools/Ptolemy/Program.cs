@@ -20,10 +20,10 @@ namespace Ptolemy {
         }
     }
 
-    public class Errors : IPtolemyTool {
+    public class Errors : IPtolemyCli {
         private readonly IEnumerable<Error> errors;
         public Errors(IEnumerable<Error> error) => errors = error;
-        public Exception Invoke(CancellationToken token, string[] args) {
+        public Exception Run(CancellationToken token, string[] args) {
             var list=new List<Exception>();
 
             foreach (var error in errors) {
