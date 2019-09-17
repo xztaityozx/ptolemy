@@ -17,4 +17,4 @@ jobs:
       with:
         dotnet-version: 2.2.108
     - name: dotnet test
-      run: dotnet test ./UnitTest/UnitTest.csproj
+      run: dotnet test
