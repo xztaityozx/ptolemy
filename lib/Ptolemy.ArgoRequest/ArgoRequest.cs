@@ -15,9 +15,8 @@ namespace Ptolemy.Argo.Request {
         public TransistorPair Transistors { get; set; }
         public Range Time { get; set; }
         public List<string> IcCommands { get; set; }
-        public string TargetCircuit { get; set; }
-        public string BaseDirectory { get; set; }
-        public string ModelFilePath { get; set; }
+        public string NetList { get; set; }
+        public List<string> Includes { get; set; }
         public decimal Vdd { get; set; }
         public decimal Gnd { get; set; }
 

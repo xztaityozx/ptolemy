@@ -26,11 +26,10 @@ namespace UnitTest.LibTest {
                 Sweep = 2,
                 Transistors = new TransistorPair(new Transistor(0.1,0.2,0.3),new Transistor(0.4,0.5,0.6)),
                 Time = new Range(0.7M,0.8M,0.9M),
-                BaseDirectory = "/path/to/baseDir",
                 Gnd = 0.123M,
                 IcCommands = new List<string> { "Command1", "Command2"},
-                ModelFilePath = "/path/to/model",
-                TargetCircuit = "/path/to/target",
+                Includes = new[]{"/path/to/model"}.ToList(),
+                NetList = "/path/to/target",
                 Vdd = 45.67M,
                 Signals = new List<string>{ "A","B","C" },
                 ResultFile = "/path/to/result"
