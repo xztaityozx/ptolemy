@@ -111,7 +111,7 @@ namespace Ptolemy.Argo {
             sb.AppendLine($".print {string.Join(" ", request.Signals.Select(x => $"V({x})"))}");
             sb.AppendLine(".end");
 
-            using (var sw = new StreamWriter(path, false, Encoding.UTF8)) {
+            using (var sw = new StreamWriter(path, false, new UTF8Encoding(false))) {
                 sw.WriteLine(sb.ToString());
             }
 
