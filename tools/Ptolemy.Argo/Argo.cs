@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using Ptolemy.Argo.Request;
@@ -18,6 +20,16 @@ namespace Ptolemy.Argo {
         private readonly string workDir;
         private readonly Guid id;
         private readonly Logger.Logger log;
+
+        private readonly Subject<string> receiver;
+
+        public IObservable<string> Receiver => receiver
+            .Where(s => !string.IsNullOrEmpty(s))
+            .SkipWhile(s => s[0] != 'x')
+            .TakeWhile(s => s[0] != 'y')
+            .Repeat();
+            
+
         public Argo(ArgoRequest request, Logger.Logger log) {
             (this.request, workDir) = (request,
                 Path.Combine(Path.GetTempPath(), "Ptolemy.Argo", request.GroupId.ToString()));
@@ -25,13 +37,14 @@ namespace Ptolemy.Argo {
             if (!Directory.Exists(workDir)) Directory.CreateDirectory(workDir);
 
             id = Guid.NewGuid();
+            receiver = new Subject<string>();
         }
 
         private string BuildCommand(string spi) {
             return $"{request.HspicePath} {string.Join(" ", request.HspiceOptions)} -i {spi}";
         }
 
-        public (bool status, ArgoRequest result) Run<T>(CancellationToken token, BlockingCollection<T> receiver, Func<string, T> converter) {
+        public (bool status, ArgoRequest result) Run(CancellationToken token) {
             try {
                 var spi = MakeScript();
                 token.ThrowIfCancellationRequested();
@@ -39,10 +52,15 @@ namespace Ptolemy.Argo {
                 token.ThrowIfCancellationRequested();
                 using (var exec = new Exec.Exec(token)) {
                     var stderr = new StringBuilder();
-                    exec.Run(command, s => receiver.Add(converter(s), token), s => stderr.AppendLine(s), false);
+                    exec.Run(command, 
+                        s => receiver.OnNext(s),
+                        s => stderr.AppendLine(s), false);
+                    
 
                     if (stderr.Length != 0) throw new ArgoException(stderr.ToString());
-                    return (exec.ExitCode != 0, request);
+                    
+                    
+                    return (exec.ExitCode == 0, request);
                 }
             }
             catch (ArgoException) {

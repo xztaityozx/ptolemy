@@ -11,7 +11,14 @@ using Ptolemy.Parameters;
 
 namespace Ptolemy.Argo {
     public class ArgoOption : ITransistorOption, ISignalOption {
+        [Option('t',"target", Required = true, 
+            HelpText = "シミュレーションしたい回路のNetListファイルへのパスを指定します")]
+        public string Target { get; set; }
+
+        [Option('o',"out", Required = true, HelpText = "出力先のファイル名です" )]
+        public string ResultFile { get; set; }
         public IEnumerable<string> VtnStrings { get; set; }
+        
         public IEnumerable<string> VtpStrings { get; set; }
         public double? Sigma { get; set; }
         
@@ -54,12 +61,6 @@ namespace Ptolemy.Argo {
         [Option("icCommand", Default = new[]{"V(N1)=0.8V", "V(N2)=0V"}, HelpText = ".ICへの引数です")]
         public IEnumerable<string> IcCommands { get; set; }
 
-        [Value(0, Required = true, 
-            HelpText = "シミュレーションしたい回路のNetListファイルへのパスを指定します")]
-        public string Target { get; set; }
-
-        [Value(1, Required = true, HelpText = "出力先のファイル名です")]
-        public string ResultFile { get; set; }
         
 
         public ArgoRequest BuildRequest() {
@@ -72,7 +73,7 @@ namespace Ptolemy.Argo {
             
             return new ArgoRequest {
                 GroupId = Guid.Empty,
-                HspicePath = hspice,
+                HspicePath = FilePath.FilePath.Expand(hspice),
                 HspiceOptions = Options.ToList(),
                 Seed = Seed,
                 Sweep = Sweep,
@@ -80,12 +81,12 @@ namespace Ptolemy.Argo {
                 Temperature = (decimal)Temperature,
                 Transistors = this.Bind(null),
                 Time = new Range(TimeString, (0,100E-12M,20E-9M)),
-                NetList =  Target,
+                NetList =  FilePath.FilePath.Expand(Target),
                 Includes = Includes.ToList(),
                 Vdd = (decimal)Vdd,
                 Gnd = (decimal)Gnd,
                 Signals = Signals.ToList(),
-                ResultFile = ResultFile,
+                ResultFile = FilePath.FilePath.Expand(ResultFile),
                 IcCommands = IcCommands.ToList()
             };
         }
