@@ -11,11 +11,14 @@ using Ptolemy.Parameters;
 
 namespace Ptolemy.Argo {
     public class ArgoOption : ITransistorOption, ISignalOption {
-        [Option('t',"target", Required = true, 
+        [Option("clean", Default = false, HelpText = "Ptolemy.Argoの作業用ディレクトリ削除して終了します")]
+        public bool Clean { get; set; }
+        
+        [Option('t',"target", 
             HelpText = "シミュレーションしたい回路のNetListファイルへのパスを指定します")]
         public string Target { get; set; }
 
-        [Option('o',"out", Required = true, HelpText = "出力先のファイル名です" )]
+        [Option('o',"out", Default  = "./argoResult", HelpText = "出力先のファイル名です" )]
         public string ResultFile { get; set; }
         public IEnumerable<string> VtnStrings { get; set; }
         
@@ -70,7 +73,8 @@ namespace Ptolemy.Argo {
             
             if(string.IsNullOrEmpty(hspice)) throw new ArgoException("HspicePath must be set");
             if(!File.Exists(hspice)) throw new ArgoException($"cannot find {hspice}");
-            
+            if (string.IsNullOrEmpty(Target)) throw new ArgoException($"Target netlist not set");
+
             return new ArgoRequest {
                 GroupId = Guid.Empty,
                 HspicePath = FilePath.FilePath.Expand(hspice),
