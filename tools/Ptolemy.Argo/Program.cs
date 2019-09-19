@@ -82,7 +82,7 @@ namespace Ptolemy.Argo {
                     log.Info("Result file: " + req.ResultFile + $"[{req.SweepStart}..{req.Sweep + req.SweepStart-1}]");
                     foreach (var item in results.Select((sb, i) => new{sb,i=i+req.SweepStart})) {
                         var path = req.ResultFile + $"{item.i}";
-                        using (var sw = new StreamWriter(path)) {
+                        using (var sw = new StreamWriter(path, false, new UTF8Encoding(false))) {
                             sw.WriteLine(item.sb.ToString().TrimEnd());
                             sw.Flush();
                         }
