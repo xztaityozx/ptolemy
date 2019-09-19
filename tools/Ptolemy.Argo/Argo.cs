@@ -82,7 +82,7 @@ namespace Ptolemy.Argo {
             sb.AppendLine($"* Target: {request.NetList}");
 
             sb.AppendLine(
-                $".param vtp=AGAUSS({request.Transistors.Vtp.Threshold},{request.Transistors.Vtp.Sigma},{request.Transistors.Vtp.Deviation}) vtp=AGAUSS({request.Transistors.Vtp.Threshold},{request.Transistors.Vtp.Sigma},{request.Transistors.Vtp.Deviation})");
+                $".param vtn=AGAUSS({request.Transistors.Vtn.Threshold},{request.Transistors.Vtn.Sigma},{request.Transistors.Vtn.Deviation}) vtp=AGAUSS({request.Transistors.Vtp.Threshold},{request.Transistors.Vtp.Sigma},{request.Transistors.Vtp.Deviation})");
             sb.AppendLine(".option PARHIER=LOCAL");
             sb.AppendLine($".option SEED={request.Seed}");
             sb.AppendLine($".temp {request.Temperature}");
