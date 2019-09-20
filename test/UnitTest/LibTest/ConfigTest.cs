@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 using Ptolemy.Argo.Request;
 using Ptolemy.Config;
 using Ptolemy.FilePath;
-using Ptolemy.Lupus.Request;
 using Ptolemy.Parameters;
 using Xunit;
 using YamlDotNet.Serialization;
@@ -24,25 +23,16 @@ namespace UnitTest.LibTest {
                 HspiceOptions = new List<string>{"Option1","Option2"},
                 Seed = 1,
                 Sweep = 2,
-                Vtn = new Transistor(0.1,0.2,0.3),
-                Vtp = new Transistor(0.4,0.5,0.6),
+                Transistors = new TransistorPair(new Transistor(0.1,0.2,0.3),new Transistor(0.4,0.5,0.6)),
                 Time = new Range(0.7M,0.8M,0.9M),
-                BaseDirectory = "/path/to/baseDir",
                 Gnd = 0.123M,
                 IcCommands = new List<string> { "Command1", "Command2"},
-                ModelFilePath = "/path/to/model",
-                TargetCircuit = "/path/to/target",
-                Vdd = 45.67M
+                Includes = new[]{"/path/to/model"}.ToList(),
+                NetList = "/path/to/target",
+                Vdd = 45.67M,
+                Signals = new List<string>{ "A","B","C" },
+                ResultFile = "/path/to/result"
             },
-            LupusDefault = new LupusRequest {
-                GroupId = Guid.NewGuid(),
-                PlotPoint = new Range(2.5E-9M,7.5E-9M,17.5E-9M),
-                TargetDirectory = "/path/to/argoResult",
-                Signals = new[] {"A","BB","CC"}.ToList(),
-                ResultFileName = "/path/to/lupus/resultFile",
-                WaveViewOptions = new[] {"-a","-b","-c"}.ToList(),
-                WaveViewPath = "/path/to/wv",
-            }
         };
 
         private readonly string yamlDoc = new Serializer().Serialize(Config);
