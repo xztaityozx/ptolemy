@@ -9,9 +9,6 @@ namespace Ptolemy.Exec {
     public class Exec : IDisposable {
         private Process process;
 
-        private static string Shell =>
-            Environment.OSVersion.ToString().StartsWith("Unix") ? "/bin/sh" : "powershell.exe";
-
         private readonly CancellationTokenSource cts;
 
         public Exec(CancellationToken token) {

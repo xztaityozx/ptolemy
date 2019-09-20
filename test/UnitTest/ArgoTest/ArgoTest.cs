@@ -14,10 +14,11 @@ namespace UnitTest.ArgoTest {
     public class ArgoTest {
         [Fact]
         public void RunTest() {
+            if(!Environment.OSVersion.ToString().StartsWith("Unix")) return;
+            
             var tmp = Path.Combine(Path.GetTempPath(), "Argo");
             Directory.CreateDirectory(tmp);
-            var hspice = Path.Combine(Directory.GetCurrentDirectory(),"..","..","..", "Script",
-                Environment.OSVersion.ToString().StartsWith("Unix") ? "hspice.sh" : "hspice.ps1");
+            var hspice = Path.Combine(Directory.GetCurrentDirectory(),"..","..","..", "Script", "hspice.sh");
             var req = new ArgoRequest {
                 HspicePath = hspice,
                 NetList = hspice,
