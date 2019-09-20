@@ -49,19 +49,24 @@ namespace Ptolemy.Exec {
 
             cts.Token.Register(process.Kill);
 
-            Task.WaitAll(
-                Task.Factory.StartNew(() =>
-                process.WaitForExit(), cts.Token),
-                Task.Factory.StartNew(() => {
-                    string l;
-                    while ((l = process.StandardOutput.ReadLine()) != null && !cts.IsCancellationRequested) StdOut.OnNext(l);
-                }),
-                Task.Factory.StartNew(() => {
-                    string l;
-                    while ((l = process.StandardError.ReadLine()) != null && !cts.IsCancellationRequested)
-                        StdError.OnNext(l);
-                })
-            );
+            try {
+                Task.WaitAll(
+                    Task.Factory.StartNew(() =>
+                        process.WaitForExit(), cts.Token),
+                    Task.Factory.StartNew(() => {
+                        string l;
+                        while ((l = process.StandardOutput.ReadLine()) != null && !cts.IsCancellationRequested)
+                            StdOut.OnNext(l);
+                    }),
+                    Task.Factory.StartNew(() => {
+                        string l;
+                        while ((l = process.StandardError.ReadLine()) != null && !cts.IsCancellationRequested)
+                            StdError.OnNext(l);
+                    })
+                );
+            }
+            catch (TaskCanceledException) {
+            }
         }
 
 
