@@ -44,8 +44,10 @@ namespace Ptolemy.Exec {
                 throw new InvalidOperationException("Failed start command");
             }
 
+            cts.Token.ThrowIfCancellationRequested();
             cts.Token.Register(process.Kill);
 
+            cts.Token.ThrowIfCancellationRequested();
             try {
                 Task.WaitAll(
                     Task.Factory.StartNew(() =>

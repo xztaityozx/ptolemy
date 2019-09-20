@@ -39,7 +39,7 @@ namespace UnitTest.LibTest {
 
         [Fact]
         public void CancelTest() {
-            using (var cts = new CancellationTokenSource(100)) {
+            using (var cts = new CancellationTokenSource(1000)) {
                 using (var e = new Exec(cts.Token)) {
                     e.Run("sleep", new[]{"10001"});
                     Assert.NotEqual(0, e.ExitCode);
