@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Ptolemy.ArgoRequest\Ptolemy.Argo.Request.csproj" />
+    <ProjectReference Include="..\Ptolemy.Draco.Request\Ptolemy.Draco.Request.csproj" />
     <ProjectReference Include="..\Ptolemy.FilePath\Ptolemy.FilePath.csproj" />
     <ProjectReference Include="..\Ptolemy.Interface\Ptolemy.Interface.csproj" />
   </ItemGroup>

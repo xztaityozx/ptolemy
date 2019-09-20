@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\lib\Ptolemy.Draco.Request\Ptolemy.Draco.Request.csproj" />
+      <ProjectReference Include="..\..\lib\Ptolemy.Repository\Ptolemy.Repository.csproj" />
+    </ItemGroup>
+
+</Project>

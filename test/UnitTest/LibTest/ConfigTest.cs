@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Ptolemy.Argo.Request;
 using Ptolemy.Config;
+using Ptolemy.Draco.Request;
 using Ptolemy.FilePath;
 using Ptolemy.Parameters;
 using Xunit;
@@ -33,6 +35,16 @@ namespace UnitTest.LibTest {
                 Signals = new List<string>{ "A","B","C" },
                 ResultFile = "/path/to/result"
             },
+            DracoDefault = new DracoRequest {
+                GroupId = Guid.NewGuid(),
+                Host = IPAddress.Parse("127.0.0.0"),
+                Password = "password",
+                Port = 10,
+                Transistors = new TransistorPair(1,2,3,4,5,6.0),
+                User = "user",
+                SqLiteFile = "/path/to/sqlite",
+                UseSqlServer = false
+            }
         };
 
         private readonly string yamlDoc = new Serializer().Serialize(Config);
