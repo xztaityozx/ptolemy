@@ -30,7 +30,6 @@ namespace Ptolemy.Argo {
 
                         throw new ArgoClean();
                     }, e => throw new ArgoParseFailedException());
-                var argo = new Argo(req, log);
                 var results = new List<StringBuilder>();
 
                 Console.Clear();
@@ -63,6 +62,7 @@ namespace Ptolemy.Argo {
                     };
                     bool status;
                     var watch = new Stopwatch();
+                    var argo = new Argo(req, cts.Token);
                     using (var pb = new ProgressBar((int) req.Sweep, "Ptolemy.Argo", new ProgressBarOptions {
                         BackgroundCharacter = '-',
                         BackgroundColor = ConsoleColor.DarkGray,
@@ -82,7 +82,7 @@ namespace Ptolemy.Argo {
                         });
                         cts.Token.Register(ob.Dispose);
                         watch.Start();
-                        (status, _) = argo.Run(cts.Token);
+                        (status, _) = argo.Run();
                         watch.Start();
                     }
 
