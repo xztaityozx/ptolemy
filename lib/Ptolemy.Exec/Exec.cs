@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,88 +14,56 @@ namespace Ptolemy.Exec {
 
         private readonly CancellationTokenSource cts;
 
-        public Exec(CancellationToken token) =>
+        public Exec(CancellationToken token) {
             cts = CancellationTokenSource.CreateLinkedTokenSource(token);
+            StdOut=new Subject<string>();
+            StdError=new Subject<string>();
+        }
+
+        public readonly Subject<string> StdOut, StdError;
 
         /// <summary>
         /// Run command
         /// </summary>
         /// <param name="command"></param>
+        /// <param name="arguments"></param>
         /// <exception cref="Exception"></exception>
-        public void Run(string command) {
+        public void Run(string command, string[] arguments = null) {
             process = new Process {
                 StartInfo = new ProcessStartInfo {
-                    FileName = Shell,
-                    Arguments = $"-c \"{command}\"",
-                    UseShellExecute = false,
-                },
-            };
-            
-            if (!process.Start()) throw new Exception($"failed start command: {Shell} -c {command}");
-            cts.Token.Register(process.Kill);
-
-            process.WaitForExit();
-        }
-
-        /// <summary>
-        /// Run command
-        /// </summary>
-        /// <param name="command">command string</param>
-        /// <param name="onStdOut">invoke on data received from stdout</param>
-        /// <param name="combineOutput">combine stdout and stderr</param>
-        public void Run(string command, Action<string> onStdOut, bool combineOutput = false) => Run(command,
-            onStdOut,
-            s => { }, combineOutput);
-       
-        /// <summary>
-        /// Run command
-        /// </summary>
-        /// <param name="command">command string</param>
-        /// <param name="onStdOut">invoke on data received from stdout</param>
-        /// <param name="onStdErr">invoke on data received from stderr</param>
-        /// <param name="combineOutput">combine stderr and stdout</param>
-        /// <exception cref="Exception"></exception>
-        public void Run(string command, Action<string> onStdOut, Action<string> onStdErr, bool combineOutput) {
-            process = new Process {
-                StartInfo = new ProcessStartInfo {
-                    FileName = Shell,
-                    Arguments = $"-c \"{command}\"",
+                    FileName = command,
+                    Arguments = string.Join(" ", arguments??new[]{""}),
                     UseShellExecute = false,
                     RedirectStandardError = true,
-                    RedirectStandardOutput = true
+                    RedirectStandardInput = false, 
+                    RedirectStandardOutput = true,
                 },
-                EnableRaisingEvents = true,
             };
 
-            process.Exited += (sender, args) => cts.Cancel();
-            if (!process.Start()) throw new Exception($"failed start command: {Shell} -c {command}");
-            
-            var stderr = combineOutput ? onStdOut : onStdErr;
-            
+            try {
+                process.Start();
+            }
+            catch (Exception) {
+                throw new InvalidOperationException("Failed start command");
+            }
+
+            cts.Token.Register(process.Kill);
+
             Task.WaitAll(
+                Task.Factory.StartNew(() =>
+                process.WaitForExit(), cts.Token),
                 Task.Factory.StartNew(() => {
-                    string line;
-                    while ((line = process.StandardOutput.ReadLine()) != null) onStdOut(line);
-                    
-                }, cts.Token),
+                    string l;
+                    while ((l = process.StandardOutput.ReadLine()) != null && !cts.IsCancellationRequested) StdOut.OnNext(l);
+                }),
                 Task.Factory.StartNew(() => {
-                    string line;
-                    while ((line = process.StandardError.ReadLine()) != null) stderr(line);
-                }, cts.Token),
-                Task.Factory.StartNew(() => {
-                    cts.Token.WaitHandle.WaitOne();
-                    process.WaitForExit();
+                    string l;
+                    while ((l = process.StandardError.ReadLine()) != null && !cts.IsCancellationRequested)
+                        StdError.OnNext(l);
                 })
             );
         }
 
-        /// <summary>
-        /// Throw exception if exit code is non zero
-        /// </summary>
-        /// <exception cref="Exception"></exception>
-        public void ThrowIfNonZeroExitCode() {
-            if (process.ExitCode != 0) throw new Exception($"exit status {process.ExitCode}\n\tcommand-->{Shell} {process.StartInfo.Arguments}");
-        }
 
         /// <summary>
         /// Get exit code this execution
@@ -102,7 +72,9 @@ namespace Ptolemy.Exec {
 
         public void Dispose() {
             process?.Dispose();
+            StdError?.Dispose();
             cts?.Dispose();
+            StdOut?.Dispose();
         }
     }
 }
