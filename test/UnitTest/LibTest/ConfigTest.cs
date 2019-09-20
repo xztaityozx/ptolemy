@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 using Ptolemy.Argo.Request;
 using Ptolemy.Config;
 using Ptolemy.FilePath;
-using Ptolemy.Lupus.Request;
 using Ptolemy.Parameters;
 using Xunit;
 using YamlDotNet.Serialization;
