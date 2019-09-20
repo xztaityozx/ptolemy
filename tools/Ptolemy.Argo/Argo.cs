@@ -13,55 +13,45 @@ using Ptolemy.Parameters;
 using ShellProgressBar;
 
 namespace Ptolemy.Argo {
-
-    public class Argo  {
+    public class Argo : IDisposable {
         public const string ENV_ARGO_HSPICE = "ARGO_HSPICE";
         private readonly ArgoRequest request;
         private readonly string workDir;
         private readonly Guid id;
-        private readonly Logger.Logger log;
+        private readonly Exec.Exec exec;
+        private readonly CancellationToken token;
 
-        private readonly Subject<string> receiver;
 
-        public IObservable<string> Receiver => receiver
+        public IObservable<string> Receiver => exec.StdOut
             .Where(s => !string.IsNullOrEmpty(s))
             .SkipWhile(s => s[0] != 'x')
             .TakeWhile(s => s[0] != 'y')
             .Repeat();
-            
 
-        public Argo(ArgoRequest request, Logger.Logger log) {
+
+        public Argo(ArgoRequest request, CancellationToken token) {
             (this.request, workDir) = (request,
                 Path.Combine(Path.GetTempPath(), "Ptolemy.Argo", request.GroupId.ToString()));
-            this.log = log;
             if (!Directory.Exists(workDir)) Directory.CreateDirectory(workDir);
 
             id = Guid.NewGuid();
-            receiver = new Subject<string>();
+            exec = new Exec.Exec(token);
+            this.token = token;
         }
 
-        private string BuildCommand(string spi) {
-            return $"{request.HspicePath} {string.Join(" ", request.HspiceOptions)} -i {spi}";
-        }
-
-        public (bool status, ArgoRequest result) Run(CancellationToken token) {
+        public (bool status, ArgoRequest result) Run() {
             try {
                 var spi = MakeScript();
                 token.ThrowIfCancellationRequested();
-                var command = BuildCommand(spi);
-                token.ThrowIfCancellationRequested();
-                using (var exec = new Exec.Exec(token)) {
-                    var stderr = new StringBuilder();
-                    exec.Run(command, 
-                        s => receiver.OnNext(s),
-                        s => stderr.AppendLine(s), false);
-                    
 
-                    if (stderr.Length != 0) throw new ArgoException(stderr.ToString());
-                    
-                    
-                    return (exec.ExitCode == 0, request);
-                }
+                var stderr = new StringBuilder();
+                var errors = exec.StdError.Subscribe(s => stderr.AppendLine(s));
+                exec.Run(request.HspicePath, request.HspiceOptions.Concat(new[] {"-i", spi}).ToArray());
+
+                errors.Dispose();
+                
+                if (!string.IsNullOrEmpty(stderr.ToString().TrimEnd())) throw new ArgoException(stderr.ToString());
+                return (exec.ExitCode == 0, request);
             }
             catch (ArgoException) {
                 throw;
@@ -116,6 +106,10 @@ namespace Ptolemy.Argo {
             }
 
             return path;
+        }
+
+        public void Dispose() {
+            exec?.Dispose();
         }
     }
 }

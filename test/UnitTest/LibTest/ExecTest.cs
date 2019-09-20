@@ -17,7 +17,7 @@ namespace UnitTest.LibTest {
         [Fact]
         public void RunTest() {
             using (var e = new Exec(CancellationToken.None)) {
-                e.Run("echo abc");
+                e.Run("echo",new []{"abc"});
                 Assert.Equal(0, e.ExitCode);
             }
         }
@@ -25,30 +25,23 @@ namespace UnitTest.LibTest {
         [Fact]
         public void RunWithStdOutTest() {
             using (var e = new Exec(CancellationToken.None)) {
-                e.Run("echo abc", s => Assert.Equal("abc", s.TrimEnd()));
-                Assert.Equal(0, e.ExitCode);
+                e.StdOut.Subscribe(s => Assert.Equal("abc", s.TrimEnd()));
+                e.Run("echo", new[]{"abc"});
             }
         }
 
         [Fact]
-        public void RunWithStdErrTest() {
+        public void ThrowTest() {
             using (var e = new Exec(CancellationToken.None)) {
-                e.Run("EXEC_TEST_NOT_FOUND", s => { }, Assert.NotNull, false);
-            }
-        }
-
-        [Fact]
-        public void RunCombineOutput() {
-            using (var e = new Exec(CancellationToken.None)) {
-                e.Run("echo abc; EXEC_TEST_NOT_FOUND", Assert.NotNull, true);
+                Assert.Throws<InvalidOperationException>(() => e.Run("EXEC_TEST_NOT_FOUND", new[]{""}));
             }
         }
 
         [Fact]
         public void CancelTest() {
-            using (var cts = new CancellationTokenSource(100)) {
+            using (var cts = new CancellationTokenSource(1000)) {
                 using (var e = new Exec(cts.Token)) {
-                    e.Run("sleep 10000");
+                    e.Run("sleep", new[]{"10001"});
                     Assert.NotEqual(0, e.ExitCode);
                 }
             }
