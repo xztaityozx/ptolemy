@@ -51,13 +51,5 @@ namespace UnitTest.LibTest {
             Assert.Equal(expect, actual);
         }
 
-        [Fact]
-        public void ToTableNameTest() {
-            var vtn=new Transistor(0.6,0.046,1.0);
-            var vtp = new Transistor(-0.6, 0.046, 1.0);
-            var expect = $"vtn_{vtn}_vtp_{vtp}";
-            var actual = Transistor.ToTableName(vtn, vtp);
-            Assert.Equal(expect,actual);
-        }
     }
 }
