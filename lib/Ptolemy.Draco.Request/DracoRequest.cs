@@ -10,7 +10,5 @@ namespace Ptolemy.Draco.Request {
         public string SqLiteFile { get; set; }
         public IPAddress Host { get; set; }
         public int Port { get; set; }
-        public string Password { get; set; }
-        public string User { get; set; }
     }
 }

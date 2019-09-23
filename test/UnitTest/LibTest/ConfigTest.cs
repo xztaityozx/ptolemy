@@ -38,13 +38,13 @@ namespace UnitTest.LibTest {
             DracoDefault = new DracoRequest {
                 GroupId = Guid.NewGuid(),
                 Host = IPAddress.Parse("127.0.0.0"),
-                Password = "password",
                 Port = 10,
                 Transistors = new TransistorPair(1,2,3,4,5,6.0),
-                User = "user",
                 SqLiteFile = "/path/to/sqlite",
                 UseSqlServer = false
-            }
+            },
+            DataBasePassword = "password",
+            DataBaseUsername = "username"
         };
 
         private readonly string yamlDoc = new Serializer().Serialize(Config);
