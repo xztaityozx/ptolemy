@@ -7,7 +7,13 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\lib\Ptolemy.Draco.Request\Ptolemy.Draco.Request.csproj" />
+      <ProjectReference Include="..\..\lib\Ptolemy.FilePath\Ptolemy.FilePath.csproj" />
+      <ProjectReference Include="..\..\lib\Ptolemy.Interface\Ptolemy.Interface.csproj" />
       <ProjectReference Include="..\..\lib\Ptolemy.Repository\Ptolemy.Repository.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Reactive" Version="4.1.6" />
     </ItemGroup>
 
 </Project>

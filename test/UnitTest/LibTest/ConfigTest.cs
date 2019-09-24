@@ -37,11 +37,8 @@ namespace UnitTest.LibTest {
             },
             DracoDefault = new DracoRequest {
                 GroupId = Guid.NewGuid(),
-                Host = IPAddress.Parse("127.0.0.0"),
-                Port = 10,
-                Transistors = new TransistorPair(1,2,3,4,5,6.0),
                 SqLiteFile = "/path/to/sqlite",
-                UseSqlServer = false
+                InputFile = "/path/to/input"
             },
             DataBasePassword = "password",
             DataBaseUsername = "username"
