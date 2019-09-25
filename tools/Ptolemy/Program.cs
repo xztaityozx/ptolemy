@@ -9,14 +9,12 @@ using Ptolemy.Interface;
 namespace Ptolemy {
     public class Program {
         internal static void Main(string[] args) {
-            using (var cts = new CancellationTokenSource()) {
-                Console.CancelKeyPress += (sender, eventArgs) => {
-                    eventArgs.Cancel = true;
-                    cts.Cancel();
-                };
-                var token = cts.Token;
-                
-            }
+            using var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (sender, eventArgs) => {
+                eventArgs.Cancel = true;
+                cts.Cancel();
+            };
+            var token = cts.Token;
         }
     }
 

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CommandLine;
 using Ptolemy.Parameters;
 using Ptolemy.SiMetricPrefix;
@@ -19,6 +17,12 @@ namespace Ptolemy.Interface {
             return items.First(x => x != null) ?? def;
         }
 
+        /// <summary>
+        /// Bind Transistor setting
+        /// </summary>
+        /// <param name="this"></param>
+        /// <param name="config">config value</param>
+        /// <returns></returns>
         public static TransistorPair Bind(this ITransistorOption @this, TransistorPair config) {
             var vtnOpt = @this.VtnStrings
                 .Select(s => string.IsNullOrEmpty(s) ? (decimal?) null : s.ParseDecimalWithSiPrefix()).ToArray();
@@ -41,6 +45,9 @@ namespace Ptolemy.Interface {
         }
     }
 
+    /// <summary>
+    /// トランジスタ系のオプションを持つCLIオプションクラス向けのInterface
+    /// </summary>
     public interface ITransistorOption {
         [Option('N', "vtn", Default = new[]{"0.6","0.046","1.0"}, HelpText = "Vtnの値を[閾値],[シグマ],[偏差]で指定します", Separator = ',')]
         IEnumerable<string> VtnStrings { get; set; }

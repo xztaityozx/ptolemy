@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ptolemy.Map
 {
@@ -16,6 +17,16 @@ namespace Ptolemy.Map
 
         public Map(Func<TValue> func) : base() {
             defaultFunc = func;
+        }
+
+        public static Map<TKey, TValue> Merge(IEnumerable<Map<TKey, TValue>> maps) {
+            var rt = new Map<TKey, TValue>();
+
+            foreach (var (key, value) in maps.SelectMany(k => k)) {
+                rt[key] = value;
+            }
+            
+            return rt;
         }
 
         public new TValue this[TKey key] {

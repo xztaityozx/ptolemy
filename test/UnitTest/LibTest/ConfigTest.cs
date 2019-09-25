@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Ptolemy.Argo.Request;
 using Ptolemy.Config;
+using Ptolemy.Draco.Request;
 using Ptolemy.FilePath;
 using Ptolemy.Parameters;
 using Xunit;
@@ -24,7 +26,7 @@ namespace UnitTest.LibTest {
                 Seed = 1,
                 Sweep = 2,
                 Transistors = new TransistorPair(new Transistor(0.1,0.2,0.3),new Transistor(0.4,0.5,0.6)),
-                Time = new Range(0.7M,0.8M,0.9M),
+                Time = new RangeParameter(0.7M,0.8M,0.9M),
                 Gnd = 0.123M,
                 IcCommands = new List<string> { "Command1", "Command2"},
                 Includes = new[]{"/path/to/model"}.ToList(),
@@ -33,6 +35,13 @@ namespace UnitTest.LibTest {
                 Signals = new List<string>{ "A","B","C" },
                 ResultFile = "/path/to/result"
             },
+            DracoDefault = new DracoRequest {
+                GroupId = Guid.NewGuid(),
+                OutputFile = "/path/to/sqlite",
+                InputFile = "/path/to/input"
+            },
+            DataBasePassword = "password",
+            DataBaseUsername = "username"
         };
 
         private readonly string yamlDoc = new Serializer().Serialize(Config);
