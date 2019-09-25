@@ -47,6 +47,8 @@ namespace Ptolemy.Exec {
             cts.Token.ThrowIfCancellationRequested();
             cts.Token.Register(process.Kill);
 
+            // TODO: Issue #17(https://github.com/xztaityozx/ptolemy/issues/17)
+            // キャンセルできない。どうにかしろ
             cts.Token.ThrowIfCancellationRequested();
             try {
                 Task.WaitAll(
