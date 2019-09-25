@@ -17,4 +17,4 @@ jobs:
       with:
         dotnet-version: 3.0.100
     - name: dotnet test
-      run: dotnet test -f netcoreapp3.0
+      run: dotnet test
