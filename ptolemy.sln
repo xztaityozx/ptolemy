@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Draco.Request", "li
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Repository", "lib\Ptolemy.Repository\Ptolemy.Repository.csproj", "{B539F39B-D14A-4B1E-B689-F829E8EDF44D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Draco", "tools\Ptolemy.Draco\Ptolemy.Draco.csproj", "{A75B6399-3709-4AB7-ADF2-EEC8FE11CD7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{B539F39B-D14A-4B1E-B689-F829E8EDF44D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B539F39B-D14A-4B1E-B689-F829E8EDF44D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B539F39B-D14A-4B1E-B689-F829E8EDF44D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A75B6399-3709-4AB7-ADF2-EEC8FE11CD7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A75B6399-3709-4AB7-ADF2-EEC8FE11CD7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A75B6399-3709-4AB7-ADF2-EEC8FE11CD7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A75B6399-3709-4AB7-ADF2-EEC8FE11CD7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -132,6 +138,7 @@ Global
 		{E272DF45-EA4C-4CAA-B292-E548E2B71CB9} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
 		{27AB4307-2A2B-4907-9877-572A72EDE175} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
 		{B539F39B-D14A-4B1E-B689-F829E8EDF44D} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
+		{A75B6399-3709-4AB7-ADF2-EEC8FE11CD7E} = {0BE68A10-7B3B-4E90-91E9-44A8F7EAE74F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {19C6E637-BC0D-4D7F-8E43-AC22C5A894BB}

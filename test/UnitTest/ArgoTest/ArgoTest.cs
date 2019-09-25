@@ -29,7 +29,7 @@ namespace UnitTest.ArgoTest {
                 Signals = new List<string>(),
                 Sweep = 1,
                 Temperature = 1,
-                Time = new Range(1,2,3),
+                Time = new RangeParameter(1,2,3),
                 Vdd = 1,
                 HspiceOptions = new List<string>(),
                 ResultFile = "",
