@@ -9,7 +9,7 @@
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
@@ -33,8 +33,8 @@
     <ProjectReference Include="..\..\lib\Ptolemy.SiMetricPrefix\Ptolemy.SiMetricPrefix.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Verb\Ptolemy.Verb.csproj" />
     <ProjectReference Include="..\..\tools\Ptolemy.Argo\Ptolemy.Argo.csproj" />
+    <ProjectReference Include="..\..\tools\Ptolemy.Draco\Ptolemy.Draco.csproj" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup Condition="$(VisualStudioVersion) == '15.0'">
     <Reference Include="Microsoft.Data.Tools.Schema.Sql, Version=13.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>$(SSDTPath)\Microsoft.Data.Tools.Schema.Sql.dll</HintPath>

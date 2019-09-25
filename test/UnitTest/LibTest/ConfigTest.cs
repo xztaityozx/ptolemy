@@ -26,7 +26,7 @@ namespace UnitTest.LibTest {
                 Seed = 1,
                 Sweep = 2,
                 Transistors = new TransistorPair(new Transistor(0.1,0.2,0.3),new Transistor(0.4,0.5,0.6)),
-                Time = new Range(0.7M,0.8M,0.9M),
+                Time = new RangeParameter(0.7M,0.8M,0.9M),
                 Gnd = 0.123M,
                 IcCommands = new List<string> { "Command1", "Command2"},
                 Includes = new[]{"/path/to/model"}.ToList(),
@@ -37,7 +37,7 @@ namespace UnitTest.LibTest {
             },
             DracoDefault = new DracoRequest {
                 GroupId = Guid.NewGuid(),
-                SqLiteFile = "/path/to/sqlite",
+                OutputFile = "/path/to/sqlite",
                 InputFile = "/path/to/input"
             },
             DataBasePassword = "password",

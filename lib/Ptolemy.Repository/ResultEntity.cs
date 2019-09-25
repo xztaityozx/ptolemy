@@ -7,6 +7,9 @@ using Ptolemy.Map;
 using Ptolemy.SiMetricPrefix;
 
 namespace Ptolemy.Repository {
+    /// <summary>
+    /// ひとつの値を表すResultEntityクラス
+    /// </summary>
     public class ResultEntity {
         [Required] public decimal Time { get; set; }
         [Required] public decimal Value { get; set; }
@@ -16,10 +19,21 @@ namespace Ptolemy.Repository {
         
         public ResultEntity(){}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="seed">Seed of this values</param>
+        /// <param name="sweep">Sweep of this values</param>
+        /// <param name="input">target</param>
+        /// <param name="keys">signal list</param>
+        /// <returns></returns>
         public static IEnumerable<ResultEntity> Parse(
             long seed, long sweep, string input,
             IEnumerable<string> keys) {
             var split = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            // format
+            // time signalA_value signalB_value signalC_value ... 
             var time = split[0].ParseDecimalWithSiPrefix();
 
             return split.Skip(1)

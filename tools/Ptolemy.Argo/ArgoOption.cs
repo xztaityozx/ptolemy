@@ -84,7 +84,7 @@ namespace Ptolemy.Argo {
                 SweepStart = SweepStart,
                 Temperature = (decimal)Temperature,
                 Transistors = this.Bind(null),
-                Time = new Range(TimeString, (0,100E-12M,20E-9M)),
+                Time = new RangeParameter(TimeString, (0,100E-12M,20E-9M)),
                 NetList =  FilePath.FilePath.Expand(Target),
                 Includes = Includes.ToList(),
                 Vdd = (decimal)Vdd,

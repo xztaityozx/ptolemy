@@ -5,6 +5,10 @@ using Ptolemy.Draco.Request;
 using Ptolemy.Interface;
 
 namespace Ptolemy.Draco {
+
+    /// <summary>
+    /// Option class for CommandLine
+    /// </summary>
     public class DracoOption :ITransistorOption {
         public IEnumerable<string> VtnStrings { get; set; }
         public IEnumerable<string> VtpStrings { get; set; }
@@ -26,12 +30,14 @@ namespace Ptolemy.Draco {
         public string OutputDirectory { get; set; }
 
         public DracoRequest Build() {
+            var transistorPair = this.Bind(null);
+
             return new DracoRequest {
                 Seed = Seed,
                 Sweep = Sweep,
-                InputFile = InputFile,
+                InputFile = FilePath.FilePath.Expand(InputFile),
                 BufferSize = BufferSize,
-                SqLiteFile = Path.Combine(FilePath.FilePath.Expand(OutputDirectory), $"vtn_{string.Join(",", VtnStrings)}_vtp_{string.Join(",", VtpStrings)}_{NetList}")
+                OutputFile = Path.Combine(FilePath.FilePath.Expand(OutputDirectory), $"{transistorPair}_{NetList}")
             };
         }
     }

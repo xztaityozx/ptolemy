@@ -7,27 +7,27 @@ using System.Text;
 using Ptolemy.SiMetricPrefix;
 
 namespace Ptolemy.Parameters {
-    public class Range {
+    public class RangeParameter {
         public decimal Start { get; set; }
         public decimal Step { get; set; }
         public decimal Stop { get; set; }
 
 
-        public Range() {
+        public RangeParameter() {
         }
 
-        public Range((decimal start, decimal step, decimal stop) values) => (Start, Step, Stop) = values;
+        public RangeParameter((decimal start, decimal step, decimal stop) values) => (Start, Step, Stop) = values;
 
-        public Range(decimal start, decimal step, decimal stop) : this((start, step, stop)) {
+        public RangeParameter(decimal start, decimal step, decimal stop) : this((start, step, stop)) {
         }
 
-        public Range(decimal start, decimal stop) : this(start, 1, stop) {
+        public RangeParameter(decimal start, decimal stop) : this(start, 1, stop) {
         }
 
-        public Range(string value) {
+        public RangeParameter(string value) {
             var split = value.Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.ParseDecimalWithSiPrefix()).ToArray();
-            if (!split.Any()) throw new ArgumentException($"Invalid argument Range(string value <-- ): value={value}");
+            if (!split.Any()) throw new ArgumentException($"Invalid argument RangeParameter(string value <-- ): value={value}");
             switch (split.Length) {
                 case 1:
                     Start = split[0];
@@ -47,7 +47,7 @@ namespace Ptolemy.Parameters {
             }
         }
 
-        public Range(string value, (decimal start, decimal step, decimal stop) def) {
+        public RangeParameter(string value, (decimal start, decimal step, decimal stop) def) {
             var split = value.Split(',').Zip(new[] {def.start, def.step, def.stop},
                 (s, d) => string.IsNullOrEmpty(s) ? d : s.ParseDecimalWithSiPrefix()).ToArray();
             switch (split.Length) {

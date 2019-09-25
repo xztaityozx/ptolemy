@@ -5,60 +5,112 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
-using System.Threading.Tasks;
 using Ptolemy.Draco.Request;
 using Ptolemy.Repository;
 
 namespace Ptolemy.Draco {
-    public class Draco : IDisposable{
+    public class Draco : IDisposable {
         private readonly CancellationToken token;
         private readonly DracoRequest request;
         private readonly Subject<ResultEntity> receiver;
         
+        /// <summary>
+        /// Log Receiver
+        /// </summary>
         public readonly Subject<string> Log;
-
+        /// <summary>
+        /// ひとつの処理が済むたびにOnNextされるSubject
+        /// </summary>
+        public readonly Subject<Unit> WriteProgress, ParseProgress;
+        
         public Draco(CancellationToken token, DracoRequest request) {
             this.token = token;
             this.request = request;
             Log = new Subject<string>();
             receiver = new Subject<ResultEntity>();
+            WriteProgress=new Subject<Unit>();
+            ParseProgress=new Subject<Unit>();
         }
        
-        // TODO: 例外処理しろ
-        public bool Run() {
+        /// <summary>
+        /// Start draco process
+        /// </summary>
+        public void Run() {
             Log.OnNext("Start Ptolemy.Draco");
             Log.OnNext($"InputFile: {request.InputFile}");
-            Log.OnNext($"TargetDatabaseFile: {request.SqLiteFile}");
+            Log.OnNext($"TargetDatabaseFile: {request.OutputFile}");
 
             string[] document;
-            using (var sr = new StreamReader(request.InputFile))
+            try {
+                Log.OnNext("Reading InputFile");
+                using var sr = new StreamReader(request.InputFile);
                 document = sr.ReadToEnd()
-                    .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                    .Split("\n", StringSplitOptions.RemoveEmptyEntries)
                     .Skip(1)
                     .ToArray();
-
-            
-            var keys = document[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            var pusher = receiver.Buffer(request.BufferSize).Subscribe(
-                r => {
-                    using var repo = new SqliteRepository(request.SqLiteFile);
-                    repo.BulkUpsert(r);
-                });
-
-            token.Register(pusher.Dispose);
-            
-            foreach (var line in document.Skip(1).SelectMany(line =>
-                ResultEntity.Parse(request.Seed, request.Sweep, line, keys))) {
-                receiver.OnNext(line);
             }
-            receiver.OnCompleted();
+            catch (FileNotFoundException) {
+                throw new DracoException($"file not found: {request.InputFile}");
+            }
 
-            return true;
+            try {
+                // input file's format
+                // time     voltage   voltage ...
+                //         signalA   signalB
+                //    0.    value     value   ...
+                //  ...
+
+
+                // Get signal list
+                var keys = document[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                
+                var writer = receiver.Buffer(request.BufferSize).Subscribe(
+                    r => {
+                        using var repo = new SqliteRepository(request.OutputFile);
+                        repo.BulkUpsert(r);
+                        WriteProgress.OnNext(Unit.Default);
+                        Log.OnNext($"Write {r.Count} records");
+                    }, () => WriteProgress.OnCompleted());
+
+                token.Register(writer.Dispose);
+
+
+                foreach (var line in document.Skip(1).SelectMany(line => {
+                    // Parse: time value value ....
+                    var rt = ResultEntity.Parse(request.Seed, request.Sweep, line, keys);
+                    ParseProgress.OnNext(Unit.Default);
+                    Log.OnNext($"Parsed: {line}");
+                    return rt;
+                })) {
+                    token.ThrowIfCancellationRequested();
+                    receiver.OnNext(line);
+                }
+
+                Log.OnNext($"Finished Parse");
+
+                receiver.OnCompleted();
+                ParseProgress.OnCompleted();
+            }
+            catch (IndexOutOfRangeException) {
+                throw new DracoException($"invalid file format: {request.InputFile}");
+            }
+            catch (FormatException) {
+                throw new DracoException($"データの数値に不正な値があります {request.InputFile}");
+            }
+            catch (OperationCanceledException) {
+                throw new DracoException("Canceled by user");
+            }
+            catch (Exception e) {
+                throw new DracoException($"Unknown error has occured\n\t-->{e}");
+            }
         }
 
         public void Dispose() {
             receiver?.Dispose();
             Log?.Dispose();
+            WriteProgress?.Dispose();
+            ParseProgress?.Dispose();
         }
     }
 }
