@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
@@ -9,10 +10,12 @@ namespace Ptolemy.Exec {
     public class Exec : IDisposable {
         private Process process;
 
-        private readonly CancellationTokenSource cts;
+        //private readonly CancellationTokenSource cts;
+        private readonly CancellationToken token;
 
         public Exec(CancellationToken token) {
-            cts = CancellationTokenSource.CreateLinkedTokenSource(token);
+            this.token = token;
+            //cts = CancellationTokenSource.CreateLinkedTokenSource(token);
             StdOut=new Subject<string>();
             StdError=new Subject<string>();
         }
@@ -35,6 +38,7 @@ namespace Ptolemy.Exec {
                     RedirectStandardInput = false, 
                     RedirectStandardOutput = true,
                 },
+                EnableRaisingEvents = true
             };
 
             try {
@@ -44,29 +48,44 @@ namespace Ptolemy.Exec {
                 throw new InvalidOperationException("Failed start command");
             }
 
-            cts.Token.ThrowIfCancellationRequested();
-            cts.Token.Register(process.Kill);
+
+            token.ThrowIfCancellationRequested();
+            token.Register(() => {
+                process.Kill();
+                Console.WriteLine("Killed");
+            });
 
             // TODO: Issue #17(https://github.com/xztaityozx/ptolemy/issues/17)
             // キャンセルできない。どうにかしろ
-            cts.Token.ThrowIfCancellationRequested();
+            token.ThrowIfCancellationRequested();
+
+            var stdoutReader = Task.Factory.StartNew(() => {
+                string l;
+                while (!token.IsCancellationRequested && (l = process.StandardOutput.ReadLine()) != null) {
+                    StdOut.OnNext(l);
+                }
+            }, token);
+
+            var stderrReader = Task.Factory.StartNew(() => {
+                string l;
+                while (!token.IsCancellationRequested && (l = process.StandardError.ReadLine()) != null) {
+                    StdError.OnNext(l);
+                }
+            }, token);
+
             try {
-                Task.WaitAll(
-                    Task.Factory.StartNew(() =>
-                        process.WaitForExit(), cts.Token),
-                    Task.Factory.StartNew(() => {
-                        string l;
-                        while ((l = process.StandardOutput.ReadLine()) != null && !cts.IsCancellationRequested)
-                            StdOut.OnNext(l);
-                    }),
-                    Task.Factory.StartNew(() => {
-                        string l;
-                        while ((l = process.StandardError.ReadLine()) != null && !cts.IsCancellationRequested)
-                            StdError.OnNext(l);
-                    })
-                );
+                Task.WaitAll(new[] {
+                    stderrReader, stdoutReader,
+                    Task.Factory.StartNew(() => { process.WaitForExit(); }, token)
+                }, token);
             }
-            catch (TaskCanceledException) {
+            catch (OperationCanceledException) {
+                throw;
+            }
+            catch (AggregateException e) {
+                foreach (var exception in e.InnerExceptions) {
+                    if (exception.GetType() == typeof(OperationCanceledException)) throw exception;
+                }
             }
         }
 
@@ -74,12 +93,11 @@ namespace Ptolemy.Exec {
         /// <summary>
         /// Get exit code this execution
         /// </summary>
-        public int ExitCode => process.ExitCode;
+        public int ExitCode => token.IsCancellationRequested ? 1 : process.ExitCode;
 
         public void Dispose() {
             process?.Dispose();
             StdError?.Dispose();
-            cts?.Dispose();
             StdOut?.Dispose();
         }
     }

@@ -9,38 +9,16 @@ using Ptolemy.Interface;
 namespace Ptolemy {
     public class Program {
         internal static void Main(string[] args) {
-            using var cts = new CancellationTokenSource();
-            Console.CancelKeyPress += (sender, eventArgs) => {
-                eventArgs.Cancel = true;
-                cts.Cancel();
-            };
-            var token = cts.Token;
-        }
-    }
-
-    public class Errors : IPtolemyCli {
-        private readonly IEnumerable<Error> errors;
-        public Errors(IEnumerable<Error> error) => errors = error;
-        public Exception Run(CancellationToken token, string[] args) {
-            var list=new List<Exception>();
-
-            foreach (var error in errors) {
-                switch (error) {
-                    case HelpRequestedError helpRequestedError:
-                        return null;
-                    case HelpVerbRequestedError helpVerbRequestedError:
-                        return null;
-                    case VersionRequestedError versionRequestedError:
-                        return null;
-                    default:
-                        list.Add(new Exception($"{error}"));
-                        break;
-                }
+            using var cts = new CancellationTokenSource(1000);
+            using var exec = new Exec.Exec(cts.Token);
+            exec.StdOut.Subscribe(Console.WriteLine);
+            try {
+                exec.Run("seq", new[] {"100000"});
             }
-
-            return new AggregateException(list);
+            catch (Exception) {
+                Console.WriteLine("error");
+            }
         }
-
-        public IEnumerable<string> Args { get; set; }
     }
+
 }
