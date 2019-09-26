@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Ptolemy.Exec;
 using Xunit;
 
@@ -36,14 +32,10 @@ namespace UnitTest.LibTest {
 
         [Fact]
         public void CancelTest() {
-            return;
-            // TODO: 動く環境と動かない環境があるね？
-            using (var cts = new CancellationTokenSource(1000)) {
-                using (var e = new Exec(cts.Token)) {
-                    e.Run("sleep", new[]{"10001"});
-                    Assert.NotEqual(0, e.ExitCode);
-                }
-            }
+            using var cts = new CancellationTokenSource(1000);
+            using var e = new Exec(cts.Token);
+            Assert.Throws<OperationCanceledException>(() => e.Run("sleep", new[] {"1000"}));
+            Assert.Equal(1, e.ExitCode);
         }
     }
 }
