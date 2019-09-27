@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using DynamicExpresso;
 using Ptolemy.Map;
@@ -8,11 +9,30 @@ using Ptolemy.SiMetricPrefix;
 namespace Ptolemy.Libra.Request
 {
     using FilterFunc = Func<Map.Map<string,decimal>, bool>;
+
+    /// <summary>
+    /// Libraの実行計画
+    /// </summary>
     public class LibraRequest {
+        /// <summary>
+        /// [値][比較演算子][値]というシンプルな条件式のリスト
+        /// </summary>
         public Dictionary<string,string> Conditions { get; set; }
+        /// <summary>
+        /// Conditionsに格納した条件式を使った数え上げ条件式のリスト
+        /// </summary>
         public List<string> Expressions { get; set; }
         public string SqliteFile { get; set; }
 
+        private  List<string> signals = new List<string>();
+        public IReadOnlyList<string> SignalList => signals;
+        private List<decimal> times = new List<decimal>();
+        public IReadOnlyList<decimal> TimeList => times;
+
+        /// <summary>
+        /// ConditionsとExpressionsからWhereに渡すデリゲートを生成する
+        /// </summary>
+        /// <returns></returns>
         public List<FilterFunc> BuildFilter() {
             var rt = new List<FilterFunc>();
             var map = new Map<string, string>();
@@ -33,6 +53,9 @@ namespace Ptolemy.Libra.Request
                 }
             }
 
+            times = times.Distinct().ToList();
+            signals = signals.Distinct().ToList();
+
             return rt;
         }
 
@@ -41,7 +64,17 @@ namespace Ptolemy.Libra.Request
         private readonly string[] expressionOperators = {"&&", "||", "(", ")", "!"};
 
         private string Parse(string condition) {
+            // <condition> ::= <value><operator><value>
+            // <value>  ::= <float> | <variable> 
+            // <float> ::= <decimal> | <decimal><si prefix>
+            // <decimal> ::= 10進数
+            // <si prefix> ::= Y ~ yで表される 10^24 ~ 10^-24 のSi接頭辞
+            // <variable> ::= <string>[<float>]
+            // <string> ::= スペースを含まない文字列
+            // <operator> ::= <= | >= | == | != | < | >
+
             foreach (var op in operators) {
+                // <operator> で split して要素が2つになるものを探す
                 var split = condition.Split(op, StringSplitOptions.RemoveEmptyEntries);
                 if(split.Length!=2) continue;
 
@@ -53,16 +86,24 @@ namespace Ptolemy.Libra.Request
             throw new ArgumentException($"Bad condition string: {condition}", nameof(condition));
         }
 
-        private static string Value(string value) {
+        private string Value(string value) {
             var split = value.Split(new[] {"[", "]"}, StringSplitOptions.RemoveEmptyEntries);
             if (split.Length == 1) return $"{value.ParseDecimalWithSiPrefix()}M";
 
 
             var signal = split[0].Trim(' ');
+            signals.Add(signal);
             var time = split[1].ParseDecimalWithSiPrefix();
+            times.Add(time);
             return $"map[\"{GetKey(signal, time)}\"]";
         }
 
+        /// <summary>
+        /// Signal/Time という文字列を作る
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="time"></param>
+        /// <returns></returns>
         public static string GetKey(string signal, decimal time) => $"{signal}/{time:E5}";
     }
 
