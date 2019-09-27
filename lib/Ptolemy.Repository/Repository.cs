@@ -41,7 +41,7 @@ namespace Ptolemy.Repository {
         /// <param name="keyGenerator">信号名と時間からMapのKeyを生成するメソッド</param>
         /// <returns></returns>
         public long[] Aggregate(
-            List<string> signals,
+            IReadOnlyList<string> signals,
             (long start, long end) seed, (long start, long end) sweep,
             IReadOnlyList<Func<Map<string, decimal>, bool>> delegates,
             Func<string, decimal, string> keyGenerator
