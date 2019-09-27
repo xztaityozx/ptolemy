@@ -24,7 +24,13 @@ namespace Ptolemy.Libra.Request
         public List<string> Expressions { get; set; }
         public string SqliteFile { get; set; }
 
-        private  List<string> signals = new List<string>();
+        public long SweepStart { get; set; }
+        public long SweepEnd { get; set; }
+        public long SeedStart { get; set; }
+        public long SeedEnd { get; set; }
+
+
+        private List<string> signals = new List<string>();
         public IReadOnlyList<string> SignalList => signals;
         private List<decimal> times = new List<decimal>();
         public IReadOnlyList<decimal> TimeList => times;
@@ -83,19 +89,25 @@ namespace Ptolemy.Libra.Request
                 return $"{Value(a)}{op}{Value(b)}";
             }
 
-            throw new ArgumentException($"Bad condition string: {condition}", nameof(condition));
+            throw new LibraException($"Bad condition string: {condition}");
         }
 
         private string Value(string value) {
-            var split = value.Split(new[] {"[", "]"}, StringSplitOptions.RemoveEmptyEntries);
-            if (split.Length == 1) return $"{value.ParseDecimalWithSiPrefix()}M";
+            try {
+                var split = value.Split(new[] {"[", "]"}, StringSplitOptions.RemoveEmptyEntries);
+                if (!split.Any()) throw new Exception();
 
+                if (split.Length == 1) return $"{value.ParseDecimalWithSiPrefix()}M";
 
-            var signal = split[0].Trim(' ');
-            signals.Add(signal);
-            var time = split[1].ParseDecimalWithSiPrefix();
-            times.Add(time);
-            return $"map[\"{GetKey(signal, time)}\"]";
+                var signal = split[0].Trim(' ');
+                signals.Add(signal);
+                var time = split[1].ParseDecimalWithSiPrefix();
+                times.Add(time);
+                return $"map[\"{GetKey(signal, time)}\"]";
+            }
+            catch (Exception) {
+                throw new LibraException($"パースできませんでした. 問題個所 --> {value}");
+            }
         }
 
         /// <summary>
@@ -107,4 +119,8 @@ namespace Ptolemy.Libra.Request
         public static string GetKey(string signal, decimal time) => $"{signal}/{time:E5}";
     }
 
+    public class LibraException : Exception {
+        public LibraException(string msg) : base(msg) {
+        }
+    }
 }
