@@ -66,6 +66,12 @@ namespace UnitTest.LibraTest {
             }.Select((s, i) => new {s, i})) {
                 Assert.Equal(expected.s, d[expected.i](map));
             }
+
+            Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert.AreEquivalent(
+                new[] {"x", "y"}, req.SignalList.ToList());
+
+            Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert.AreEquivalent(
+                new[]{1M,2M,3M,4M,5M,6M}, req.TimeList.ToList());
         }
     }
 }
