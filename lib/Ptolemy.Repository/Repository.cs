@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
+using Ptolemy.Map;
 
 namespace Ptolemy.Repository {
-    
+
+
     /// <summary>
     /// Sqlite3を扱うやつ
     /// </summary>
@@ -26,6 +29,45 @@ namespace Ptolemy.Repository {
         public void BulkUpsert(IList<ResultEntity> list) {
             context.BulkInsertOrUpdate(list);
         }
+
+
+        /// <summary>
+        /// 絞り込み条件とデリゲートを渡して数え上げをする
+        /// </summary>
+        /// <param name="signals"></param>
+        /// <param name="seed">Seedの範囲</param>
+        /// <param name="sweep">Sweepの範囲</param>
+        /// <param name="delegates"></param>
+        /// <param name="keyGenerator">信号名と時間からMapのKeyを生成するメソッド</param>
+        /// <returns></returns>
+        public long[] Aggregate(
+            List<string> signals,
+            (long start, long end) seed, (long start, long end) sweep,
+            IReadOnlyList<Func<Map<string, decimal>, bool>> delegates,
+            Func<string, decimal, string> keyGenerator
+        ) {
+
+            var rt = new long[delegates.Count];
+
+            var (eStart, eEnd) = seed;
+            var (wStart, wEnd) = sweep;
+
+
+            var targets = context.Entities.Where(e =>
+                    (wStart <= e.Sweep && e.Sweep <= wEnd) && (eStart <= e.Seed && e.Seed <= eEnd))
+                .Where(e => signals.Contains(e.Signal))
+                .GroupBy(e => new {e.Sweep, e.Seed})
+                .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
+
+
+            delegates
+                .Select((d, i) => new {d, i})
+                .AsParallel()
+                .ForAll(item => rt[item.i] = targets.Count(item.d));
+
+            return rt;
+        }
+
 
         /// <summary>
         /// DbContext(EFCore)

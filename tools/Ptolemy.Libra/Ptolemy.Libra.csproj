@@ -5,4 +5,9 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\Ptolemy.Libra.Request\Ptolemy.Libra.Request.csproj" />
+    <ProjectReference Include="..\..\lib\Ptolemy.Repository\Ptolemy.Repository.csproj" />
+  </ItemGroup>
+
 </Project>
