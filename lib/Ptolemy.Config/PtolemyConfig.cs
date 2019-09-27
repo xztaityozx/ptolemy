@@ -5,6 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Ptolemy.Argo.Request;
 using Ptolemy.Draco.Request;
+using Ptolemy.Libra.Request;
 using Ptolemy.Interface;
 using YamlDotNet.Serialization;
 
@@ -14,6 +15,7 @@ namespace Ptolemy.Config {
         [YamlMember] public DracoRequest DracoDefault { get; set; }
         [YamlMember] public string DataBaseUsername { get; set; }
         [YamlMember] public string DataBasePassword { get; set; }
+        [YamlMember] public LibraRequest LibraDefault { get; set; }
 
 
         private static Config instance = null;
