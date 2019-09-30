@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,7 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Kurukuru" Version="1.1.0" />
+    <PackageReference Include="System.Reactive" Version="4.1.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\Ptolemy.Interface\Ptolemy.Interface.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Libra.Request\Ptolemy.Libra.Request.csproj" />
+    <ProjectReference Include="..\..\lib\Ptolemy.Logger\Ptolemy.Logger.csproj" />
+    <ProjectReference Include="..\..\lib\Ptolemy.OptionException\Ptolemy.OptionException.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Repository\Ptolemy.Repository.csproj" />
   </ItemGroup>
 

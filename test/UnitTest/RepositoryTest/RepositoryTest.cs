@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using Ptolemy.Map;
 using Ptolemy.Repository;
@@ -53,7 +54,8 @@ namespace UnitTest.RepositoryTest {
                 expect[item.i] = filtered.Count(item.d);
             }
 
-            var actual = repo.Aggregate(new List<string> {"A", "B"}, (1, 2), (20, 50), ds, LibraRequest.GetKey);
+            var actual = repo.Aggregate(new List<string> {"A", "B"}, (1, 2), (20, 50), ds, LibraRequest.GetKey,
+                CancellationToken.None);
 
             Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert.AreEquivalent(
                 expect, actual

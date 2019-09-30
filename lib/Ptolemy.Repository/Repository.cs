@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Ptolemy.Map;
@@ -39,14 +40,16 @@ namespace Ptolemy.Repository {
         /// <param name="sweep">Sweepの範囲</param>
         /// <param name="delegates"></param>
         /// <param name="keyGenerator">信号名と時間からMapのKeyを生成するメソッド</param>
+        /// <param name="token"></param>
         /// <returns></returns>
         public long[] Aggregate(
             IReadOnlyList<string> signals,
             (long start, long end) seed, (long start, long end) sweep,
             IReadOnlyList<Func<Map<string, decimal>, bool>> delegates,
-            Func<string, decimal, string> keyGenerator
+            Func<string, decimal, string> keyGenerator,
+            CancellationToken token
         ) {
-
+            token.ThrowIfCancellationRequested();
             var rt = new long[delegates.Count];
 
             var (eStart, eEnd) = seed;
@@ -58,6 +61,7 @@ namespace Ptolemy.Repository {
                 .GroupBy(e => new {e.Sweep, e.Seed})
                 .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
 
+            token.ThrowIfCancellationRequested();
             //PLinqで並列化
             delegates
                 .Select((d, i) => new {d, i})
