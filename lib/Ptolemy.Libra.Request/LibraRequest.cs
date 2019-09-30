@@ -35,6 +35,8 @@ namespace Ptolemy.Libra.Request
         private List<decimal> times = new List<decimal>();
         public IReadOnlyList<decimal> TimeList => times;
 
+        public LibraRequest() { }
+
         /// <summary>
         /// ConditionsとExpressionsからWhereに渡すデリゲートを生成する
         /// </summary>
@@ -63,6 +65,30 @@ namespace Ptolemy.Libra.Request
             signals = signals.Distinct().ToList();
 
             return rt;
+        }
+
+        public LibraRequest(string str, (long start, long end) seed, (long start, long end) sweep, string sqliteFile) {
+            var expressions = str.Replace(" ", "")
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(s =>
+                    expressionOperators.Aggregate(s, (exp, op) => exp.Replace(op, $" {op} ")).Replace(" ! =", "!="))
+                .ToList();
+
+            Conditions = new Dictionary<string, string>();
+            foreach (var item in expressions.SelectMany(s => s.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                .Where(s => !expressionOperators.Contains(s))
+                .Distinct().Select((s, i) => new {s, i = i + 1})) {
+                Conditions[$"exp{item.i}"] = item.s;
+            }
+
+            Expressions = new List<string>();
+            foreach (var expression in expressions) {
+                Expressions.Add(Conditions.Aggregate(expression, (s, kv) => s.Replace(kv.Value, kv.Key)));
+            }
+
+            (SweepStart, SweepEnd) = sweep;
+            (SeedStart, SeedEnd) = seed;
+            SqliteFile = sqliteFile;
         }
 
 

@@ -10,23 +10,30 @@ namespace Ptolemy.Libra {
         private readonly CancellationToken token;
         private readonly LibraRequest request;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="request"></param>
         public Libra(CancellationToken token, LibraRequest request) {
             this.token = token;
             this.request = request;
         }
 
+        /// <summary>
+        /// requestに従って数え上げる
+        /// </summary>
+        /// <returns>Expression,結果のペアリスト</returns>
         public Tuple<string, long>[] Run() {
             try {
                 var delegates = request.BuildFilter();
                 var signals = request.SignalList;
-                var times = request.TimeList;
 
                 if (!signals.Any()) throw new LibraException("Conditions have no signals");
-                if (!times.Any()) throw new LibraException("Conditions have no time");
 
                 using var repo = new Repository.SqliteRepository(request.SqliteFile);
                 return repo.Aggregate(signals, (request.SeedStart, request.SeedEnd),
-                        (request.SweepStart, request.SweepEnd), delegates, LibraRequest.GetKey)
+                        (request.SweepStart, request.SweepEnd), delegates, LibraRequest.GetKey, token)
                     .Zip(signals, (l, s) => Tuple.Create(s, l)).ToArray();
             }
             catch (LibraException) {
