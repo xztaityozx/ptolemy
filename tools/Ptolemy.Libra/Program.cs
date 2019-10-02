@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Threading;
 using CommandLine;
@@ -16,9 +17,12 @@ namespace Ptolemy.Libra {
                 eventArgs.Cancel = true;
                 cts.Cancel();
             };
+            log.Warn("Press Ctrl+C to cancel");
 
             try {
                 Tuple<string, long>[] result = null;
+                var sw = new Stopwatch();
+                sw.Start();
                 Spinner.Start("Ptolemy.Libra", spin => {
                     using (Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1))
                         .Subscribe(s => spin.Text = $" {s}s")) {
@@ -34,7 +38,10 @@ namespace Ptolemy.Libra {
                         spin.Info("Finished aggregate");
                     }
                 });
-
+                sw.Stop();
+                log.Info($"Elapsed time: {sw.Elapsed}");
+                log.Info("Result: ");
+                Console.WriteLine();
                 foreach (var (key,value) in result) {
                     Console.WriteLine($"Expression: {key}, Value: {value}");
                 }
