@@ -37,6 +37,7 @@
     <ProjectReference Include="..\..\tools\Ptolemy.Argo\Ptolemy.Argo.csproj" />
     <ProjectReference Include="..\..\tools\Ptolemy.Draco\Ptolemy.Draco.csproj" />
     <ProjectReference Include="..\..\tools\Ptolemy.Libra\Ptolemy.Libra.csproj" />
+    <ProjectReference Include="..\..\tools\Ptolemy.Lupus\Ptolemy.Lupus.csproj" />
   </ItemGroup>
   <ItemGroup Condition="$(VisualStudioVersion) == '15.0'">
     <Reference Include="Microsoft.Data.Tools.Schema.Sql, Version=13.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">

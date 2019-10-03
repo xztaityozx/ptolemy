@@ -112,5 +112,6 @@ namespace Ptolemy.Draco {
             WriteProgress?.Dispose();
             ParseProgress?.Dispose();
         }
+
     }
 }
