@@ -55,8 +55,8 @@ namespace Ptolemy.Repository {
             var (eStart, eEnd) = seed;
             var (wStart, wEnd) = sweep;
 
-            var targets = context.Entities.Where(e =>
-                    (wStart <= e.Sweep && e.Sweep <= wEnd) && (eStart <= e.Seed && e.Seed <= eEnd))
+            var targets = context.Entities
+                .Where(e => (wStart <= e.Sweep && e.Sweep <= wEnd) && (eStart <= e.Seed && e.Seed <= eEnd))
                 .Where(e => signals.Contains(e.Signal))
                 .GroupBy(e => new {e.Sweep, e.Seed})
                 .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();

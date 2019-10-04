@@ -26,11 +26,13 @@ namespace Ptolemy.Lupus {
             Directory.CreateDirectory(tmp);
             var db = Path.Combine(tmp, $"{Guid.NewGuid()}");
 
-            Files??=Directory.GetFiles(FilePath.FilePath.Expand(TargetDirectory??throw new LupusException("-d,--directoryを指定してください")));
+            if (Files is null || !Files.Any())
+                Files = Directory.GetFiles(
+                    FilePath.FilePath.Expand(TargetDirectory ?? throw new LupusException("-d,--directoryを指定してください")));
 
             if(!Files.Any()) throw new LupusException("ファイルが少なくとも1つは必要です");
 
-            var targets = Files.ToList();
+            var targets = Files.Select(FilePath.FilePath.Expand).ToList();
 
             return new LupusRequest {
                 LibraRequest = new LibraRequest(Expressions, (Seed, Seed), (0, targets.Count), db),
