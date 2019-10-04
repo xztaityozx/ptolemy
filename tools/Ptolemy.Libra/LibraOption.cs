@@ -18,6 +18,8 @@ namespace Ptolemy.Libra {
 
             if(string.IsNullOrEmpty(Expressions)) throw new LibraException("Expressionsが空です");
 
+            SqliteFile = FilePath.FilePath.Expand(SqliteFile);
+
             if (!File.Exists(SqliteFile)) {
                 throw new LibraException($"SQLiteファイル {SqliteFile} が見つかりません");
             }

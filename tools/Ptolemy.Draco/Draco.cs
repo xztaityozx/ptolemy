@@ -55,7 +55,6 @@ namespace Ptolemy.Draco {
 
             try {
                 // input file's format
-                // time     voltage   voltage ...
                 //         signalA   signalB
                 //    0.    value     value   ...
                 //  ...
@@ -112,5 +111,6 @@ namespace Ptolemy.Draco {
             WriteProgress?.Dispose();
             ParseProgress?.Dispose();
         }
+
     }
 }

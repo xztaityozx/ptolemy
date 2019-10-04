@@ -42,7 +42,9 @@ namespace UnitTest.LibraTest {
             using var repo = new SqliteRepository(sqlite);
             repo.BulkUpsert(box);
             var expect = repo.Aggregate(req.SignalList, (1, 2), (20, 50), delegates, LibraRequest.GetKey,
-                CancellationToken.None).Zip(req.SignalList, (l,s)=>Tuple.Create(s,l)).ToList();
+                CancellationToken.None).Zip(req.Expressions.Select(s => 
+                    req.Conditions.Aggregate(s, (exp, x) => exp.Replace(x.Key,x.Value))
+                ), (l,s)=>Tuple.Create(s,l)).ToList();
 
             var libra = new Libra(CancellationToken.None, req);
             var actual = libra.Run();
