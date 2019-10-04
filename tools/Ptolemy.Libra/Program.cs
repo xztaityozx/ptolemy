@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using CommandLine;
@@ -10,6 +11,7 @@ using Ptolemy.OptionException;
 namespace Ptolemy.Libra {
     internal class Program {
         private static void Main(string[] args) {
+
             var log = new Logger.Logger();
             using var cts = new CancellationTokenSource();
             var token = cts.Token;
