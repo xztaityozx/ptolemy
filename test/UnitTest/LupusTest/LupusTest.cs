@@ -28,7 +28,7 @@ namespace UnitTest.LupusTest {
                     Files = files
                 };
 
-                var req = opt.BuildRequests();
+                var req = opt.BuildRequest();
                 Assert.Equal(10, req.DracoRequests.Length);
                 CAssert.AreEquivalent(Enumerable.Range(0, 10).Select(s => (long) s).ToList(),
                     req.DracoRequests.Select(s => s.Sweep).ToList());
@@ -59,7 +59,7 @@ namespace UnitTest.LupusTest {
                     TargetDirectory = tmp
                 };
 
-                var req = opt.BuildRequests();
+                var req = opt.BuildRequest();
                 Assert.Equal(10, req.DracoRequests.Length);
                 CAssert.AreEquivalent(Enumerable.Range(0, 10).Select(s => (long)s).ToList(), req.DracoRequests.Select(s => s.Sweep).ToList());
                 CAssert.AreEquivalent(files, req.DracoRequests.Select(s => s.InputFile).ToList());
@@ -73,7 +73,7 @@ namespace UnitTest.LupusTest {
 
         [Fact]
         public void ThrowsTest() {
-            Assert.Throws<LupusException>(() => new LupusOptions().BuildRequests());
+            Assert.Throws<LupusException>(() => new LupusOptions().BuildRequest());
         }
     }
 }
