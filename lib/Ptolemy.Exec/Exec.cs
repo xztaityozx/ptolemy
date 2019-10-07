@@ -52,7 +52,6 @@ namespace Ptolemy.Exec {
             token.ThrowIfCancellationRequested();
             token.Register(() => {
                 process.Kill();
-                Console.WriteLine("Killed");
             });
 
             // TODO: Issue #17(https://github.com/xztaityozx/ptolemy/issues/17)
