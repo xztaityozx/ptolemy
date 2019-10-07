@@ -11,16 +11,15 @@ using Ptolemy.Map;
 using Ptolemy.Repository;
 
 namespace Ptolemy.Lupus {
-    public class Lupus : IDisposable {
-
-        private readonly string temp;
-
-        public Lupus() {
-            temp = Path.Combine(Path.GetTempPath(), "Ptolemy.Lupus");
-            Directory.CreateDirectory(temp);
+    public class Lupus : Cli.SingleCli<LupusOptions, LupusRequest, Tuple<string, long>[]> {
+        private readonly string tempDir;
+        
+        public Lupus(IEnumerable<string> args, Logger.Logger log) : base(args, log) {
+            tempDir = Path.Combine(Path.GetTempPath(), "Ptolemy.Lupus");
+            Directory.CreateDirectory(tempDir);
         }
 
-        public Tuple<string,long>[] Run(CancellationToken token, LupusRequest request) {
+        protected override Tuple<string, long>[] Process() {
             try {
                 foreach (var item in request.DracoRequests) {
                     using var draco = new Draco.Draco(token, item);
@@ -41,13 +40,9 @@ namespace Ptolemy.Lupus {
             }
         }
 
-        public void Dispose() {
-            Directory.Delete(temp, true);
+        public new void Dispose() {
+            base.Dispose();
+            if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
         }
-    }
-
-    public class LupusResult {
-        public string Name { get; set; }
-        public Tuple<string,long>[] Results { get; set; }
     }
 }

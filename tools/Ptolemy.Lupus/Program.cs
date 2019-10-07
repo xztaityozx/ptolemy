@@ -12,28 +12,18 @@ using Ptolemy.OptionException;
 namespace Ptolemy.Lupus {
     internal class Program {
         private static void Main(string[] args) {
-
+            Console.Clear();
             var log = new Logger.Logger();
-            using var cts = new CancellationTokenSource();
-            Console.CancelKeyPress += (sender, eventArgs) => {
-                eventArgs.Cancel = true;
-                cts.Cancel();
-            };
-            var token = cts.Token;
-
             try {
                 Tuple<string, long>[] result = null;
                 var sw = new Stopwatch();
                 sw.Start();
-                var req = Parser.Default.ParseArguments<LupusOptions>(args)
-                    .MapResult(o => o.BuildRequests(), e => throw new ParseFailedException());
-
+                log.Info("Start Ptolemy.Lupus");
                 Spinner.Start("Wait", spin => {
                     using (Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1))
-                        .Subscribe(l => spin.Text = $" Elapsed: {l}s")) {
-                        log.Info("Start Ptolemy.Lupus");
-                        var lupus = new Lupus();
-                        result = lupus.Run(token, req);
+                        .Subscribe(l => { spin.Text = $" Elapsed: {l}s"; })) {
+                        using var lupus = new Lupus(args, log);
+                        result = lupus.Run<LupusException>();
                         spin.Info("Finished");
                     }
                 });
@@ -47,7 +37,7 @@ namespace Ptolemy.Lupus {
                 var valueWidth = Math.Max(result.Select(s => $"{s.Item2}".Length).Max(), " Value ".Length);
 
                 Console.WriteLine($"\t|{{0,{expWidth}}}|{{1, {valueWidth}}}|", " Expressions ", " Value ");
-                Console.WriteLine("\t"+Enumerable.Repeat("-", expWidth+valueWidth+3).Join(""));
+                Console.WriteLine("\t" + Enumerable.Repeat("-", expWidth + valueWidth + 3).Join(""));
 
                 foreach (var (exp, val) in result) {
                     Console.WriteLine($"\t|{{0,{expWidth}}}|{{1,{valueWidth}}}|", exp, val);
@@ -55,7 +45,6 @@ namespace Ptolemy.Lupus {
 
                 Console.WriteLine();
                 Console.WriteLine("========================================================");
-
             }
             catch (ParseFailedException) {
             }
@@ -69,11 +58,7 @@ namespace Ptolemy.Lupus {
                 log.Error($"Unknown error has occured\n\t-->{e}");
             }
             finally {
-                var tmp = Path.Combine(Path.GetTempPath(), "Ptolemy.Lupus");
-                if (Directory.Exists(tmp)) {
-                    log.Info("CleanUp tempDir...");
-                    Directory.Delete(tmp, true);
-                }
+                log.Info("CleanUp tempDir...");
             }
         }
     }

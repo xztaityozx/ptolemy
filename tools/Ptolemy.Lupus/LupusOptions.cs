@@ -4,11 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using CommandLine;
+using Ptolemy.Cli;
 using Ptolemy.Draco.Request;
 using Ptolemy.Libra.Request;
 
 namespace Ptolemy.Lupus {
-    public class LupusOptions {
+    public class LupusOptions : IPtolemyOption<LupusRequest> {
         [Option('d', "directory", HelpText = "数え上げたいファイルが格納されいているディレクトリを指定できます")]
         public string TargetDirectory { get; set; }
 
@@ -21,7 +22,7 @@ namespace Ptolemy.Lupus {
         [Value(0, Default = null, HelpText = "入力ファイルのリスト")]
         public IEnumerable<string> Files { get; set; }
 
-        public LupusRequest BuildRequests() {
+        public LupusRequest BuildRequest() {
             var tmp = Path.Combine(Path.GetTempPath(), "Ptolemy.Lupus");
             Directory.CreateDirectory(tmp);
             var db = Path.Combine(tmp, $"{Guid.NewGuid()}");
@@ -42,6 +43,7 @@ namespace Ptolemy.Lupus {
                 }).ToArray()
             };
         }
+
     }
 
     public class LupusException : Exception {

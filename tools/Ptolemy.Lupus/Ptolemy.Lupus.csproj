@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\lib\Ptolemy.Cli\Ptolemy.Cli.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Draco.Request\Ptolemy.Draco.Request.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Libra.Request\Ptolemy.Libra.Request.csproj" />
     <ProjectReference Include="..\Ptolemy.Draco\Ptolemy.Draco.csproj" />
