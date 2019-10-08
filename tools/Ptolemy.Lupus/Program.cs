@@ -3,8 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Threading;
-using CommandLine;
 using Kurukuru;
 using Microsoft.EntityFrameworkCore.Internal;
 using Ptolemy.OptionException;
