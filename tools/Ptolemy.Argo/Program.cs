@@ -55,52 +55,50 @@ namespace Ptolemy.Argo {
 
                 log.Warn($"Press Ctrl+C to cancel");
 
-                using (var cts = new CancellationTokenSource()) {
-                    Console.CancelKeyPress += (sender, eventArgs) => {
-                        eventArgs.Cancel = true;
-                        cts.Cancel();
-                    };
-                    bool status;
-                    var watch = new Stopwatch();
-                    var argo = new Argo(req, cts.Token);
-                    using (var pb = new ProgressBar((int) req.Sweep, "Ptolemy.Argo", new ProgressBarOptions {
-                        BackgroundCharacter = '-',
-                        BackgroundColor = ConsoleColor.DarkGray,
-                        ForegroundColor = ConsoleColor.DarkBlue,
-                        ProgressCharacter = '>',
-                        ForegroundColorDone = ConsoleColor.Green,
-                        CollapseWhenFinished = false
-                    })) {
-                        var ob = argo.Receiver.Subscribe(s => {
-                            if (s[0] == 'x') {
-                                pb.Tick();
-                                results.Add(new StringBuilder());
-                            }
-                            else {
-                                results.Last().AppendLine(s);
-                            }
-                        });
-                        cts.Token.Register(ob.Dispose);
-                        watch.Start();
-                        (status, _) = argo.Run();
-                        watch.Start();
-                    }
-
-                    if (!status) {
-                        log.Error("Failed simulation");
-                    }
-                    else {
-                        log.Info("Finished simulation");
-                        log.Info($"Elapsed time: {watch.Elapsed}");
-                        log.Info("Result file: " + req.ResultFile +
-                                 $"[{req.SweepStart}..{req.Sweep + req.SweepStart - 1}]");
-                        foreach (var item in results.Select((sb, i) => new {sb, i = i + req.SweepStart})) {
-                            var path = req.ResultFile + $"{item.i}";
-                            using (var sw = new StreamWriter(path, false, new UTF8Encoding(false))) {
-                                sw.WriteLine(item.sb.ToString().TrimEnd());
-                                sw.Flush();
-                            }
+                using var cts = new CancellationTokenSource();
+                Console.CancelKeyPress += (sender, eventArgs) => {
+                    eventArgs.Cancel = true;
+                    cts.Cancel();
+                };
+                bool status;
+                var watch = new Stopwatch();
+                using var argo = new Argo(req, cts.Token);
+                using (var pb = new ProgressBar((int) req.Sweep, "Ptolemy.Argo", new ProgressBarOptions {
+                    BackgroundCharacter = '-',
+                    BackgroundColor = ConsoleColor.DarkGray,
+                    ForegroundColor = ConsoleColor.DarkBlue,
+                    ProgressCharacter = '>',
+                    ForegroundColorDone = ConsoleColor.Green,
+                    CollapseWhenFinished = false
+                })) {
+                    var ob = argo.Receiver.Subscribe(s => {
+                        if (s[0] == 'x') {
+                            pb.Tick();
+                            results.Add(new StringBuilder());
                         }
+                        else {
+                            results.Last().AppendLine(s);
+                        }
+                    });
+                    cts.Token.Register(ob.Dispose);
+                    watch.Start();
+                    (status, _) = argo.Run();
+                    watch.Start();
+                }
+
+                if (!status) {
+                    log.Error("Failed simulation");
+                }
+                else {
+                    log.Info("Finished simulation");
+                    log.Info($"Elapsed time: {watch.Elapsed}");
+                    log.Info("Result file: " + req.ResultFile +
+                             $"[{req.SweepStart}..{req.Sweep + req.SweepStart - 1}]");
+                    foreach (var item in results.Select((sb, i) => new {sb, i = i + req.SweepStart})) {
+                        var path = req.ResultFile + $"{item.i}";
+                        using var sw = new StreamWriter(path, false, new UTF8Encoding(false));
+                        sw.WriteLine(item.sb.ToString().TrimEnd());
+                        sw.Flush();
                     }
                 }
             }

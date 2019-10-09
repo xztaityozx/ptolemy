@@ -51,7 +51,7 @@ namespace Ptolemy.Aries {
         [Option("include", HelpText = "モデルファイルなど、NetListにIncludeするファイルのリストです")]
         public IEnumerable<string> Includes { get; set; }
 
-        [Option("hspice", HelpText = "Hspiceへのパスです(env: " + Argo.Argo.ENV_ARGO_HSPICE + ")")]
+        [Option("hspice", HelpText = "Hspiceへのパスです(env: " + Argo.Argo.EnvArgoHspice + ")")]
         public string HspicePath { get; set; }
 
         [Option("options", HelpText = "Hspiceに渡したいオプションです")]
@@ -82,6 +82,8 @@ namespace Ptolemy.Aries {
                 IcCommands = IcCommands.ToList(), NetList = NetList, SweepStart = SweepStart 
             };
 
+            var dbName = baseRequest.GetHashString();
+            baseRequest.ResultFile = dbName;
             if (SplitOption == "none") {
                 WriteTaskFile(Path.Combine(baseDir, $"{guid}.json"), baseRequest);
             }

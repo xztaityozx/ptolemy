@@ -10,11 +10,13 @@ using System.Text;
 using System.Threading;
 using Ptolemy.Argo.Request;
 using Ptolemy.Parameters;
+using Ptolemy.Repository;
+using Ptolemy.SiMetricPrefix;
 using ShellProgressBar;
 
 namespace Ptolemy.Argo {
     public class Argo : IDisposable {
-        public const string ENV_ARGO_HSPICE = "ARGO_HSPICE";
+        public const string EnvArgoHspice = "ARGO_HSPICE";
         private readonly ArgoRequest request;
         private readonly string workDir;
         private readonly Guid id;
@@ -37,6 +39,34 @@ namespace Ptolemy.Argo {
             id = Guid.NewGuid();
             exec = new Exec.Exec(token);
             this.token = token;
+        }
+
+        public void RunWithParse(Subject<ResultEntity> receiver) {
+            var rt = new List<ResultEntity>();
+
+            IEnumerable<long> Range() {
+                for (var l = request.SweepStart; l <= request.SweepStart + request.Sweep; l++) yield return l;
+            };
+
+            var rec = exec.StdOut
+                .Where(s => !string.IsNullOrEmpty(s))
+                .SkipWhile(s => s[0] != 'x')
+                .TakeWhile(s => s[0] != 'y')
+                .ToList()
+                .Repeat()
+                .Zip(Range(), (list, l) => Tuple.Create(list.Skip(3), l))
+                .Subscribe(pair => {
+                    var (doc, sweep) = pair;
+                    foreach (var entity in doc.SelectMany(line => ResultEntity.Parse(request.Seed, sweep, line, request.Signals))) {
+                        receiver.OnNext(entity);
+                    }
+                });
+
+            token.Register(rec.Dispose);
+
+            Run();
+
+            receiver.OnCompleted();
         }
 
         public (bool status, ArgoRequest result) Run() {
@@ -85,7 +115,8 @@ namespace Ptolemy.Argo {
 
             // Read NetList
             try {
-                using (var sr = new StreamReader(request.NetList)) sb.AppendLine(sr.ReadToEnd());
+                using var sr = new StreamReader(request.NetList);
+                sb.AppendLine(sr.ReadToEnd());
             }
             catch (FileNotFoundException) {
                 throw new ArgoException($"NetList file not found: path={request.NetList}");

@@ -3,17 +3,31 @@ using System.Text.Json;
 using System.Threading;
 using CommandLine;
 using Ptolemy.Interface;
+using Ptolemy.OptionException;
 
 namespace Ptolemy.Aries {
     internal class Program {
         private static void Main(string[] args) {
-            var res = Parser.Default.ParseArguments<AriesMake>(args)
-                .MapResult(a => {
-                    a.Run(CancellationToken.None);
-                    return null;
-                }, e => "error");
+            using var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (sender, eventArgs) => {
+                eventArgs.Cancel = true;
+                cts.Cancel();
+            };
 
-            Console.WriteLine(res);
+            var token = cts.Token;
+
+            Parser.Default.ParseArguments<AriesMake, AriesRun>(args)
+                .MapResult(
+                    (AriesMake a) => {
+                        a.Run(token);
+                        return 1;
+                    },
+                    (AriesRun a) => {
+                        a.Run(token);
+                        return 1;
+                    },
+                    e => throw new ParseFailedException());
+
         }
     }
 }
