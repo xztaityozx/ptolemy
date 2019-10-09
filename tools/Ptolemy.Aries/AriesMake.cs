@@ -8,9 +8,11 @@ using System.Reactive.Subjects;
 using System.Text.Json;
 using System.Threading;
 using CommandLine;
+using Microsoft.VisualBasic;
 using Ptolemy.Argo.Request;
 using Ptolemy.Interface;
 using Ptolemy.Parameters;
+using Remotion.Linq.Parsing;
 using ShellProgressBar;
 
 namespace Ptolemy.Aries {
@@ -26,15 +28,11 @@ namespace Ptolemy.Aries {
         [Option('w',"sweeps",Default = 2000, HelpText = "合計のSweep数です")]
         public long TotalSweeps { get; set; }
 
-        private const string sbw = "SplitBySweep", sbe = "SplitBySeed";
-        [Option('W',"splitBySweep", Default = null, SetName = sbw, HelpText = "合計Sweep数をこのオプションに与えた値で分割します")]
-        public long? SplitBySweep { get; set; }
-
         [Option('e', "seed",Default = 1,HelpText = "Seed値です")]
         public long Seed { get; set; }
 
-        [Option('E',"splitBySeed", Default = null, SetName = sbe, HelpText = "合計Sweep数をこのオプションに与えたSeed数で分割します")]
-        public long? SplitBySeed { get; set; }
+        [Option('W',"splitOption", HelpText = "合計Sweepをseedかsweepで分割します.[seed or sweep]:[num]", Default = "none")]
+        public string SplitOption { get; set; }
 
         public IEnumerable<string> Signals { get; set; }
 
@@ -66,13 +64,16 @@ namespace Ptolemy.Aries {
         public string NetList { get; set; }
 
         public void Run(CancellationToken token) {
-            var transistors = this.Bind(Ptolemy.Config.Config.Instance.ArgoDefault.Transistors);
+            
+            var transistors = this.Bind(null);
+            NetList = FilePath.FilePath.Expand(NetList);
             var guid = Guid.NewGuid();
             var baseDir = Path.Combine(FilePath.FilePath.DotConfig, "aries", "task");
             
             if(!Directory.Exists(baseDir)) Directory.CreateDirectory(baseDir);
 
             if (!File.Exists(NetList)) throw new AriesException($"Netlistファイルが見つかりません: {NetList}");
+
 
             var baseRequest = new ArgoRequest {
                 GroupId = guid, Gnd = (decimal) Gnd, Includes = Includes.ToList(), Seed = Seed, Signals = Signals.ToList(),
@@ -81,20 +82,50 @@ namespace Ptolemy.Aries {
                 IcCommands = IcCommands.ToList(), NetList = NetList, SweepStart = SweepStart 
             };
 
-            if (SplitBySeed != null) {
-                var range = (long)SplitBySeed;
-                var sweep = TotalSweeps / range;
-                var rest = TotalSweeps - sweep * range;
-                using var bar = new ProgressBar((int)range + (rest > 0 ? 1 : 0), "Write task file", ConsoleColor.Green);
-                for (var seed = Seed; seed <= Seed + range; seed++) {
-                    var path = Path.Combine(baseDir, $"{guid}-{seed}.json");
-                    // TODO: ここやれ
-                }
+            if (SplitOption == "none") {
+                WriteTaskFile(Path.Combine(baseDir, $"{guid}.json"), baseRequest);
             }
+            else {
+                var (by, size) = SplitOption.Split(':', StringSplitOptions.RemoveEmptyEntries) switch {
+                    var s when s.Length != 2 => throw new AriesException("SplitOptionに与えた引数がフォーマットに従っていません.[seed, sweep]:[size]"),
+                    var s when s[1] == "0" => throw new AriesException("[size]に0を指定できません"),
+                    var s when s[0] == "seed" => (SplitBy.Seed, long.Parse(s[1])),
+                    var s when s[0] == "sweep" => (SplitBy.Sweep, long.Parse(s[1])),
+                    _ => throw new AriesException("SplitOptionの解釈に失敗しました. [seed, sweep]:[size]")
+                    };
 
+                var seed = Seed;
+                var start = SweepStart;
+                var total = TotalSweeps / size + (TotalSweeps % size == 0 ? 0 : 1);
+                using var bar = new ProgressBar((int)total,"Write task files", ConsoleColor.Green);
+
+                for (var i = 0; i < total; i++) {
+
+                    token.ThrowIfCancellationRequested();
+
+                    var rest = TotalSweeps - i * size;
+                    baseRequest.Sweep = rest < size ? rest : size;
+                    var path = Path.Combine(baseDir, $"{guid}-{i}.json");
+                    if (by == SplitBy.Seed) {
+                        baseRequest.Seed = seed++;
+                    }
+                    else {
+                        baseRequest.Seed = seed;
+                        baseRequest.SweepStart = start;
+                        start += size;
+                    }
+                    WriteTaskFile(path, baseRequest);
+                    bar.Tick($"write to {path}");
+                }
+
+            }
+        }
+
+        private enum SplitBy {
+            Seed, Sweep
         }
         
-        private void WriteTaskFile(string path, ArgoRequest request) {
+        private static void WriteTaskFile(string path, ArgoRequest request) {
             using var sw = new StreamWriter(path);
             sw.WriteLine(request.ToJson());
             sw.Flush();
