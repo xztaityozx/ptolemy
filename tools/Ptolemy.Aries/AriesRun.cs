@@ -91,7 +91,7 @@ namespace Ptolemy.Aries {
         private ProgressBar bar;
         public void Run(CancellationToken token) {
             log = new Logger.Logger();
-
+            
             var sw = new Stopwatch();
             sw.Start();
             try {
@@ -121,8 +121,11 @@ namespace Ptolemy.Aries {
             catch (FileNotFoundException e) {
                 log.Error($"{e.FileName} が見つかりませんでした");
             }
+            
+            Console.WriteLine();
             sw.Stop();
             log.Info("Finished Ptolemy.Aries run");
+            log.Info($"Elapsed {sw.Elapsed}");
         }
 
         public void Dispose() {

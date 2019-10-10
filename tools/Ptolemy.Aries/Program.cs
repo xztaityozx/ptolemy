@@ -9,6 +9,7 @@ namespace Ptolemy.Aries {
     internal static class Program {
         private static void Main(string[] args) {
             var log = new Logger.Logger();
+            Console.Clear();
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) => {
                 eventArgs.Cancel = true;

@@ -93,7 +93,11 @@ namespace Ptolemy.Aries {
                 var seed = Seed;
                 var start = SweepStart;
                 var total = TotalSweeps / size + (TotalSweeps % size == 0 ? 0 : 1);
-                using var bar = new ProgressBar((int)total,"Write task files", ConsoleColor.Green);
+                using var bar = new ProgressBar((int)total,"Write task files", new ProgressBarOptions {
+                    BackgroundCharacter = '-', BackgroundColor = ConsoleColor.DarkGray,
+                    ForegroundColor = ConsoleColor.DarkGreen, ProgressCharacter = '>',
+                    CollapseWhenFinished = false, ForegroundColorDone = ConsoleColor.Green
+                });
 
                 for (var i = 0; i < total; i++) {
 
