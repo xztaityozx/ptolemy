@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -91,12 +92,19 @@ namespace Ptolemy.Aries {
         public void Run(CancellationToken token) {
             log = new Logger.Logger();
 
+            var sw = new Stopwatch();
+            sw.Start();
             try {
                 MakeDbRoot();
-                log.Info("Ptolemy.Aries run");
+                log.Info("Start Ptolemy.Aries run");
                 var requests = GetRequests();
+                
                 container = GetDbContainer(token, requests.Select(s => s.ResultFile));
-                bar = new ProgressBar(requests.Count, "Ptolemy.Aries", ConsoleColor.DarkGreen);
+                bar = new ProgressBar(requests.Count, "Ptolemy.Aries", new ProgressBarOptions {
+                    BackgroundCharacter = '-', BackgroundColor = ConsoleColor.DarkGray,
+                    ForegroundColor = ConsoleColor.DarkGreen, ProgressCharacter = '>',
+                    CollapseWhenFinished = false, ForegroundColorDone = ConsoleColor.Green
+                });
 
                 requests
                     .AsParallel()
@@ -113,6 +121,8 @@ namespace Ptolemy.Aries {
             catch (FileNotFoundException e) {
                 log.Error($"{e.FileName} が見つかりませんでした");
             }
+            sw.Stop();
+            log.Info("Finished Ptolemy.Aries run");
         }
 
         public void Dispose() {

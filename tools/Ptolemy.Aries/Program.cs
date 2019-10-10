@@ -39,6 +39,8 @@ namespace Ptolemy.Aries {
             catch (Exception e) {
                 log.Error($"Unknown error has occured\n\t-->{e}");
             }
+            
+            Console.ResetColor();
         }
     }
 }

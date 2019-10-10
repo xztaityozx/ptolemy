@@ -44,7 +44,9 @@ namespace Ptolemy.Repository {
 
                 subjectMap[db] = new Subject<ResultEntity>();
                 repositories[db] = new SqliteRepository(path);
-                subjectMap[db].Buffer(bufferSize).Subscribe(s => repositories[db].BulkUpsert(s),
+                subjectMap[db].Buffer(bufferSize).Subscribe(s => {
+                        repositories[db].BulkUpsert(s);
+                    },
                     () => logger.OnNext($"finished: {db}.sqlite"), token);
                 isClosed[db] = false;
             }
