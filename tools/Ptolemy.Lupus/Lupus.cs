@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using Ptolemy.Draco;
-using Ptolemy.Draco.Request;
 using Ptolemy.Libra.Request;
-using Ptolemy.Map;
-using Ptolemy.Repository;
 
 namespace Ptolemy.Lupus {
     public class Lupus : Cli.SingleCli<LupusOptions, LupusRequest, Tuple<string, long>[]> {

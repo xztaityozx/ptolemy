@@ -6,28 +6,39 @@ using Ptolemy.Interface;
 using Ptolemy.OptionException;
 
 namespace Ptolemy.Aries {
-    internal class Program {
+    internal static class Program {
         private static void Main(string[] args) {
+            var log = new Logger.Logger();
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) => {
                 eventArgs.Cancel = true;
                 cts.Cancel();
             };
 
+            log.Warn("Canceled by user");
             var token = cts.Token;
 
-            Parser.Default.ParseArguments<AriesMake, AriesRun>(args)
-                .MapResult(
-                    (AriesMake a) => {
-                        a.Run(token);
-                        return 1;
-                    },
-                    (AriesRun a) => {
-                        a.Run(token);
-                        return 1;
-                    },
-                    e => throw new ParseFailedException());
-
+            try {
+                Parser.Default.ParseArguments<AriesMake, AriesRun>(args)
+                    .MapResult(
+                        (AriesMake a) => {
+                            a.Run(token);
+                            return 1;
+                        },
+                        (AriesRun a) => {
+                            a.Run(token);
+                            return 1;
+                        },
+                        e => throw new ParseFailedException());
+            }
+            catch (ParseFailedException) {
+            }
+            catch (AriesException e) {
+                log.Error(e);
+            }
+            catch (Exception e) {
+                log.Error($"Unknown error has occured\n\t-->{e}");
+            }
         }
     }
 }

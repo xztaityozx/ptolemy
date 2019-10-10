@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -9,10 +7,7 @@ using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using Ptolemy.Argo.Request;
-using Ptolemy.Parameters;
 using Ptolemy.Repository;
-using Ptolemy.SiMetricPrefix;
-using ShellProgressBar;
 
 namespace Ptolemy.Argo {
     public class Argo : IDisposable {

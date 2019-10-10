@@ -15,10 +15,10 @@ using ShellProgressBar;
 namespace Ptolemy.Aries {
     [Verb("run", HelpText = "シミュレーションを実行します")]
     public class AriesRun :IDisposable {
-        [Option("parallel", Default = 1, HelpText = "シミュレーションの並列数です", Max = 20, Min = 1)]
+        [Option("parallel", Default = 1, HelpText = "シミュレーションの並列数です")]
         public int Parallel { get; set; }
 
-        [Option('n', "count", HelpText = "実行するタスクの数です", Default = 1, Min = 1)]
+        [Option('n', "count", HelpText = "実行するタスクの数です", Default = 1)]
         public int Count { get; set; }
 
         [Option("taskDir", Default = "~/.config/ptolemy/aries/task", HelpText = "タスクが保存されているディレクトリへのパスです")]
@@ -33,7 +33,8 @@ namespace Ptolemy.Aries {
         [Option('i', "input", HelpText = "タスクファイルを指定して実行します", Default = null)]
         public string InputFile { get; set; }
 
-        [Option('y', "yes",  HelpText = "確認をスキップします", Default = false)] public bool Yes { get; set; }
+        [Option('y', "yes",  HelpText = "確認をスキップします", Default = false)] 
+        public bool Yes { get; set; }
         [Option('b', "bufferSize", HelpText = "1度のDbアクセスで書き込むアイテムの最大数です")]
         public int BufferSize { get; set; }
 
@@ -59,6 +60,7 @@ namespace Ptolemy.Aries {
         private List<ArgoRequest> GetRequests() {
             var tasks = new List<ArgoRequest>();
 
+            if (Count <= 0) throw new AriesException("Countを0以下にできません");
 
             if (!string.IsNullOrEmpty(InputFile)) {
                 string doc;

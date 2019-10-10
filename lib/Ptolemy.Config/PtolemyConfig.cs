@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using Ptolemy.Argo.Request;
 using Ptolemy.Draco.Request;
 using Ptolemy.Libra.Request;
-using Ptolemy.Interface;
 using YamlDotNet.Serialization;
 
 namespace Ptolemy.Config {

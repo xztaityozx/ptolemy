@@ -2,17 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Text.Json;
 using System.Threading;
 using CommandLine;
-using Microsoft.VisualBasic;
 using Ptolemy.Argo.Request;
 using Ptolemy.Interface;
 using Ptolemy.Parameters;
-using Remotion.Linq.Parsing;
 using ShellProgressBar;
 
 namespace Ptolemy.Aries {
@@ -64,7 +58,7 @@ namespace Ptolemy.Aries {
         public string NetList { get; set; }
 
         public void Run(CancellationToken token) {
-            
+
             var transistors = this.Bind(null);
             NetList = FilePath.FilePath.Expand(NetList);
             var guid = Guid.NewGuid();
