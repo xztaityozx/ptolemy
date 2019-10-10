@@ -81,14 +81,13 @@ namespace Ptolemy.Aries {
             return tasks;
         }
 
-        private DbContainer GetDbContainer(CancellationToken token, IEnumerable<string> dbs) {
-            using var sub = new Subject<string>();
-            using (sub.Subscribe(s => log.Info(s)))
-                return new DbContainer(token, DbRoot, dbs, BufferSize, sub);
+        private DbContainer GetDbContainer(CancellationToken token, IEnumerable<string> dbs, IObserver<string> sub) {
+            log.Info("Build DbContainer...");
+            log.Info("\tSearching databases...");
+            return new DbContainer(token, DbRoot, dbs, BufferSize, sub);
         }
 
         private DbContainer container;
-        private ProgressBar bar;
         public void Run(CancellationToken token) {
             log = new Logger.Logger();
             
@@ -97,10 +96,18 @@ namespace Ptolemy.Aries {
             try {
                 MakeDbRoot();
                 log.Info("Start Ptolemy.Aries run");
+                Console.WriteLine();
                 var requests = GetRequests();
+
+                using var logSubject = new Subject<string>();
+                logSubject.Subscribe(s => log.Info(s));
+                container = GetDbContainer(token, requests.Select(s => s.ResultFile), logSubject);
                 
-                container = GetDbContainer(token, requests.Select(s => s.ResultFile));
-                bar = new ProgressBar(requests.Count, "Ptolemy.Aries", new ProgressBarOptions {
+                log.Info($"DbContainer has {container.Count} databases");
+                log.Info($"Start simulation and write to db");
+                Console.WriteLine();
+                
+                using var bar = new ProgressBar(requests.Count, "Ptolemy.Aries", new ProgressBarOptions {
                     BackgroundCharacter = '-', BackgroundColor = ConsoleColor.DarkGray,
                     ForegroundColor = ConsoleColor.DarkGreen, ProgressCharacter = '>',
                     CollapseWhenFinished = false, ForegroundColorDone = ConsoleColor.Green
@@ -117,6 +124,8 @@ namespace Ptolemy.Aries {
                         using var argo = new Argo.Argo(req, token);
                         argo.RunWithParse(rec);
                     });
+                
+                container.CloseAll();
             }
             catch (FileNotFoundException e) {
                 log.Error($"{e.FileName} が見つかりませんでした");
@@ -130,7 +139,6 @@ namespace Ptolemy.Aries {
 
         public void Dispose() {
             container?.Dispose();
-            bar?.Dispose();
         }
     }
 }

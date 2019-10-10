@@ -58,11 +58,9 @@ namespace Ptolemy.Repository {
         /// </summary>
         /// <param name="db">閉じるDBの名前</param>
         public void Close(string db) {
-            if (isClosed[db]) return;
+            if (isClosed[db] || subjectMap[db].IsDisposed) return;
          
-            subjectMap[db].OnCompleted();
-            repositories[db].Dispose();
-            subjectMap[db].Dispose();
+            subjectMap[db]?.OnCompleted();
             isClosed[db] = true;
         }
 
@@ -75,6 +73,8 @@ namespace Ptolemy.Repository {
             }
         }
 
+        public int Count => subjectMap.Count;
+        
         /// <summary>
         /// DBへ書き込む
         /// </summary>
@@ -85,6 +85,14 @@ namespace Ptolemy.Repository {
         public void Dispose() {
             foreach (var (key,_) in isClosed.Where(k => !k.Value)) {
                 Close(key);
+            }
+
+            foreach (var sqliteRepository in repositories) {
+               sqliteRepository.Value.Dispose(); 
+            }
+
+            foreach (var subject in subjectMap) {
+                subject.Value.Dispose();
             }
         }
     }
