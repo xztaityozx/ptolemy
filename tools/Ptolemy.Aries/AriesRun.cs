@@ -35,7 +35,7 @@ namespace Ptolemy.Aries {
 
         [Option('y', "yes",  HelpText = "確認をスキップします", Default = false)] 
         public bool Yes { get; set; }
-        [Option('b', "bufferSize", HelpText = "1度のDbアクセスで書き込むアイテムの最大数です")]
+        [Option('b', "bufferSize", HelpText = "1度のDbアクセスで書き込むアイテムの最大数です", Default = 50000)]
         public int BufferSize { get; set; }
 
         private Logger.Logger log;
