@@ -7,7 +7,9 @@ using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using Ptolemy.Argo.Request;
+using Ptolemy.Logger;
 using Ptolemy.Repository;
+using Ptolemy.SiMetricPrefix;
 
 namespace Ptolemy.Argo {
     public class Argo : IDisposable {
@@ -19,11 +21,11 @@ namespace Ptolemy.Argo {
         private readonly CancellationToken token;
 
 
-//        public IObservable<string> Receiver => exec.StdOut
-//            .Where(s => !string.IsNullOrEmpty(s))
-//            .SkipWhile(s => s[0] != 'x')
-//            .TakeWhile(s => s[0] != 'y')
-//            .Repeat();
+        public IObservable<string> Receiver => exec.StdOut
+            .Where(s => !string.IsNullOrEmpty(s))
+            .SkipWhile(s => s[0] != 'x')
+            .TakeWhile(s => s[0] != 'y')
+            .Repeat();
 
 
         public Argo(ArgoRequest request, CancellationToken token) {
@@ -43,16 +45,30 @@ namespace Ptolemy.Argo {
                 for (var l = request.SweepStart; l <= request.SweepStart + request.Sweep; l++) yield return l;
             };
 
+            var logFile = Path.Combine(FilePath.FilePath.DotConfig, "log", "log");
+            var fileLogger = new Logger.Logger();
+            fileLogger.AddHook(new FileHook(logFile));
+
             var rec = exec.StdOut
                 .Where(s => !string.IsNullOrEmpty(s))
                 .SkipWhile(s => s[0] != 'x')
                 .TakeWhile(s => s[0] != 'y')
+                .Where(s => s.Split(' ')[0].TryParseDecimalWithSiPrefix(out _))
                 .ToList()
                 .Repeat()
                 .Zip(Range(), (list, l) => Tuple.Create(list.Skip(3), l))
                 .Subscribe(pair => {
                     var (doc, sweep) = pair;
-                    foreach (var entity in doc.SelectMany(line => ResultEntity.Parse(request.Seed, sweep, line, request.Signals))) {
+
+                    var enumerable = doc as string[] ?? doc.ToArray();
+                    fileLogger.Info($"sweep={sweep}, length={enumerable.Length}");
+                    if (enumerable.Length != 201) {
+                        foreach (var d in enumerable) {
+                            fileLogger.Info(d);
+                        }
+                    }
+                    
+                    foreach (var entity in enumerable.SelectMany(line => ResultEntity.Parse(request.Seed, sweep, line, request.Signals))) {
                         receiver.OnNext(entity);
                     }
                 });

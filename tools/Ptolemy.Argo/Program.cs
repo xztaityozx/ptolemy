@@ -71,16 +71,16 @@ namespace Ptolemy.Argo {
                     ForegroundColorDone = ConsoleColor.Green,
                     CollapseWhenFinished = false
                 })) {
-//                    var ob = argo.Receiver.Subscribe(s => {
-//                        if (s[0] == 'x') {
-//                            pb.Tick();
-//                            results.Add(new StringBuilder());
-//                        }
-//                        else {
-//                            results.Last().AppendLine(s);
-//                        }
-//                    });
-//                    cts.Token.Register(ob.Dispose);
+                    var ob = argo.Receiver.Subscribe(s => {
+                        if (s[0] == 'x') {
+                            pb.Tick();
+                            results.Add(new StringBuilder());
+                        }
+                        else {
+                            results.Last().AppendLine(s);
+                        }
+                    });
+                    cts.Token.Register(ob.Dispose);
                     watch.Start();
                     (status, _) = argo.Run();
                     watch.Start();
