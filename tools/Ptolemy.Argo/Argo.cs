@@ -60,9 +60,9 @@ namespace Ptolemy.Argo {
                 .Subscribe(pair => {
                     var (doc, sweep) = pair;
 
-                    var enumerable = doc as string[] ?? doc.ToArray();
-                    fileLogger.Info($"sweep={sweep}, length={enumerable.Length}");
-                    if (enumerable.Length != 201) {
+                    var enumerable = doc.ToList();
+                    fileLogger.Info($"sweep={sweep}, length={enumerable.Count}");
+                    if (enumerable.Count != 201) {
                         foreach (var d in enumerable) {
                             fileLogger.Info(d);
                         }
