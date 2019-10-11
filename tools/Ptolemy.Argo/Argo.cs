@@ -45,9 +45,9 @@ namespace Ptolemy.Argo {
                 for (var l = request.SweepStart; l <= request.SweepStart + request.Sweep; l++) yield return l;
             };
 
-            var logFile = Path.Combine(FilePath.FilePath.DotConfig, "log", "log");
-            var fileLogger = new Logger.Logger();
-            fileLogger.AddHook(new FileHook(logFile));
+//            var logFile = Path.Combine(FilePath.FilePath.DotConfig, "log", "log");
+//            var fileLogger = new Logger.Logger();
+//            fileLogger.AddHook(new FileHook(logFile));
 
             var rec = exec.StdOut
                 .Where(s => !string.IsNullOrEmpty(s))
@@ -59,16 +59,8 @@ namespace Ptolemy.Argo {
                 .Zip(Range(), (list, l) => Tuple.Create(list.Skip(3), l))
                 .Subscribe(pair => {
                     var (doc, sweep) = pair;
-
-                    var enumerable = doc.ToList();
-                    fileLogger.Info($"sweep={sweep}, length={enumerable.Count}");
-                    if (enumerable.Count != 201) {
-                        foreach (var d in enumerable) {
-                            fileLogger.Info(d);
-                        }
-                    }
-                    
-                    foreach (var entity in enumerable.SelectMany(line => ResultEntity.Parse(request.Seed, sweep, line, request.Signals))) {
+                    foreach (var entity in doc.SelectMany(line => ResultEntity.Parse(request.Seed, sweep, line, request.Signals))) {
+                        // TODO: ここらへんおかしいぞ
                         receiver.OnNext(entity);
                     }
                 });

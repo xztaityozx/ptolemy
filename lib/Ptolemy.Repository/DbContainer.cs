@@ -80,7 +80,9 @@ namespace Ptolemy.Repository {
         /// </summary>
         /// <param name="db">書き込むDBの名前</param>
         /// <param name="item"></param>
-        public void Add(string db, ResultEntity item) => subjectMap[db].OnNext(item);
+        public void Add(string db, ResultEntity item) {
+            subjectMap[db].OnNext(item);
+        }
 
         public void Dispose() {
             foreach (var (key,_) in isClosed.Where(k => !k.Value)) {
