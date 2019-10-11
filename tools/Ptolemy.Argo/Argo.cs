@@ -47,6 +47,7 @@ namespace Ptolemy.Argo {
                 .Where(s => !string.IsNullOrEmpty(s))
                 .SkipWhile(s => s[0] != 'x')
                 .TakeWhile(s => s[0] != 'y')
+                .SelectMany(s => s.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries))
                 .ToList()
                 .Repeat()
                 .Zip(Range(), (list, l) => Tuple.Create(list.Skip(3), l))
@@ -71,6 +72,8 @@ namespace Ptolemy.Argo {
 
                 var stderr = new StringBuilder();
                 var errors = exec.StdError.Subscribe(s => stderr.AppendLine(s));
+
+                Directory.SetCurrentDirectory(workDir);
                 exec.Run(request.HspicePath, request.HspiceOptions.Concat(new[] {"-i", spi}).ToArray());
 
                 errors.Dispose();
