@@ -19,11 +19,11 @@ namespace Ptolemy.Argo {
         private readonly CancellationToken token;
 
 
-        public IObservable<string> Receiver => exec.StdOut
-            .Where(s => !string.IsNullOrEmpty(s))
-            .SkipWhile(s => s[0] != 'x')
-            .TakeWhile(s => s[0] != 'y')
-            .Repeat();
+//        public IObservable<string> Receiver => exec.StdOut
+//            .Where(s => !string.IsNullOrEmpty(s))
+//            .SkipWhile(s => s[0] != 'x')
+//            .TakeWhile(s => s[0] != 'y')
+//            .Repeat();
 
 
         public Argo(ArgoRequest request, CancellationToken token) {
