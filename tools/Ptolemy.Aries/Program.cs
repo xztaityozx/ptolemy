@@ -16,11 +16,11 @@ namespace Ptolemy.Aries {
                 cts.Cancel();
             };
 
-            log.Warn("Canceled by user");
+            log.Warn("Press Ctrl+C to cancel");
             var token = cts.Token;
 
             try {
-                Parser.Default.ParseArguments<AriesMake, AriesRun>(args)
+                Parser.Default.ParseArguments<AriesMake, AriesRun, AriesSearch>(args)
                     .MapResult(
                         (AriesMake a) => {
                             a.Run(token);
@@ -28,6 +28,10 @@ namespace Ptolemy.Aries {
                         },
                         (AriesRun a) => {
                             a.Run(token);
+                            return 1;
+                        },
+                        (AriesSearch a) => {
+                            a.Run();
                             return 1;
                         },
                         e => throw new ParseFailedException());

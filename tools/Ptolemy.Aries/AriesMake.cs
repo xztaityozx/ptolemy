@@ -59,6 +59,8 @@ namespace Ptolemy.Aries {
 
         public void Run(CancellationToken token) {
 
+            var log = new Logger.Logger();
+
             var transistors = this.Bind(null);
             NetList = FilePath.FilePath.Expand(NetList);
             var guid = Guid.NewGuid();
@@ -118,6 +120,8 @@ namespace Ptolemy.Aries {
                     bar.Tick($"write to {path}");
                 }
 
+                log.Info("Ptolemy.Aries make done");
+               
             }
         }
 
