@@ -44,14 +44,13 @@ namespace Ptolemy.Repository {
 
                 subjectMap[db] = new Subject<ResultEntity>();
                 repositories[db] = new SqliteRepository(path);
-                subjectMap[db].Buffer(bufferSize).Subscribe(s => {
+                subjectMap[db].Synchronize().Buffer(bufferSize).Subscribe(s => {
                         repositories[db].BulkUpsert(s);
                     },
                     () => logger.OnNext($"finished: {db}.sqlite"), token);
                 isClosed[db] = false;
             }
         }
-
 
         /// <summary>
         /// DBを閉じ書き込みを終了する
