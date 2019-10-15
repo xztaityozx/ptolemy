@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Ptolemy.Argo.Request;
+using Ptolemy.Logger;
 using Ptolemy.Repository;
 using ShellProgressBar;
 
@@ -90,6 +91,7 @@ namespace Ptolemy.Aries {
         private DbContainer container;
         public void Run(CancellationToken token) {
             log = new Logger.Logger();
+            log.AddHook(new FileHook(Path.Combine(FilePath.FilePath.DotConfig, "log", "runLog")));
             
             var sw = new Stopwatch();
             sw.Start();
@@ -120,7 +122,12 @@ namespace Ptolemy.Aries {
                     .ForAll(req => {
                         var db = req.ResultFile;
                         var rec = new Subject<ResultEntity>();
-                        rec.Subscribe(s => container.Add(db, s), () => bar.Tick(), token);
+                        rec.Subscribe(s => {
+
+                            log.Info(s);
+                            
+                            container.Add(db, s);
+                        }, () => bar.Tick(), token);
                         using var argo = new Argo.Argo(req, token);
                         argo.RunWithParse(rec);
                     });
