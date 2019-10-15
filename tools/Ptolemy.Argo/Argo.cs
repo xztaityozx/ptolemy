@@ -45,22 +45,17 @@ namespace Ptolemy.Argo {
                 for (var l = request.SweepStart; l <= request.SweepStart + request.Sweep; l++) yield return l;
             };
 
-            var logFile = Path.Combine(FilePath.FilePath.DotConfig, "log", "log");
-            var fileLogger = new Logger.Logger();
-            fileLogger.AddHook(new FileHook(logFile));
-
             var rec = exec.StdOut
                 .Where(s => !string.IsNullOrEmpty(s))
                 .SkipWhile(s => s[0] != 'x')
                 .TakeWhile(s => s[0] != 'y')
-                .Where(s => s.Split(' ')[0].TryParseDecimalWithSiPrefix(out _))
+                .Where(s => s.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0].TryParseDecimalWithSiPrefix(out _))
                 .ToList()
                 .Repeat()
                 .Zip(Range(), Tuple.Create)
                 .Subscribe(pair => {
                     var (doc, sweep) = pair;
                     foreach (var entity in doc.SelectMany(line => ResultEntity.Parse(request.Seed, sweep, line, request.Signals))) {
-                        // TODO: ここらへんおかしいぞ
                         receiver.OnNext(entity);
                     }
                 });

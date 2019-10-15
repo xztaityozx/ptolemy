@@ -122,12 +122,7 @@ namespace Ptolemy.Aries {
                     .ForAll(req => {
                         var db = req.ResultFile;
                         var rec = new Subject<ResultEntity>();
-                        rec.Subscribe(s => {
-
-                            log.Info(s);
-                            
-                            container.Add(db, s);
-                        }, () => bar.Tick(), token);
+                        rec.Subscribe(s => container[db].OnNext(s), () => bar.Tick(), token);
                         using var argo = new Argo.Argo(req, token);
                         argo.RunWithParse(rec);
                     });

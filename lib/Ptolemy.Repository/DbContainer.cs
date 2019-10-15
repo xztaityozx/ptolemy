@@ -84,6 +84,8 @@ namespace Ptolemy.Repository {
             subjectMap[db].OnNext(item);
         }
 
+        public Subject<ResultEntity> this[string index] => subjectMap[index];
+
         public void Dispose() {
             foreach (var (key,_) in isClosed.Where(k => !k.Value)) {
                 Close(key);
