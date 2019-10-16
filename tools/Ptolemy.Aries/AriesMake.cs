@@ -11,7 +11,7 @@ using ShellProgressBar;
 
 namespace Ptolemy.Aries {
     [Verb("make", HelpText = "タスクを作ります")]
-    public class AriesMake : ITransistorOption,ISignalOption {
+    public class AriesMake : ITransistorOption,ISignalOption,IAriesVerb {
         public IEnumerable<string> VtnStrings { get; set; }
         public IEnumerable<string> VtpStrings { get; set; }
         public double? Sigma { get; set; }

@@ -20,21 +20,14 @@ namespace Ptolemy.Aries {
             var token = cts.Token;
 
             try {
-                Parser.Default.ParseArguments<AriesMake, AriesRun, AriesSearch>(args)
+                var itf = Parser.Default.ParseArguments<AriesMake, AriesRun, AriesSearch>(args)
                     .MapResult(
-                        (AriesMake a) => {
-                            a.Run(token);
-                            return 1;
-                        },
-                        (AriesRun a) => {
-                            a.Run(token);
-                            return 1;
-                        },
-                        (AriesSearch a) => {
-                            a.Run();
-                            return 1;
-                        },
+                        (AriesMake a) => (IAriesVerb)a,
+                        (AriesRun a) => (IAriesVerb)a,
+                        (AriesSearch a) => (IAriesVerb)a,
                         e => throw new ParseFailedException());
+                
+                itf.Run(token);
             }
             catch (ParseFailedException) {
             }

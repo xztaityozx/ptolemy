@@ -16,7 +16,7 @@ using ShellProgressBar;
 
 namespace Ptolemy.Aries {
     [Verb("run", HelpText = "シミュレーションを実行します")]
-    public class AriesRun :IDisposable {
+    public class AriesRun :IDisposable,IAriesVerb {
         [Option("parallel", Default = 1, HelpText = "シミュレーションの並列数です")]
         public int Parallel { get; set; }
 

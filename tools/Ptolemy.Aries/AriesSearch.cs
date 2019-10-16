@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using CommandLine;
 using Ptolemy.Argo.Request;
 using Ptolemy.Interface;
 using Ptolemy.Parameters;
 
 namespace Ptolemy.Aries {
-    [Verb("search")]
-    public class AriesSearch:ITransistorOption,ISignalOption {
+    [Verb("search", HelpText = "パラメータ情報からDBを検索します")]
+    public class AriesSearch:ITransistorOption,ISignalOption,IAriesVerb {
         
         public IEnumerable<string> VtnStrings { get; set; }
         public IEnumerable<string> VtpStrings { get; set; }
@@ -55,7 +56,7 @@ namespace Ptolemy.Aries {
         [Value(0, HelpText = "NetListへのパスです", MetaName = "netlist")]
         public string NetList { get; set; }
 
-        public void Run() {
+        public void Run(CancellationToken token) {
             var transistors = this.Bind(null);
             var hash = new ArgoRequest {
                 Gnd = (decimal) Gnd, Includes = Includes.ToList(), Seed = Seed, Signals = Signals.ToList(),
@@ -65,7 +66,11 @@ namespace Ptolemy.Aries {
                 IcCommands = IcCommands.ToList(), NetList = NetList, SweepStart = SweepStart
             }.GetHashString();
 
-            Console.WriteLine(Path.Combine(FilePath.FilePath.Expand(DbRoot), hash + ".sqlite"));
+            var path = Path.Combine(FilePath.FilePath.Expand(DbRoot), hash + ".sqlite");
+            if(File.Exists(path))
+                Console.WriteLine(Path.Combine(FilePath.FilePath.Expand(DbRoot), hash + ".sqlite"));
+            else 
+                Console.Error.WriteLine("DBが見つかりませんでした");
         }
     }
 }
