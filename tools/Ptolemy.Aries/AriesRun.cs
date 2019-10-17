@@ -111,36 +111,7 @@ namespace Ptolemy.Aries {
                 log.Info($"Start simulation and write to db");
                 Console.WriteLine();
                 
-                using var bar = new ProgressBar(requests.Count, "Ptolemy.Aries", new ProgressBarOptions {
-                    BackgroundCharacter = '-', BackgroundColor = ConsoleColor.DarkGray,
-                    ForegroundColor = ConsoleColor.DarkGreen, ProgressCharacter = '>',
-                    CollapseWhenFinished = false, ForegroundColorDone = ConsoleColor.Green
-                });
-
-                //var receivers = new Map<string, Subject<ResultEntity>>();
-                //foreach (var key in requests.Select(s=>s.ResultFile).Distinct()) {
-                //    receivers[key] = new Subject<ResultEntity>();
-                //    receivers[key].Subscribe(s => container[key].OnNext(s), token);
-                //}
-
-                foreach (var grouping in requests.GroupBy(s => s.ResultFile)) {
-                    var db = grouping.Key;
-                    var path = Path.Combine(FilePath.FilePath.DotConfig, "aries", "db", db + ".sqlite");
-
-                    using var receiver = new Subject<ResultEntity>();
-
-                    receiver.Synchronize().Buffer(BufferSize).Subscribe(r => {
-                        using var repo = new SqliteRepository(path);
-                        repo.BulkUpsert(r);
-                    }, token);
-                    grouping.AsParallel().WithCancellation(token).WithDegreeOfParallelism(Parallel)
-                        .ForAll(req => {
-                            using var argo = new Argo.Argo(req, token);
-                            foreach (var resultEntity in argo.RunWithParse()) {
-                                receiver.OnNext(resultEntity);
-                            }
-                        });
-                }
+                // TODO: Impl multi simulation
                 
                 container.CloseAll();
             }

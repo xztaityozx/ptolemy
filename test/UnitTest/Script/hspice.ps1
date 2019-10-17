@@ -1,3 +1,3 @@
-echo 'x'
-seq 10
-echo 'y'
+echo x
+echo 0. 10
+echo y

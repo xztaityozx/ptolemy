@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Ptolemy.Argo.Request;
 using Ptolemy.Repository;
 using Ptolemy.SiMetricPrefix;
+using ShellProgressBar;
 
 namespace Ptolemy.Argo {
     public class Hspice {
@@ -17,7 +18,8 @@ namespace Ptolemy.Argo {
             workingRoot = Path.Combine(Path.GetTempPath(), "Ptolemy.Argo");
         }
 
-        public List<ResultEntity> Run(CancellationToken token, ArgoRequest request) {
+        // TODO: Test
+        public List<ResultEntity> Run(CancellationToken token, ArgoRequest request, IProgressBar bar = null) {
             var rt = new List<ResultEntity>();
 
             var guid = Guid.NewGuid();
@@ -47,7 +49,9 @@ namespace Ptolemy.Argo {
                 var kind = HspiceOutKind.Else;
                 var sweep = request.SweepStart;
                 string line;
-                while ((line = stdout.ReadLine()) != null || !token.IsCancellationRequested && !p.HasExited) {
+                while ((line = stdout.ReadLine()) != null || !p.HasExited) {
+                    token.ThrowIfCancellationRequested();
+
 
                     if (string.IsNullOrEmpty(line)) continue;
                     if (line[0] == 'x') {
@@ -56,13 +60,13 @@ namespace Ptolemy.Argo {
                     else if (line[0] == 'y') {
                         sweep++;
                         kind = HspiceOutKind.Else;
-                    }
+                        bar?.Tick();
+                    } else if(line[0] == 't') continue;
 
                     if (kind == HspiceOutKind.Else) continue;
                     if (!line.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0]
                         .TryParseDecimalWithSiPrefix(out _)) continue;
 
-                    //Console.WriteLine(line);
 
                     rt.AddRange(ResultEntity.Parse(request.Seed, sweep, line, signals));
                 }

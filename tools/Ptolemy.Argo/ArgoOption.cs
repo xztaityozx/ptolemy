@@ -16,7 +16,7 @@ namespace Ptolemy.Argo {
         
         [Option('t',"target", 
             HelpText = "シミュレーションしたい回路のNetListファイルへのパスを指定します")]
-        public string Target { get; set; }
+        public string TargetNetList { get; set; }
 
         [Option('o',"out", Default  = "./argoResult", HelpText = "出力先のファイル名です" )]
         public string ResultFile { get; set; }
@@ -73,7 +73,7 @@ namespace Ptolemy.Argo {
             
             if(string.IsNullOrEmpty(hspice)) throw new ArgoException("HspicePath must be set");
             if(!File.Exists(hspice)) throw new ArgoException($"cannot find {hspice}");
-            if (string.IsNullOrEmpty(Target)) throw new ArgoException($"Target netlist not set");
+            if (string.IsNullOrEmpty(TargetNetList)) throw new ArgoException($"TargetNetList netlist not set");
 
             return new ArgoRequest {
                 GroupId = Guid.Empty,
@@ -85,7 +85,7 @@ namespace Ptolemy.Argo {
                 Temperature = (decimal)Temperature,
                 Transistors = this.Bind(null),
                 Time = new RangeParameter(TimeString, (0,100E-12M,20E-9M)),
-                NetList =  FilePath.FilePath.Expand(Target),
+                NetList =  FilePath.FilePath.Expand(TargetNetList),
                 Includes = Includes.ToList(),
                 Vdd = (decimal)Vdd,
                 Gnd = (decimal)Gnd,

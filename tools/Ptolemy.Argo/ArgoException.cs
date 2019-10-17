@@ -6,5 +6,4 @@ namespace Ptolemy.Argo {
     }
 
     public class ArgoClean : Exception {}
-    public class ArgoParseFailedException: Exception{}
 }
