@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
+using Kurukuru;
+using Ptolemy.Argo;
 using Ptolemy.Argo.Request;
 using Ptolemy.Logger;
 using Ptolemy.Map;
@@ -87,13 +89,14 @@ namespace Ptolemy.Aries {
         private DbContainer GetDbContainer(CancellationToken token, IEnumerable<string> dbs, IObserver<string> sub) {
             log.Info("Build DbContainer...");
             log.Info("\tSearching databases...");
-            return new DbContainer(token, DbRoot, dbs, BufferSize, sub);
+            DbContainer rt = null;
+            Spinner.Start("Building DbContainer...", () => rt = new DbContainer(token, DbRoot, dbs, BufferSize, sub));
+            return rt;
         }
 
         private DbContainer container;
         public void Run(CancellationToken token) {
             log = new Logger.Logger();
-            log.AddHook(new FileHook(Path.Combine(FilePath.FilePath.DotConfig, "log", "runLog")));
             
             var sw = new Stopwatch();
             sw.Start();
@@ -112,7 +115,27 @@ namespace Ptolemy.Aries {
                 Console.WriteLine();
                 
                 // TODO: Impl multi simulation
-                
+                var group = requests.GroupBy(s => s.ResultFile).ToList();
+
+                using var parent = new AriesRunProgressBar(requests.Count, requests.Select(s => (int) s.Sweep).Sum());
+                logSubject.Subscribe(s => parent.TickWriteBar(BufferSize));
+
+                foreach (var g in group) {
+                    var key = g.Key;
+                    g.AsParallel()
+                        .WithDegreeOfParallelism(Parallel)
+                        .WithCancellation(token)
+                        .ForAll(req => {
+                            using var bar = parent.SpawnSimBar((int) req.Sweep,
+                                $"Sweep: {req.Sweep}, Seed:{req.Seed}, Transistor: {req.Transistors}");
+
+                            var hspice = new Hspice();
+                            foreach (var r in hspice.Run(token, req, bar)) {
+                                container[key].OnNext(r);
+                            }
+                        });
+                }
+
                 container.CloseAll();
             }
             catch (FileNotFoundException e) {
@@ -127,6 +150,55 @@ namespace Ptolemy.Aries {
 
         public void Dispose() {
             container?.Dispose();
+        }
+    }
+
+    internal class AriesRunProgressBar : IDisposable {
+        private readonly ProgressBar parent;
+        private readonly IProgressBar sim, write;
+
+        private readonly ProgressBarOptions second = new ProgressBarOptions {
+                BackgroundCharacter = '-', 
+                ProgressCharacter = '=',
+                BackgroundColor = ConsoleColor.DarkGray, 
+                ForegroundColor = ConsoleColor.DarkBlue,
+            },
+            inner = new ProgressBarOptions {
+                BackgroundCharacter = '_',
+                ProgressCharacter = '#',
+                BackgroundColor = ConsoleColor.DarkGray,
+                ForegroundColor = ConsoleColor.DarkCyan,
+            };
+
+        public AriesRunProgressBar(int totalRequests,int totalRecords) {
+            parent=new ProgressBar(2, "Ptolemy.Aries run", new ProgressBarOptions {
+                BackgroundCharacter = '-', ProgressCharacter = '>',
+                BackgroundColor = ConsoleColor.DarkGray, ForegroundColor = ConsoleColor.DarkGreen,
+                CollapseWhenFinished = false, DisplayTimeInRealTime = true,
+                ForegroundColorDone = ConsoleColor.Green
+            });
+
+            sim = parent.Spawn(totalRequests, "Simulation", second);
+            write = parent.Spawn(totalRecords, "Write to database", second);
+        }
+
+        public IProgressBar SpawnSimBar(int totalSweep, string msg="") {
+            return sim.Spawn(totalSweep, msg, inner);
+        }
+
+        public void TickWriteBar(int size) {
+            var cnt = Math.Max(size, write.MaxTicks - write.CurrentTick);
+            for (var i = 0; i < cnt; i++) {
+                write.Tick();
+            }
+
+            if (write.MaxTicks == write.CurrentTick) parent.Tick("Finished write to database");
+        }
+
+        public void Dispose() {
+            parent?.Dispose();
+            sim?.Dispose();
+            write?.Dispose();
         }
     }
 }
