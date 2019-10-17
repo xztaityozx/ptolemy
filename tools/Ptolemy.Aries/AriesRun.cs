@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -116,24 +117,30 @@ namespace Ptolemy.Aries {
                     CollapseWhenFinished = false, ForegroundColorDone = ConsoleColor.Green
                 });
 
-                var receivers = new Map<string, Subject<ResultEntity>>();
-                foreach (var key in requests.Select(s=>s.ResultFile).Distinct()) {
-                    receivers[key] = new Subject<ResultEntity>();
-                    receivers[key].Subscribe(s => container[key].OnNext(s), token);
-                }
+                //var receivers = new Map<string, Subject<ResultEntity>>();
+                //foreach (var key in requests.Select(s=>s.ResultFile).Distinct()) {
+                //    receivers[key] = new Subject<ResultEntity>();
+                //    receivers[key].Subscribe(s => container[key].OnNext(s), token);
+                //}
 
-                requests
-                    .AsParallel()
-                    .WithCancellation(token)
-                    .WithDegreeOfParallelism(Parallel)
-                    .ForAll(req => {
-                        var db = req.ResultFile;
-                        using var argo = new Argo.Argo(req, token);
-                        foreach (var resultEntity in argo.RunWithParse()) {
-                            receivers[db].OnNext(resultEntity);
-                        }
-                        bar.Tick();
-                    });
+                foreach (var grouping in requests.GroupBy(s => s.ResultFile)) {
+                    var db = grouping.Key;
+                    var path = Path.Combine(FilePath.FilePath.DotConfig, "aries", "db", db + ".sqlite");
+
+                    using var receiver = new Subject<ResultEntity>();
+
+                    receiver.Buffer(BufferSize).Subscribe(r => {
+                        using var repo = new SqliteRepository(path);
+                        repo.BulkUpsert(r);
+                    }, token);
+                    grouping.AsParallel().WithCancellation(token).WithDegreeOfParallelism(Parallel)
+                        .ForAll(req => {
+                            using var argo = new Argo.Argo(req, token);
+                            foreach (var resultEntity in argo.RunWithParse()) {
+                                receiver.OnNext(resultEntity);
+                            }
+                        });
+                }
                 
                 container.CloseAll();
             }
