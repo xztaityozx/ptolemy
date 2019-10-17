@@ -129,7 +129,7 @@ namespace Ptolemy.Aries {
 
                     using var receiver = new Subject<ResultEntity>();
 
-                    receiver.Buffer(BufferSize).Subscribe(r => {
+                    receiver.Synchronize().Buffer(BufferSize).Subscribe(r => {
                         using var repo = new SqliteRepository(path);
                         repo.BulkUpsert(r);
                     }, token);
