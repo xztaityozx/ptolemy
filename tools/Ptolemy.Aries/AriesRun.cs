@@ -119,7 +119,7 @@ namespace Ptolemy.Aries {
                 var receivers = new Map<string, Subject<ResultEntity>>();
                 foreach (var key in requests.Select(s=>s.ResultFile).Distinct()) {
                     receivers[key] = new Subject<ResultEntity>();
-                    receivers[key].Subscribe(s => container[key].OnNext(s), () => bar.Tick(), token);
+                    receivers[key].Subscribe(s => container[key].OnNext(s), token);
                 }
 
                 requests
@@ -129,7 +129,10 @@ namespace Ptolemy.Aries {
                     .ForAll(req => {
                         var db = req.ResultFile;
                         using var argo = new Argo.Argo(req, token);
-                        argo.RunWithParse(receivers[db]);
+                        foreach (var resultEntity in argo.RunWithParse()) {
+                            receivers[db].OnNext(resultEntity);
+                        }
+                        bar.Tick();
                     });
                 
                 container.CloseAll();

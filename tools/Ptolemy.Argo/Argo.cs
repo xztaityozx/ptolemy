@@ -38,7 +38,7 @@ namespace Ptolemy.Argo {
             this.token = token;
         }
 
-        public void RunWithParse(Subject<ResultEntity> receiver) {
+        public List<ResultEntity> RunWithParse() {
             var rt = new List<ResultEntity>();
 
             IEnumerable<long> Range() {
@@ -55,16 +55,14 @@ namespace Ptolemy.Argo {
                 .Zip(Range(), Tuple.Create)
                 .Subscribe(pair => {
                     var (doc, sweep) = pair;
-                    foreach (var entity in doc.SelectMany(line => ResultEntity.Parse(request.Seed, sweep, line, request.Signals))) {
-                        receiver.OnNext(entity);
-                    }
+                    rt.AddRange(doc.SelectMany(line => ResultEntity.Parse(request.Seed, sweep, line, request.Signals)));
                 });
 
             token.Register(rec.Dispose);
 
             Run();
 
-            receiver.OnCompleted();
+            return rt;
         }
 
         public (bool status, ArgoRequest result) Run() {
