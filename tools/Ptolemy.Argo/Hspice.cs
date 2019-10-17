@@ -11,32 +11,36 @@ using Ptolemy.SiMetricPrefix;
 
 namespace Ptolemy.Argo {
     public class Hspice {
-        private readonly string hspice, workingRoot;
+        private readonly string workingRoot;
 
-        public Hspice(string hspicePath, string workingRoot) {
-            hspice = hspicePath;
-            this.workingRoot = workingRoot;
+        public Hspice() {
+            workingRoot = Path.Combine(Path.GetTempPath(), "Ptolemy.Argo");
         }
 
         public List<ResultEntity> Run(CancellationToken token, ArgoRequest request) {
             var rt = new List<ResultEntity>();
 
-            Directory.CreateDirectory(workingRoot);
-            Directory.SetCurrentDirectory(workingRoot);
+            var guid = Guid.NewGuid();
+            var dir = Path.Combine(workingRoot, $"{request.GroupId}");
+            FilePath.FilePath.TryMakeDirectory(dir);
+            Directory.SetCurrentDirectory(dir);
+            var spi = Path.Combine(dir, guid + ".spi");
 
-            using (var p = new Process {
-                StartInfo = new ProcessStartInfo {
-                    UseShellExecute = false,
-                    FileName = "bash",
-                    ArgumentList = {"-c", "~/TestDir/hspice.sh"},
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                },
-            }) {
+            try {
+                request.WriteSpiScript(spi);
+
+                using var p = new Process {
+                    StartInfo = new ProcessStartInfo {
+                        UseShellExecute = false,
+                        FileName = "bash",
+                        ArgumentList =
+                            {"-c", $"{request.HspicePath} {string.Join(" ", request.HspiceOptions)} -i {guid}.spi"},
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    }
+                };
                 p.Start();
                 var stdout = p.StandardOutput;
-
-                var stderr = p.StandardError;
 
                 var signals = request.Signals;
 
@@ -48,23 +52,27 @@ namespace Ptolemy.Argo {
                     if (string.IsNullOrEmpty(line)) continue;
                     if (line[0] == 'x') {
                         kind = HspiceOutKind.Data;
-                    } 
+                    }
                     else if (line[0] == 'y') {
                         sweep++;
                         kind = HspiceOutKind.Else;
                     }
 
                     if (kind == HspiceOutKind.Else) continue;
-                    var split = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                    if (!split[0].TryParseDecimalWithSiPrefix(out _)) continue;
+                    if (!line.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0]
+                        .TryParseDecimalWithSiPrefix(out _)) continue;
 
-                    Console.WriteLine(line);
+                    //Console.WriteLine(line);
 
-                    //rt.AddRange(ResultEntity.Parse(request.Seed, sweep, line, signals));
+                    rt.AddRange(ResultEntity.Parse(request.Seed, sweep, line, signals));
                 }
 
                 p.WaitForExit();
             }
+            finally {
+                File.Delete(spi);
+            }
+            
 
             return rt;
         }

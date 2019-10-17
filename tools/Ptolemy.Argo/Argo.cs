@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using Ptolemy.Argo.Request;
-using Ptolemy.Logger;
 using Ptolemy.Repository;
 using Ptolemy.SiMetricPrefix;
 

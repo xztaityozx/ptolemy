@@ -17,11 +17,11 @@ using ShellProgressBar;
 namespace Ptolemy.Argo {
     internal static class Program {
         private static void Main(string[] args) {
-            var h = new Hspice("", FilePath.FilePath.DotConfig);
-            var rt = h.Run(CancellationToken.None, new ArgoRequest {
-                Signals = new List<string>{"n1","n2","blb","bl"},
-                SweepStart = 1
-            });
+            var h = new Hspice();
+            string doc;
+            using (var sr = new StreamReader(args[0])) doc = sr.ReadToEnd();
+            var req = JsonSerializer.Deserialize<ArgoRequest>(doc);
+            var rt = h.Run(CancellationToken.None, req);
 
             foreach (var resultEntity in rt) {
                 Console.WriteLine(JsonSerializer.Serialize(resultEntity));
