@@ -22,8 +22,8 @@ namespace Ptolemy.Aries {
             try {
                 var itf = Parser.Default.ParseArguments<AriesMake, AriesRun, AriesSearch>(args)
                     .MapResult(
-                        (AriesMake a) => (IAriesVerb)a,
-                        (AriesRun a) => (IAriesVerb)a,
+                        (AriesMake a) => a,
+                        (AriesRun a) => a,
                         (AriesSearch a) => (IAriesVerb)a,
                         e => throw new ParseFailedException());
                 

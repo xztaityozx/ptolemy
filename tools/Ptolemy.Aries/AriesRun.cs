@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CommandLine;
 using Ptolemy.Argo.Request;
 using Ptolemy.Logger;
+using Ptolemy.Map;
 using Ptolemy.Repository;
 using ShellProgressBar;
 
@@ -115,16 +116,20 @@ namespace Ptolemy.Aries {
                     CollapseWhenFinished = false, ForegroundColorDone = ConsoleColor.Green
                 });
 
+                var receivers = new Map<string, Subject<ResultEntity>>();
+                foreach (var key in requests.Select(s=>s.ResultFile).Distinct()) {
+                    receivers[key] = new Subject<ResultEntity>();
+                    receivers[key].Subscribe(s => container[key].OnNext(s), () => bar.Tick(), token);
+                }
+
                 requests
                     .AsParallel()
                     .WithCancellation(token)
                     .WithDegreeOfParallelism(Parallel)
                     .ForAll(req => {
                         var db = req.ResultFile;
-                        var rec = new Subject<ResultEntity>();
-                        rec.Subscribe(s => container[db].OnNext(s), () => bar.Tick(), token);
                         using var argo = new Argo.Argo(req, token);
-                        argo.RunWithParse(rec);
+                        argo.RunWithParse(receivers[db]);
                     });
                 
                 container.CloseAll();

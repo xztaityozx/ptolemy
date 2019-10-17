@@ -30,16 +30,16 @@ namespace Ptolemy.Argo {
 
                         throw new ArgoClean();
                     }, e => throw new ArgoParseFailedException());
-                var results = new List<StringBuilder>();
+                var results = new StringBuilder();
 
                 Console.Clear();
                 log.Info($"Target Netlist: {req.NetList}");
                 log.Info("Parameters");
-                log.Info($"\tVtn:");
+                log.Info("\tVtn:");
                 log.Info($"\t\tThreshold: {req.Transistors.Vtn.Threshold}");
                 log.Info($"\t\tSigma: {req.Transistors.Vtn.Sigma}");
                 log.Info($"\t\tDeviation: {req.Transistors.Vtn.Deviation}");
-                log.Info($"\tVtp:");
+                log.Info("\tVtp:");
                 log.Info($"\t\tThreshold: {req.Transistors.Vtp.Threshold}");
                 log.Info($"\t\tSigma: {req.Transistors.Vtp.Sigma}");
                 log.Info($"\t\tDeviation: {req.Transistors.Vtp.Deviation}");
@@ -71,13 +71,13 @@ namespace Ptolemy.Argo {
                     ForegroundColorDone = ConsoleColor.Green,
                     CollapseWhenFinished = false
                 })) {
+                    var sweep = req.SweepStart-1;
                     var ob = argo.Receiver.Subscribe(s => {
                         if (s[0] == 'x') {
-                            pb.Tick();
-                            results.Add(new StringBuilder());
+                            sweep++;
                         }
                         else {
-                            results.Last().AppendLine(s);
+                            results.AppendLine(s);
                         }
                     });
                     cts.Token.Register(ob.Dispose);
@@ -94,12 +94,16 @@ namespace Ptolemy.Argo {
                     log.Info($"Elapsed time: {watch.Elapsed}");
                     log.Info("Result file: " + req.ResultFile +
                              $"[{req.SweepStart}..{req.Sweep + req.SweepStart - 1}]");
-                    foreach (var item in results.Select((sb, i) => new {sb, i = i + req.SweepStart})) {
-                        var path = req.ResultFile + $"{item.i}";
-                        using var sw = new StreamWriter(path, false, new UTF8Encoding(false));
-                        sw.WriteLine(item.sb.ToString().TrimEnd());
-                        sw.Flush();
-                    }
+                    //foreach (var item in results.Select((sb, i) => new {sb, i = i + req.SweepStart})) {
+                    //    var path = req.ResultFile + $"{item.i}";
+                    //    using var sw = new StreamWriter(path, false, new UTF8Encoding(false));
+                    //    sw.WriteLine(item.sb.ToString().TrimEnd());
+                    //    sw.Flush();
+                    //}
+
+                    using var sw = new StreamWriter(req.ResultFile, false, Encoding.UTF8);
+                    sw.WriteLine(results.ToString());
+                    sw.Flush();
                 }
             }
             catch (ArgoClean) {
