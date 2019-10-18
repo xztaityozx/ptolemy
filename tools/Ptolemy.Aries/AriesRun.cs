@@ -113,30 +113,38 @@ namespace Ptolemy.Aries {
                 log.Info($"DbContainer has {container.Count} databases");
                 log.Info($"Start simulation and write to db");
                 Console.WriteLine();
-                
+
+                var totalRecords = requests.Select(s => (int) s.Sweep).Sum();
+                log.Info($"Ptolemy.Aries will generate {totalRecords} records");
+
                 // TODO: Impl multi simulation
-                var group = requests.GroupBy(s => s.ResultFile).ToList();
 
-                using var parent = new AriesRunProgressBar(requests.Count, requests.Select(s => (int) s.Sweep).Sum());
-                logSubject.Subscribe(s => parent.TickWriteBar(BufferSize));
+                using (var parent =
+                    new AriesRunProgressBar(requests.Count, totalRecords)) {
+                    logSubject.Subscribe(s => parent.TickWriteBar(BufferSize));
 
-                foreach (var g in group) {
-                    var key = g.Key;
-                    g.AsParallel()
+                    requests
+                        .OrderBy(_ => Guid.NewGuid()) // DbContainerは同じDBへ並列書き込みしないので、できるだけ書き込み先のDBをばらけさせる
+                        .AsParallel()
                         .WithDegreeOfParallelism(Parallel)
                         .WithCancellation(token)
                         .ForAll(req => {
-                            using var bar = parent.SpawnSimBar((int) req.Sweep,
-                                $"Sweep: {req.Sweep}, Seed:{req.Seed}, Transistor: {req.Transistors}");
+                                using var bar = parent.SpawnSimBar((int) req.Sweep,
+                                    $"Sweep: {req.Sweep}, Seed:{req.Seed}, Transistor: {req.Transistors}");
 
-                            var hspice = new Hspice();
-                            foreach (var r in hspice.Run(token, req, bar)) {
-                                container[key].OnNext(r);
+                                var hspice = new Hspice();
+                                foreach (var r in hspice.Run(token, req, bar)) {
+                                    container[req.ResultFile].OnNext(r);
+                                }
+
+                                parent.TickSimBar();
                             }
-                        });
+                        );
                 }
 
-                container.CloseAll();
+                Spinner.Start("Closing DbContainer...", () => {
+                    container.CloseAll();
+                });
             }
             catch (FileNotFoundException e) {
                 log.Error($"{e.FileName} が見つかりませんでした");
@@ -184,6 +192,12 @@ namespace Ptolemy.Aries {
 
         public IProgressBar SpawnSimBar(int totalSweep, string msg="") {
             return sim.Spawn(totalSweep, msg, inner);
+        }
+
+        public void TickSimBar(string msg = "") {
+            sim.Tick(msg);
+
+            if (sim.MaxTicks == write.CurrentTick) parent.Tick("Finished simulation");
         }
 
         public void TickWriteBar(int size) {

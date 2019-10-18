@@ -67,12 +67,22 @@ namespace Ptolemy.Argo {
                 log.Info($"{res.Count} result records");
                 if (string.IsNullOrEmpty(req.ResultFile)) {
                     log.Warn("result file not set. print to stdout");
-                    Console.WriteLine(JsonSerializer.Serialize(res));
+                    Console.WriteLine("[");
+                    foreach (var r in res) {
+                        Console.WriteLine($"{r},");
+                    }
+                    Console.WriteLine("]");
                 }
                 else {
                     log.Info($"Write to {req.ResultFile}");
                     using var writer = new StreamWriter(req.ResultFile);
-                    writer.WriteLine(JsonSerializer.Serialize(res));
+                    writer.WriteLine("[");
+                    foreach (var r in res) {
+                        writer.WriteLine($"{r},");
+                        writer.Flush();
+
+                    }
+                    writer.WriteLine("]");
                     writer.Flush();
                 }
             }
