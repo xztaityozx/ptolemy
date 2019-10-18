@@ -19,7 +19,7 @@ namespace Ptolemy.Argo {
         }
 
         // TODO: Test
-        public List<ResultEntity> Run(CancellationToken token, ArgoRequest request, IProgressBar bar = null) {
+        public IEnumerable<ResultEntity> Run(CancellationToken token, ArgoRequest request, IProgressBar bar = null) {
             var rt = new List<ResultEntity>();
 
             var guid = Guid.NewGuid();
@@ -33,7 +33,7 @@ namespace Ptolemy.Argo {
             using var p = new Process {
                 StartInfo = new ProcessStartInfo {
                     UseShellExecute = false,
-                    FileName = "bash",
+                    FileName = Environment.OSVersion.Platform == PlatformID.Unix ? "bash":"powershell.exe",
                     ArgumentList =
                         {"-c", $"{request.HspicePath} {string.Join(" ", request.HspiceOptions)} -i {guid}.spi"},
                     RedirectStandardOutput = true,
@@ -67,14 +67,13 @@ namespace Ptolemy.Argo {
                 if (!line.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0]
                     .TryParseDecimalWithSiPrefix(out _)) continue;
 
-
-                rt.AddRange(ResultEntity.Parse(request.Seed, sweep, line, signals));
+                foreach (var resultEntity in ResultEntity.Parse(request.Seed, sweep, line, signals)) {
+                    yield return resultEntity;
+                }
             }
 
             p.WaitForExit();
             File.Delete(spi);
-
-            return rt;
         }
 
         private enum HspiceOutKind {

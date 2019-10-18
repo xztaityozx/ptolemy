@@ -29,7 +29,8 @@ namespace Ptolemy.Repository {
             string containerRoot, 
             IEnumerable<string> dbs, 
             int bufferSize,
-            IObserver<string> logger) {
+            IObserver<string> logger
+            ) {
             
             if(!Directory.Exists(containerRoot)) throw new DirectoryNotFoundException($"{containerRoot} nou found");
 
@@ -44,10 +45,11 @@ namespace Ptolemy.Repository {
 
                 subjectMap[db] = new Subject<ResultEntity>();
                 repositories[db] = new SqliteRepository(path);
-                subjectMap[db].Synchronize().Buffer(bufferSize).Subscribe(s => {
+                subjectMap[db].Synchronize().Buffer(bufferSize)
+                    .Subscribe(s => {
                         repositories[db].BulkUpsert(s);
-                    },
-                    () => logger.OnNext($"finished: {db}.sqlite"), token);
+                        logger.OnNext($"{s.Count}");
+                    }, token);
                 isClosed[db] = false;
             }
         }

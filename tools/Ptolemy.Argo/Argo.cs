@@ -22,7 +22,7 @@ namespace Ptolemy.Argo {
                 CollapseWhenFinished = true, DisplayTimeInRealTime = true,
                 ForegroundColorDone = ConsoleColor.Green
             });
-            return hspice.Run(token, request, bar);
+            return hspice.Run(token, request, bar).ToList();
         }
     }
 }

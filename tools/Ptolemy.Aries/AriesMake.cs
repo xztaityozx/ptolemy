@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using CommandLine;
+using Ptolemy.Argo;
 using Ptolemy.Argo.Request;
 using Ptolemy.Interface;
 using Ptolemy.Parameters;
@@ -70,6 +71,13 @@ namespace Ptolemy.Aries {
 
             if (!File.Exists(NetList)) throw new AriesException($"Netlistファイルが見つかりません: {NetList}");
 
+            HspicePath = string.IsNullOrEmpty(HspicePath)
+                ? Environment.GetEnvironmentVariable(Argo.Argo.EnvArgoHspice)
+                : HspicePath;
+
+            if (string.IsNullOrEmpty(HspicePath) || !File.Exists(HspicePath)) {
+                throw new ArgoException($"Hspice can not found: {HspicePath}");
+            }
 
             var baseRequest = new ArgoRequest {
                 GroupId = guid, Gnd = (decimal) Gnd, Includes = Includes.ToList(), Seed = Seed, Signals = Signals.ToList(),
