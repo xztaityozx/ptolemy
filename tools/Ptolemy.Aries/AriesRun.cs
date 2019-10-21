@@ -139,6 +139,7 @@ namespace Ptolemy.Aries {
                             parent.TickSimBar();
                         }
                     );
+                parent.SetTextToWriteBar("Closing DbContainer...");
                 container.CloseAll();
             }
             catch (FileNotFoundException e) {
@@ -163,13 +164,13 @@ namespace Ptolemy.Aries {
         private readonly ProgressBarOptions second = new ProgressBarOptions {
                 BackgroundCharacter = '-', 
                 ProgressCharacter = '=',
-                BackgroundColor = ConsoleColor.DarkGray, 
-                ForegroundColor = ConsoleColor.DarkBlue,
+                BackgroundColor = ConsoleColor.Gray, 
+                ForegroundColor = ConsoleColor.DarkYellow,
             },
             inner = new ProgressBarOptions {
                 BackgroundCharacter = '_',
                 ProgressCharacter = '#',
-                BackgroundColor = ConsoleColor.DarkGray,
+                BackgroundColor = ConsoleColor.Gray,
                 ForegroundColor = ConsoleColor.DarkCyan,
             };
 
@@ -194,6 +195,8 @@ namespace Ptolemy.Aries {
 
             if (sim.MaxTicks == sim.CurrentTick) parent.Tick("Finished simulation");
         }
+
+        public void SetTextToWriteBar(string msg = "") => write.Message = msg;
 
         public void TickWriteBar(int size) {
             var cnt = Math.Min(size, write.MaxTicks - write.CurrentTick);

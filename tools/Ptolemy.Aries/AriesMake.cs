@@ -8,6 +8,7 @@ using Ptolemy.Argo;
 using Ptolemy.Argo.Request;
 using Ptolemy.Interface;
 using Ptolemy.Parameters;
+using Ptolemy.SiMetricPrefix;
 using ShellProgressBar;
 
 namespace Ptolemy.Aries {
@@ -17,31 +18,31 @@ namespace Ptolemy.Aries {
         public IEnumerable<string> VtpStrings { get; set; }
         public double? Sigma { get; set; }
 
-        [Option("sweepStart", Default = 1, HelpText = "Sweepの開始値です")]
-        public long SweepStart { get; set; }
+        [Option("sweepStart", Default = "1", HelpText = "Sweepの開始値です")]
+        public string SweepStart { get; set; }
 
-        [Option('w',"sweeps",Default = 2000, HelpText = "合計のSweep数です")]
-        public long TotalSweeps { get; set; }
+        [Option('w',"sweeps",Default = "2000", HelpText = "合計のSweep数です")]
+        public string TotalSweeps { get; set; }
 
-        [Option('e', "seed",Default = 1,HelpText = "Seed値です")]
-        public long Seed { get; set; }
+        [Option('e', "seed",Default = "1",HelpText = "Seed値です")]
+        public string Seed { get; set; }
 
         [Option('W',"splitOption", HelpText = "合計Sweepをseedかsweepで分割します.[seed or sweep]:[num]", Default = "none")]
         public string SplitOption { get; set; }
 
         public IEnumerable<string> Signals { get; set; }
 
-        [Option("temp", Default = 25.0, HelpText = "温度です")]
-        public double Temperature { get; set; }
+        [Option("temp", Default = "25.0", HelpText = "温度です")]
+        public string Temperature { get; set; }
 
         [Option("time", Default = "0,100p,20n", HelpText = "シミュレーション時間を[start],[step],[stop]で指定します")]
         public string TimeString { get; set; }
 
-        [Option("gnd", Default = 0.0, HelpText = "Gndの電圧です")]
-        public double Gnd { get; set; }
+        [Option("gnd", Default = "0.0", HelpText = "Gndの電圧です")]
+        public string Gnd { get; set; }
 
-        [Option("vdd", Default = 0.8, HelpText = "Vddの電圧です")]
-        public double Vdd { get; set; }
+        [Option("vdd", Default = "0.8", HelpText = "Vddの電圧です")]
+        public string Vdd { get; set; }
 
         [Option("include", HelpText = "モデルファイルなど、NetListにIncludeするファイルのリストです")]
         public IEnumerable<string> Includes { get; set; }
@@ -79,11 +80,21 @@ namespace Ptolemy.Aries {
                 throw new ArgoException($"Hspice can not found: {HspicePath}");
             }
 
+            var totalSweep = TotalSweeps.ParseLongWithSiPrefix();
+            var seed = Seed.ParseLongWithSiPrefix();
+            var start = SweepStart.ParseLongWithSiPrefix();
             var baseRequest = new ArgoRequest {
-                GroupId = guid, Gnd = (decimal) Gnd, Includes = Includes.ToList(), Seed = Seed, Signals = Signals.ToList(),
-                Sweep = TotalSweeps, Temperature = (decimal) Temperature, Time = new RangeParameter(TimeString),
-                Transistors = transistors, Vdd = (decimal) Vdd, HspiceOptions = Options.ToList(), HspicePath = HspicePath,
-                IcCommands = IcCommands.ToList(), NetList = NetList, SweepStart = SweepStart 
+                GroupId = guid, Gnd = Gnd.ParseDecimalWithSiPrefix(),
+                Includes = Includes.ToList(),
+                Seed = seed,
+                Signals = Signals.ToList(),
+                Sweep = totalSweep,
+                Temperature = Temperature.ParseDecimalWithSiPrefix()
+                , Time = new RangeParameter(TimeString),
+                Transistors = transistors, 
+                Vdd = Vdd.ParseDecimalWithSiPrefix(),
+                HspiceOptions = Options.ToList(), HspicePath = HspicePath,
+                IcCommands = IcCommands.ToList(), NetList = NetList, SweepStart = start
             };
 
             var dbName = baseRequest.GetHashString();
@@ -100,9 +111,7 @@ namespace Ptolemy.Aries {
                     _ => throw new AriesException("SplitOptionの解釈に失敗しました. [seed, sweep]:[size]")
                     };
 
-                var seed = Seed;
-                var start = SweepStart;
-                var total = TotalSweeps / size + (TotalSweeps % size == 0 ? 0 : 1);
+                var total = totalSweep / size + (totalSweep % size == 0 ? 0 : 1);
                 using var bar = new ProgressBar((int)total,"Write task files", new ProgressBarOptions {
                     BackgroundCharacter = '-', BackgroundColor = ConsoleColor.DarkGray,
                     ForegroundColor = ConsoleColor.DarkGreen, ProgressCharacter = '>',
@@ -113,7 +122,7 @@ namespace Ptolemy.Aries {
 
                     token.ThrowIfCancellationRequested();
 
-                    var rest = TotalSweeps - i * size;
+                    var rest = totalSweep - i * size;
                     baseRequest.Sweep = rest < size ? rest : size;
                     var path = Path.Combine(baseDir, $"{guid}-{i}.json");
                     if (by == SplitBy.Seed) {
