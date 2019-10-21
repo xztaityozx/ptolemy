@@ -76,6 +76,7 @@ namespace Ptolemy.Aries {
                 ? Environment.GetEnvironmentVariable(Argo.Argo.EnvArgoHspice)
                 : HspicePath;
 
+
             if (string.IsNullOrEmpty(HspicePath) || !File.Exists(HspicePath)) {
                 throw new ArgoException($"Hspice can not found: {HspicePath}");
             }
@@ -86,7 +87,10 @@ namespace Ptolemy.Aries {
                 var start = SweepStart.ParseLongWithSiPrefix();
                 var baseRequest = new ArgoRequest {
                     GroupId = guid, Gnd = Gnd.ParseDecimalWithSiPrefix(),
-                    Includes = Includes.ToList(),
+                    Includes = Includes.Any()
+                        ? Includes.ToList()
+                        : Environment.GetEnvironmentVariable(Argo.Argo.EnvArgoIncludes)
+                            ?.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
                     Seed = seed,
                     Signals = Signals.ToList(),
                     Sweep = totalSweep,

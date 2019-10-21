@@ -13,6 +13,7 @@ using ShellProgressBar;
 namespace Ptolemy.Argo {
     public class Argo  {
         public const string EnvArgoHspice = "ARGO_HSPICE";
+        public const string EnvArgoIncludes = "ARGO_INCLUDES";
 
         public static List<ResultEntity> Run(CancellationToken token, ArgoRequest request) {
             var hspice = new Hspice();
