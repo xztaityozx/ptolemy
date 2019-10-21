@@ -63,10 +63,22 @@ namespace Ptolemy.Aries {
 
             var log = new Logger.Logger();
 
-            var transistors = this.Bind(null);
-            NetList = FilePath.FilePath.Expand(NetList);
+            // Configのデフォルトも見る
+            var transistors = this.Bind(Config.Config.Instance.ArgoDefault.Transistors);
+
+            if(string.IsNullOrEmpty(NetList)||string.IsNullOrEmpty(Config.Config.Instance.ArgoDefault.NetList))
+                throw new AriesException("NetListを空にできません.一番目の引数もしくはコンフィグファイルのArgoDefault.NetListで指定してください");
+
+            // 引数で与えたNetListが優先
+            NetList = FilePath.FilePath.Expand(
+                string.IsNullOrEmpty(NetList)
+                    ? Config.Config.Instance.ArgoDefault.NetList
+                    : NetList);
+
             var guid = Guid.NewGuid();
-            var baseDir = Path.Combine(FilePath.FilePath.DotConfig, "aries", "task");
+
+            // タスクファイルを保存してるディレクトリへのパスを展開
+            var baseDir = Path.Combine(Config.Config.Instance.WorkingRoot, "aries", "task");
             
             if(!Directory.Exists(baseDir)) Directory.CreateDirectory(baseDir);
 
@@ -85,14 +97,23 @@ namespace Ptolemy.Aries {
                 var totalSweep = TotalSweeps.ParseLongWithSiPrefix();
                 var seed = Seed.ParseLongWithSiPrefix();
                 var start = SweepStart.ParseLongWithSiPrefix();
+
+                var include = new[] {
+                    Includes,
+                    Config.Config.Instance.ArgoDefault.Includes,
+                    Environment.GetEnvironmentVariable(Argo.Argo.EnvArgoIncludes)
+                        ?.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                };
+
+
                 var baseRequest = new ArgoRequest {
                     GroupId = guid, Gnd = Gnd.ParseDecimalWithSiPrefix(),
-                    Includes = Includes.Any()
-                        ? Includes.ToList()
-                        : Environment.GetEnvironmentVariable(Argo.Argo.EnvArgoIncludes)
-                            ?.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
+
+                    // Includesは引数、コンフィグ、環境変数のうち最初にNullじゃないやつを選ぶ。全部Nullなら空のリスト
+                    Includes = include.Any(s=>s.Any()) ? include.First(s=>s.Any()).ToList() : new List<string>(),
                     Seed = seed,
-                    Signals = Signals.ToList(),
+                    // Signalsは引数がNullならコンフィグを選ぶ
+                    Signals = (Signals ?? Config.Config.Instance.ArgoDefault.Signals).ToList(),
                     Sweep = totalSweep,
                     Temperature = Temperature.ParseDecimalWithSiPrefix(), Time = new RangeParameter(TimeString),
                     Transistors = transistors,

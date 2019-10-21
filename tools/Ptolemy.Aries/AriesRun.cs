@@ -9,6 +9,7 @@ using CommandLine;
 using Kurukuru;
 using Ptolemy.Argo;
 using Ptolemy.Argo.Request;
+using Ptolemy.Logger;
 using Ptolemy.Repository;
 using Ptolemy.SiMetricPrefix;
 using ShellProgressBar;
@@ -22,12 +23,6 @@ namespace Ptolemy.Aries {
         [Option('n', "count", HelpText = "実行するタスクの数です", Default = "1")]
         public string Count { get; set; }
 
-        [Option("taskDir", Default = "~/.config/ptolemy/aries/task", HelpText = "タスクが保存されているディレクトリへのパスです")]
-        public string TaskDir { get; set; }
-
-        [Option('R',"dbRoot", HelpText = "DBファイルの格納されるディレクトリルートへのパスです", Default = "~/.config/ptolemy/aries/dbRoot")]
-        public string DbRoot { get; set; }
-
         [Option("all", Default = false, HelpText = "保存されているタスクをすべて実行します")]
         public bool All { get; set; }
 
@@ -39,27 +34,43 @@ namespace Ptolemy.Aries {
         [Option('b', "bufferSize", HelpText = "1度のDbアクセスで書き込むアイテムの最大数です", Default = 50000)]
         public int BufferSize { get; set; }
 
+        [Option('m', "maxRetry", Default = 3, HelpText = "ひとつのシミュレーションが失敗したときに再実行する回数の上限値です")]
+        public int MaxRetry { get; set; }
+
+        [Option("slack", Default = true, HelpText = "シミュレーションの開始時と終了時にSlackへ投稿します")]
+        public bool PostToSlack { get; set; }
+
         private Logger.Logger log;
+
+        private string dbRoot, taskDir, logDir;
+
+        /// <summary>
+        /// DBを保存するディレクトリを作る
+        /// </summary>
         private void MakeDbRoot() {
-            DbRoot = FilePath.FilePath.Expand(DbRoot);
-            if (Directory.Exists(DbRoot)) return;
-            log.Warn($"DbRoot: {DbRoot} not found");
+            dbRoot = FilePath.FilePath.Expand(Path.Combine(Config.Config.Instance.WorkingRoot, "aries", "db"));
+            if (Directory.Exists(dbRoot)) return;
+            log.Warn($"DbRoot: {dbRoot} not found");
 
             bool Ask() {
-                Console.Write($"Dbファイルを {DbRoot} に保存しますか？(y/n)>> ");
+                Console.Write($"Dbファイルを {dbRoot} に保存しますか？(y/n)>> ");
                 return Console.ReadLine() switch { "y" => true, "yes" => true, _ => false };
             }
 
             if (Yes || Ask()) {
-                Directory.CreateDirectory(DbRoot);
+                Directory.CreateDirectory(dbRoot);
             }
             else {
                 throw new OperationCanceledException();
             }
         }
 
-        private List<ArgoRequest> GetRequests() {
-            var tasks = new List<ArgoRequest>();
+        /// <summary>
+        /// Requestのリストを返す
+        /// </summary>
+        /// <returns></returns>
+        private List<(ArgoRequest request, string filePath)> GetRequests() {
+            var tasks = new List<(ArgoRequest, string)>();
             var count = 1;
             try {
                 count = Count.ParseIntWithSiPrefix();
@@ -74,83 +85,151 @@ namespace Ptolemy.Aries {
             if (!string.IsNullOrEmpty(InputFile)) {
                 string doc;
                 using (var sr = new StreamReader(InputFile)) doc = sr.ReadToEnd();
-                tasks.Add(ArgoRequest.FromJson(doc));
+                tasks.Add((ArgoRequest.FromJson(doc), InputFile));
             }
             else {
-                TaskDir = FilePath.FilePath.Expand(TaskDir);
-                if (!Directory.Exists(TaskDir)) throw new AriesException($"{TaskDir} が見つかりません");
+                taskDir = FilePath.FilePath.Expand(Path.Combine(Config.Config.Instance.WorkingRoot, "aries", "tasks"));
+                if (!Directory.Exists(taskDir)) throw new AriesException($"{taskDir} が見つかりません");
 
-                tasks.AddRange(Directory.GetFiles(TaskDir)
+                tasks.AddRange(Directory.GetFiles(taskDir)
                     .TakeWhile((s, i) => i < count || All)
-                    .Select(ArgoRequest.FromFile));
+                    .Select(s=> (ArgoRequest.FromFile(s), s)));
             }
 
             log.Info($"Total task = {tasks.Count}");
             return tasks;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="dbs"></param>
+        /// <param name="sub"></param>
+        /// <returns></returns>
         private DbContainer GetDbContainer(CancellationToken token, IEnumerable<string> dbs, IObserver<string> sub) {
             log.Info("Build DbContainer...");
             log.Info("\tSearching databases...");
             DbContainer rt = null;
-            Spinner.Start("Building DbContainer...", () => rt = new DbContainer(token, DbRoot, dbs, BufferSize, sub));
+            Spinner.Start("Building DbContainer...", () => rt = new DbContainer(token, dbRoot, dbs, BufferSize, sub));
+            return rt;
+        }
+
+        /// <summary>
+        /// シミュレーションをする。削除していいタスクファイルへのパスのリストを返す
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="requests"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        private List<string> StartSimulation(CancellationToken token, List<(ArgoRequest, string)> requests,AriesRunProgressBar parent) {
+            var rt = new List<string>();
+            requests
+                .OrderBy(_ => Guid.NewGuid()) // DbContainerは同じDBへ並列書き込みしないので、できるだけ書き込み先のDBをばらけさせる
+                .AsParallel().WithDegreeOfParallelism(Parallel) // requestを並列化
+                .WithCancellation(token) // キャンセル可能
+                .ForAll(req => {
+                        var (request, filePath) = req;
+                        using var bar = parent.SpawnSimBar((int) request.Sweep,
+                            $"Sweep: {request.Sweep}, Seed:{request.Seed}, Transistor: {request.Transistors}");
+
+                        var hspice = new Hspice();
+                        var retry = 0;
+
+                        // リトライ機構
+                        do {
+                            try {
+                                foreach (var r in hspice.Run(token, request, bar)) {
+                                    container[request.ResultFile].OnNext(r);
+                                }
+
+                                break;
+                            }
+                            catch (Exception) {
+                                retry++;
+                            }
+                        } while (retry < MaxRetry);
+
+                        // リトライ数の上限に達してないので削除対象にする
+                        if (retry < MaxRetry) {
+                            rt.Add(filePath);
+                        }
+
+                        // Progress
+                        parent.TickSimBar();
+                    }
+                );
+            parent.SetTextToWriteBar("Closing DbContainer...");
+            container.CloseAll();
             return rt;
         }
 
         private DbContainer container;
         public void Run(CancellationToken token) {
             log = new Logger.Logger();
-            
+            {
+                logDir = FilePath.FilePath.Expand(Path.Combine(Config.Config.Instance.WorkingRoot, "aries", "log"));
+                FilePath.FilePath.TryMakeDirectory(logDir);
+                var logFile = Path.Combine(logDir, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.log");
+                log.AddHook(new FileHook(logFile));
+                log.Info("Add file hook");
+                log.Info($"log file: {logFile}");
+            }
+
+
+            if (PostToSlack) {
+                Slack.Slack.ReplyTo($"Ptolemy.Aries run: Started at {DateTime.Now}",Config.Config.Instance.SlackConfig);
+            }
+
             var sw = new Stopwatch();
+            var deleteTarget=new List<string>();
+            var (success, failed) = (0, 0);
             sw.Start();
             try {
                 MakeDbRoot();
                 log.Info("Start Ptolemy.Aries run");
                 Console.WriteLine();
                 var requests = GetRequests();
-
+                
                 using var logSubject = new Subject<string>();
                 logSubject.Subscribe(s => log.Info(s));
-                container = GetDbContainer(token, requests.Select(s => s.ResultFile), logSubject);
+                container = GetDbContainer(token, requests.Select(s => s.request.ResultFile), logSubject);
                 
                 log.Info($"DbContainer has {container.Count} databases");
                 log.Info($"Start simulation and write to db");
                 Console.WriteLine();
 
-                var totalRecords = requests.Select(s => (int) s.Sweep * s.Signals.Count * s.Time.ToEnumerable().Count()).Sum();
+                var totalRecords = requests.Select(s => (int) s.request.Sweep * s.request.Signals.Count * s.request.Time.ToEnumerable().Count()).Sum();
                 log.Info($"Ptolemy.Aries will generate {totalRecords} records");
 
                 using var parent =
                     new AriesRunProgressBar(requests.Count, totalRecords);
                 logSubject.Subscribe(s => parent.TickWriteBar(int.Parse(s)));
 
-                requests
-                    .OrderBy(_ => Guid.NewGuid())                   // DbContainerは同じDBへ並列書き込みしないので、できるだけ書き込み先のDBをばらけさせる
-                    .AsParallel().WithDegreeOfParallelism(Parallel) // requestを並列化
-                    .WithCancellation(token)                        // キャンセル可能
-                    .ForAll(req => {
-                            using var bar = parent.SpawnSimBar((int) req.Sweep,
-                                $"Sweep: {req.Sweep}, Seed:{req.Seed}, Transistor: {req.Transistors}");
-
-                            var hspice = new Hspice();
-                            foreach (var r in hspice.Run(token, req, bar)) {
-                                container[req.ResultFile].OnNext(r);
-                            }
-
-                            parent.TickSimBar();
-                        }
-                    );
-                parent.SetTextToWriteBar("Closing DbContainer...");
-                container.CloseAll();
+                deleteTarget = StartSimulation(token, requests, parent);
+                success = deleteTarget.Count;
+                failed = requests.Count - success;
             }
             catch (FileNotFoundException e) {
                 log.Error($"{e.FileName} が見つかりませんでした");
             }
             
             Console.WriteLine();
+
+            Spinner.Start("Cleaning up...", spin => {
+                foreach (var item in deleteTarget) {
+                    File.Delete(item);
+                    spin.Text = $"{item} removing...";
+                }
+                spin.Info("Finished");
+            });
             sw.Stop();
             log.Info("Finished Ptolemy.Aries run");
             log.Info($"Elapsed {sw.Elapsed}");
+            if (PostToSlack) {
+                Slack.Slack.PostToAriesResult(success, failed, sw.Elapsed, Config.Config.Instance.SlackConfig);
+            }
+
         }
 
         public void Dispose() {

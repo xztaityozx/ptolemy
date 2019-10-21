@@ -53,7 +53,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Lupus", "tools\Ptol
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Cli", "lib\Ptolemy.Cli\Ptolemy.Cli.csproj", "{3D649AB4-E66C-4C33-B3EA-0B5DEF650318}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Aries", "tools\Ptolemy.Aries\Ptolemy.Aries.csproj", "{BF084235-E064-43A4-9380-682FCBB9371D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Aries", "tools\Ptolemy.Aries\Ptolemy.Aries.csproj", "{BF084235-E064-43A4-9380-682FCBB9371D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Slack", "lib\Ptolemy.Slack\Ptolemy.Slack.csproj", "{47F3BD37-6021-41A4-AAC8-C6DFD1F51F4F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -153,6 +155,10 @@ Global
 		{BF084235-E064-43A4-9380-682FCBB9371D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF084235-E064-43A4-9380-682FCBB9371D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF084235-E064-43A4-9380-682FCBB9371D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47F3BD37-6021-41A4-AAC8-C6DFD1F51F4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47F3BD37-6021-41A4-AAC8-C6DFD1F51F4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47F3BD37-6021-41A4-AAC8-C6DFD1F51F4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47F3BD37-6021-41A4-AAC8-C6DFD1F51F4F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -181,6 +187,7 @@ Global
 		{4FD51AB5-38C2-40D2-8521-D832C81B3E83} = {0BE68A10-7B3B-4E90-91E9-44A8F7EAE74F}
 		{3D649AB4-E66C-4C33-B3EA-0B5DEF650318} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
 		{BF084235-E064-43A4-9380-682FCBB9371D} = {0BE68A10-7B3B-4E90-91E9-44A8F7EAE74F}
+		{47F3BD37-6021-41A4-AAC8-C6DFD1F51F4F} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {19C6E637-BC0D-4D7F-8E43-AC22C5A894BB}

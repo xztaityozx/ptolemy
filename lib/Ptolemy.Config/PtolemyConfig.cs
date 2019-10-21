@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Ptolemy.Argo.Request;
 using Ptolemy.Draco.Request;
 using Ptolemy.Libra.Request;
+using Ptolemy.Slack;
 using YamlDotNet.Serialization;
 
 namespace Ptolemy.Config {
@@ -15,6 +16,8 @@ namespace Ptolemy.Config {
         [YamlMember] public string DataBaseUsername { get; set; }
         [YamlMember] public string DataBasePassword { get; set; }
         [YamlMember] public LibraRequest LibraDefault { get; set; }
+        [YamlMember] public SlackConfig SlackConfig { get; set; }
+        [YamlMember] public string WorkingRoot { get; set; }
 
 
         private static Config instance = null;
@@ -50,6 +53,9 @@ namespace Ptolemy.Config {
 
             if (instance == null)
                 throw new InvalidDataContractException("failed to load config. it should be json or yaml format");
+
+
+            instance.WorkingRoot = FilePath.FilePath.Expand(instance.WorkingRoot);
         }
 
         public static Config Instance {

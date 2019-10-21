@@ -9,6 +9,17 @@ namespace Ptolemy.Aries {
     internal static class Program {
         private static void Main(string[] args) {
             var log = new Logger.Logger();
+
+            try {
+                Config.Config.Load();
+                log.Info($"use config file: {Config.Config.ConfigFile}");
+            }
+            catch (Exception e) {
+                log.Error($"Failed load config file: {Config.Config.ConfigFile}\n\t-->{e}");
+                Environment.Exit(1);
+            }
+
+
             Console.Clear();
             using var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (sender, eventArgs) => {
