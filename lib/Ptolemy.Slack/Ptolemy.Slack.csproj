@@ -4,4 +4,8 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Slack.Webhooks" Version="1.0.6" />
+  </ItemGroup>
+
 </Project>
