@@ -80,65 +80,71 @@ namespace Ptolemy.Aries {
                 throw new ArgoException($"Hspice can not found: {HspicePath}");
             }
 
-            var totalSweep = TotalSweeps.ParseLongWithSiPrefix();
-            var seed = Seed.ParseLongWithSiPrefix();
-            var start = SweepStart.ParseLongWithSiPrefix();
-            var baseRequest = new ArgoRequest {
-                GroupId = guid, Gnd = Gnd.ParseDecimalWithSiPrefix(),
-                Includes = Includes.ToList(),
-                Seed = seed,
-                Signals = Signals.ToList(),
-                Sweep = totalSweep,
-                Temperature = Temperature.ParseDecimalWithSiPrefix()
-                , Time = new RangeParameter(TimeString),
-                Transistors = transistors, 
-                Vdd = Vdd.ParseDecimalWithSiPrefix(),
-                HspiceOptions = Options.ToList(), HspicePath = HspicePath,
-                IcCommands = IcCommands.ToList(), NetList = NetList, SweepStart = start
-            };
+            try {
+                var totalSweep = TotalSweeps.ParseLongWithSiPrefix();
+                var seed = Seed.ParseLongWithSiPrefix();
+                var start = SweepStart.ParseLongWithSiPrefix();
+                var baseRequest = new ArgoRequest {
+                    GroupId = guid, Gnd = Gnd.ParseDecimalWithSiPrefix(),
+                    Includes = Includes.ToList(),
+                    Seed = seed,
+                    Signals = Signals.ToList(),
+                    Sweep = totalSweep,
+                    Temperature = Temperature.ParseDecimalWithSiPrefix(), Time = new RangeParameter(TimeString),
+                    Transistors = transistors,
+                    Vdd = Vdd.ParseDecimalWithSiPrefix(),
+                    HspiceOptions = Options.ToList(), HspicePath = HspicePath,
+                    IcCommands = IcCommands.ToList(), NetList = NetList, SweepStart = start
+                };
 
-            var dbName = baseRequest.GetHashString();
-            baseRequest.ResultFile = dbName;
-            if (SplitOption == "none") {
-                WriteTaskFile(Path.Combine(baseDir, $"{guid}.json"), baseRequest);
-            }
-            else {
-                var (by, size) = SplitOption.Split(':', StringSplitOptions.RemoveEmptyEntries) switch {
-                    var s when s.Length != 2 => throw new AriesException("SplitOptionに与えた引数がフォーマットに従っていません.[seed, sweep]:[size]"),
-                    var s when s[1] == "0" => throw new AriesException("[size]に0を指定できません"),
-                    var s when s[0] == "seed" => (SplitBy.Seed, long.Parse(s[1])),
-                    var s when s[0] == "sweep" => (SplitBy.Sweep, long.Parse(s[1])),
-                    _ => throw new AriesException("SplitOptionの解釈に失敗しました. [seed, sweep]:[size]")
-                    };
-
-                var total = totalSweep / size + (totalSweep % size == 0 ? 0 : 1);
-                using var bar = new ProgressBar((int)total,"Write task files", new ProgressBarOptions {
-                    BackgroundCharacter = '-', BackgroundColor = ConsoleColor.DarkGray,
-                    ForegroundColor = ConsoleColor.DarkGreen, ProgressCharacter = '>',
-                    CollapseWhenFinished = false, ForegroundColorDone = ConsoleColor.Green
-                });
-
-                for (var i = 0; i < total; i++) {
-
-                    token.ThrowIfCancellationRequested();
-
-                    var rest = totalSweep - i * size;
-                    baseRequest.Sweep = rest < size ? rest : size;
-                    var path = Path.Combine(baseDir, $"{guid}-{i}.json");
-                    if (by == SplitBy.Seed) {
-                        baseRequest.Seed = seed++;
-                    }
-                    else {
-                        baseRequest.Seed = seed;
-                        baseRequest.SweepStart = start;
-                        start += size;
-                    }
-                    WriteTaskFile(path, baseRequest);
-                    bar.Tick($"write to {path}");
+                var dbName = baseRequest.GetHashString();
+                baseRequest.ResultFile = dbName;
+                if (SplitOption == "none") {
+                    WriteTaskFile(Path.Combine(baseDir, $"{guid}.json"), baseRequest);
                 }
+                else {
+                    var (by, size) = SplitOption.Split(':', StringSplitOptions.RemoveEmptyEntries) switch {
+                        var s when s.Length != 2 => throw new AriesException(
+                            "SplitOptionに与えた引数がフォーマットに従っていません.[seed, sweep]:[size]"),
+                        var s when s[1] == "0" => throw new AriesException("[size]に0を指定できません"),
+                        var s when s[0] == "seed" => (SplitBy.Seed, long.Parse(s[1])),
+                        var s when s[0] == "sweep" => (SplitBy.Sweep, long.Parse(s[1])),
+                        _ => throw new AriesException("SplitOptionの解釈に失敗しました. [seed, sweep]:[size]")
+                        };
 
-                log.Info("Ptolemy.Aries make done");
-               
+                    var total = totalSweep / size + (totalSweep % size == 0 ? 0 : 1);
+                    using var bar = new ProgressBar((int) total, "Write task files", new ProgressBarOptions {
+                        BackgroundCharacter = '-', BackgroundColor = ConsoleColor.DarkGray,
+                        ForegroundColor = ConsoleColor.DarkGreen, ProgressCharacter = '>',
+                        CollapseWhenFinished = false, ForegroundColorDone = ConsoleColor.Green
+                    });
+
+                    for (var i = 0; i < total; i++) {
+
+                        token.ThrowIfCancellationRequested();
+
+                        var rest = totalSweep - i * size;
+                        baseRequest.Sweep = rest < size ? rest : size;
+                        var path = Path.Combine(baseDir, $"{guid}-{i}.json");
+                        if (by == SplitBy.Seed) {
+                            baseRequest.Seed = seed++;
+                        }
+                        else {
+                            baseRequest.Seed = seed;
+                            baseRequest.SweepStart = start;
+                            start += size;
+                        }
+
+                        WriteTaskFile(path, baseRequest);
+                        bar.Tick($"write to {path}");
+                    }
+
+                    log.Info("Ptolemy.Aries make done");
+
+                }
+            }
+            catch (FormatException e) {
+                throw  new AriesException($"数値をパースできませんでした: {e}");
             }
         }
 

@@ -1,21 +1,16 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using CommandLine;
 using Kurukuru;
 using Ptolemy.Argo;
 using Ptolemy.Argo.Request;
-using Ptolemy.Logger;
-using Ptolemy.Map;
 using Ptolemy.Repository;
+using Ptolemy.SiMetricPrefix;
 using ShellProgressBar;
 
 namespace Ptolemy.Aries {
@@ -24,8 +19,8 @@ namespace Ptolemy.Aries {
         [Option("parallel", Default = 1, HelpText = "シミュレーションの並列数です")]
         public int Parallel { get; set; }
 
-        [Option('n', "count", HelpText = "実行するタスクの数です", Default = 1)]
-        public int Count { get; set; }
+        [Option('n', "count", HelpText = "実行するタスクの数です", Default = "1")]
+        public string Count { get; set; }
 
         [Option("taskDir", Default = "~/.config/ptolemy/aries/task", HelpText = "タスクが保存されているディレクトリへのパスです")]
         public string TaskDir { get; set; }
@@ -65,8 +60,16 @@ namespace Ptolemy.Aries {
 
         private List<ArgoRequest> GetRequests() {
             var tasks = new List<ArgoRequest>();
+            var count = 1;
+            try {
+                count = Count.ParseIntWithSiPrefix();
+            }
+            catch (Exception) {
+                log.Error($"{Count} をパースできませんでした");
+                Environment.Exit(1);
+            }
 
-            if (Count <= 0) throw new AriesException("Countを0以下にできません");
+            if (count <= 0) throw new AriesException("Countを0以下にできません");
 
             if (!string.IsNullOrEmpty(InputFile)) {
                 string doc;
@@ -78,7 +81,7 @@ namespace Ptolemy.Aries {
                 if (!Directory.Exists(TaskDir)) throw new AriesException($"{TaskDir} が見つかりません");
 
                 tasks.AddRange(Directory.GetFiles(TaskDir)
-                    .TakeWhile((s, i) => i < Count || All)
+                    .TakeWhile((s, i) => i < count || All)
                     .Select(ArgoRequest.FromFile));
             }
 
@@ -116,8 +119,6 @@ namespace Ptolemy.Aries {
 
                 var totalRecords = requests.Select(s => (int) s.Sweep * s.Signals.Count * s.Time.ToEnumerable().Count()).Sum();
                 log.Info($"Ptolemy.Aries will generate {totalRecords} records");
-
-                // TODO: Impl multi simulation
 
                 using var parent =
                     new AriesRunProgressBar(requests.Count, totalRecords);
