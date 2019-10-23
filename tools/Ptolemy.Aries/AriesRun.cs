@@ -199,7 +199,14 @@ namespace Ptolemy.Aries {
                 log.Info($"Start simulation and write to db");
                 Console.WriteLine();
 
-                var totalRecords = requests.Select(s => (int) s.request.Sweep * s.request.Signals.Count * s.request.Time.ToEnumerable().Count()).Sum();
+                
+                int totalRecords = 0;
+                
+                try{
+                  totalRecords=requests.Select(s => (int) s.request.Sweep * s.request.Signals.Count * s.request.Time.ToEnumerable().Count()).Sum();
+                } catch(OverflowException){
+                  throw new AriesException($"一度に処理できるレコードの数が{int.MaxValue}を超えました。タスクの数を調整することを検討してください")
+                }
                 log.Info($"Ptolemy.Aries will generate {totalRecords} records");
 
                 using var parent =
