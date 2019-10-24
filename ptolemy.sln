@@ -57,6 +57,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ptolemy.Aries", "tools\Ptol
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Slack", "lib\Ptolemy.Slack\Ptolemy.Slack.csproj", "{47F3BD37-6021-41A4-AAC8-C6DFD1F51F4F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ptolemy.Hydra", "tools\Ptolemy.Hydra\Ptolemy.Hydra.csproj", "{E3E2816E-8F9E-400C-8B7C-F8D1F54D5815}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -159,6 +161,10 @@ Global
 		{47F3BD37-6021-41A4-AAC8-C6DFD1F51F4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47F3BD37-6021-41A4-AAC8-C6DFD1F51F4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47F3BD37-6021-41A4-AAC8-C6DFD1F51F4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3E2816E-8F9E-400C-8B7C-F8D1F54D5815}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3E2816E-8F9E-400C-8B7C-F8D1F54D5815}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3E2816E-8F9E-400C-8B7C-F8D1F54D5815}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3E2816E-8F9E-400C-8B7C-F8D1F54D5815}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -188,6 +194,7 @@ Global
 		{3D649AB4-E66C-4C33-B3EA-0B5DEF650318} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
 		{BF084235-E064-43A4-9380-682FCBB9371D} = {0BE68A10-7B3B-4E90-91E9-44A8F7EAE74F}
 		{47F3BD37-6021-41A4-AAC8-C6DFD1F51F4F} = {E46422ED-13BC-42A4-90FB-8658793B7C9F}
+		{E3E2816E-8F9E-400C-8B7C-F8D1F54D5815} = {0BE68A10-7B3B-4E90-91E9-44A8F7EAE74F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {19C6E637-BC0D-4D7F-8E43-AC22C5A894BB}
