@@ -13,6 +13,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\lib\Ptolemy.Exec\Ptolemy.Exec.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Interface\Ptolemy.Interface.csproj" />
+    <ProjectReference Include="..\..\lib\Ptolemy.Logger\Ptolemy.Logger.csproj" />
+    <ProjectReference Include="..\..\lib\Ptolemy.Parameters\Ptolemy.Parameters.csproj" />
+    <ProjectReference Include="..\..\lib\Ptolemy.Repository\Ptolemy.Repository.csproj" />
+    <ProjectReference Include="..\..\lib\Ptolemy.Slack\Ptolemy.Slack.csproj" />
   </ItemGroup>
 
 </Project>

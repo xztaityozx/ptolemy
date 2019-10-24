@@ -7,8 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Ptolemy.Map;
 
 namespace Ptolemy.Repository {
-
-
     /// <summary>
     /// Sqlite3を扱うやつ
     /// </summary>

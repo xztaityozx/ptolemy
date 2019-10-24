@@ -79,9 +79,9 @@ namespace Ptolemy.Logger {
         public FileHook(string path) {
             this.path = path;
             if (File.Exists(path)) return;
-            using (var f = File.Create(path)) {
-                Console.Error.WriteLine($"[Logger] : Created logfile {f.Name}");
-            }
+            using var sw = new StreamWriter(path);
+            sw.WriteLine($"Created at {DateTime.Now}");
+            sw.Flush();
         }
 
         public void Write(object message, LogLevel level) {

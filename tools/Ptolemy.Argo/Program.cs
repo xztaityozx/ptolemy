@@ -1,20 +1,18 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Text;
+using System.Text.Json;
 using System.Threading;
 using CommandLine;
 using Kurukuru;
-using ShellProgressBar;
+using Ptolemy.OptionException;
 
 namespace Ptolemy.Argo {
     internal static class Program {
         private static void Main(string[] args) {
+
+
             var log = new Logger.Logger();
             log.Info("Welcome to Ptolemy.Argo");
             try {
@@ -26,20 +24,19 @@ namespace Ptolemy.Argo {
                             if (Directory.Exists(path)) Directory.Delete(path, true);
                             spin.Info("Finished");
                         });
-                        
+
 
                         throw new ArgoClean();
-                    }, e => throw new ArgoParseFailedException());
-                var results = new List<StringBuilder>();
+                    }, e => throw new ParseFailedException());
 
                 Console.Clear();
-                log.Info($"Target Netlist: {req.NetList}");
+                log.Info($"TargetNetList Netlist: {req.NetList}");
                 log.Info("Parameters");
-                log.Info($"\tVtn:");
+                log.Info("\tVtn:");
                 log.Info($"\t\tThreshold: {req.Transistors.Vtn.Threshold}");
                 log.Info($"\t\tSigma: {req.Transistors.Vtn.Sigma}");
                 log.Info($"\t\tDeviation: {req.Transistors.Vtn.Deviation}");
-                log.Info($"\tVtp:");
+                log.Info("\tVtp:");
                 log.Info($"\t\tThreshold: {req.Transistors.Vtp.Threshold}");
                 log.Info($"\t\tSigma: {req.Transistors.Vtp.Sigma}");
                 log.Info($"\t\tDeviation: {req.Transistors.Vtp.Deviation}");
@@ -55,59 +52,45 @@ namespace Ptolemy.Argo {
 
                 log.Warn($"Press Ctrl+C to cancel");
 
-                using (var cts = new CancellationTokenSource()) {
-                    Console.CancelKeyPress += (sender, eventArgs) => {
-                        eventArgs.Cancel = true;
-                        cts.Cancel();
-                    };
-                    bool status;
-                    var watch = new Stopwatch();
-                    var argo = new Argo(req, cts.Token);
-                    using (var pb = new ProgressBar((int) req.Sweep, "Ptolemy.Argo", new ProgressBarOptions {
-                        BackgroundCharacter = '-',
-                        BackgroundColor = ConsoleColor.DarkGray,
-                        ForegroundColor = ConsoleColor.DarkBlue,
-                        ProgressCharacter = '>',
-                        ForegroundColorDone = ConsoleColor.Green,
-                        CollapseWhenFinished = false
-                    })) {
-                        var ob = argo.Receiver.Subscribe(s => {
-                            if (s[0] == 'x') {
-                                pb.Tick();
-                                results.Add(new StringBuilder());
-                            }
-                            else {
-                                results.Last().AppendLine(s);
-                            }
-                        });
-                        cts.Token.Register(ob.Dispose);
-                        watch.Start();
-                        (status, _) = argo.Run();
-                        watch.Start();
-                    }
+                using var cts = new CancellationTokenSource();
+                Console.CancelKeyPress += (sender, eventArgs) => {
+                    eventArgs.Cancel = true;
+                    cts.Cancel();
+                };
 
-                    if (!status) {
-                        log.Error("Failed simulation");
+                var sw = new Stopwatch();
+                sw.Start();
+                var res = Argo.Run(cts.Token, req);
+                sw.Stop();
+
+                log.Info("Finished simulation");
+                log.Info($"Elapsed: {sw.Elapsed}");
+                log.Info($"{res.Count} result records");
+                if (string.IsNullOrEmpty(req.ResultFile)) {
+                    log.Warn("result file not set. print to stdout");
+                    Console.WriteLine("[");
+                    foreach (var r in res) {
+                        Console.WriteLine($"{r},");
                     }
-                    else {
-                        log.Info("Finished simulation");
-                        log.Info($"Elapsed time: {watch.Elapsed}");
-                        log.Info("Result file: " + req.ResultFile +
-                                 $"[{req.SweepStart}..{req.Sweep + req.SweepStart - 1}]");
-                        foreach (var item in results.Select((sb, i) => new {sb, i = i + req.SweepStart})) {
-                            var path = req.ResultFile + $"{item.i}";
-                            using (var sw = new StreamWriter(path, false, new UTF8Encoding(false))) {
-                                sw.WriteLine(item.sb.ToString().TrimEnd());
-                                sw.Flush();
-                            }
-                        }
+                    Console.WriteLine("]");
+                }
+                else {
+                    log.Info($"Write to {req.ResultFile}");
+                    using var writer = new StreamWriter(req.ResultFile);
+                    writer.WriteLine("[");
+                    foreach (var r in res) {
+                        writer.WriteLine($"{r},");
+                        writer.Flush();
+
                     }
+                    writer.WriteLine("]");
+                    writer.Flush();
                 }
             }
             catch (ArgoClean) {
                 log.Info("Ptolemy.Argo clean temp directory /tmp/Ptolemy.Argo");
             }
-            catch (ArgoParseFailedException) {
+            catch (ParseFailedException) {
                 log.Warn("Failed parse options");
             }
             catch (ArgoException e) {

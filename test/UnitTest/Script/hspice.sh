@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 echo x
-seq 10
+echo 0. 10
 echo y
