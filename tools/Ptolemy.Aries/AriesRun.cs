@@ -89,7 +89,7 @@ namespace Ptolemy.Aries {
                 tasks.Add((ArgoRequest.FromJson(doc), InputFile));
             }
             else {
-                taskDir = FilePath.FilePath.Expand(Path.Combine(Config.Config.Instance.WorkingRoot, "aries", "tasks"));
+                taskDir = FilePath.FilePath.Expand(Path.Combine(Config.Config.Instance.WorkingRoot, "aries", "task"));
                 if (!Directory.Exists(taskDir)) throw new AriesException($"{taskDir} が見つかりません");
 
                 tasks.AddRange(Directory.GetFiles(taskDir)
