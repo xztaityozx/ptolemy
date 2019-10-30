@@ -18,7 +18,6 @@ namespace Ptolemy.Argo {
             workingRoot = Path.Combine(Path.GetTempPath(), "Ptolemy.Argo");
         }
 
-        // TODO: Test
         public IEnumerable<ResultEntity> Run(CancellationToken token, ArgoRequest request, IProgressBar bar = null) {
             var rt = new List<ResultEntity>();
 
@@ -40,7 +39,7 @@ namespace Ptolemy.Argo {
                     RedirectStandardError = true
                 }
             };
-            p.Start();
+            if(!p.Start()) throw new ArgoException("Failed start hspice");
             var stdout = p.StandardOutput;
 
             var signals = request.Signals;
@@ -73,6 +72,7 @@ namespace Ptolemy.Argo {
             }
 
             p.WaitForExit();
+            if (p.ExitCode != 0) throw new ArgoException($"Failed simulation: {p.StandardError.ReadToEnd()}");
             File.Delete(spi);
         }
 
