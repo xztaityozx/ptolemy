@@ -21,13 +21,13 @@ namespace Ptolemy.Repository {
         /// </summary>
         /// <param name="token">キャンセル用のToken</param>
         /// <param name="containerRoot">Dbファイルの保存されるルートディレクトリ</param>
-        /// <param name="dbs">Db名のリスト</param>
+        /// <param name="parameters">Db名のリスト</param>
         /// <param name="bufferSize">1度のBulkUpsertで書き込まれるEntity数の最大値</param>
         /// <param name="logger"></param>
         public DbContainer(
             CancellationToken token, 
             string containerRoot, 
-            IEnumerable<string> dbs, 
+            IEnumerable<ParameterEntity> parameters, 
             int bufferSize,
             IObserver<string> logger
             ) {
@@ -38,13 +38,20 @@ namespace Ptolemy.Repository {
             repositories = new Map<string, SqliteRepository>();
             isClosed=new Map<string, bool>();
 
-            foreach (var db in dbs.Distinct()) {
+            foreach (var pe in parameters) {
+                // name of db file
+                var db = pe.Hash();
                 var path = Path.Combine(containerRoot, $"{db}.sqlite");
 
                 logger.OnNext(File.Exists(path) ? $"\u2611 {path} found" : $"\u26A0 {path} new");
 
                 subjectMap[db] = new Subject<ResultEntity>();
                 repositories[db] = new SqliteRepository(path);
+
+                // register parameter info
+                repositories[db].UpdateParameter(pe);
+
+                // build writer observable
                 subjectMap[db].Synchronize().Buffer(bufferSize)
                     .Subscribe(s => {
                         repositories[db].BulkUpsert(s);

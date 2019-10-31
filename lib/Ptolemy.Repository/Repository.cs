@@ -29,6 +29,15 @@ namespace Ptolemy.Repository {
             context.BulkInsertOrUpdate(list);
         }
 
+        /// <summary>
+        /// update parameter information
+        /// </summary>
+        /// <param name="pe"></param>
+        public void UpdateParameter(ParameterEntity pe) {
+            pe.Id = 0;
+            if (context.ParameterEntities.Any()) context.ParameterEntities.Update(pe);
+            else context.ParameterEntities.Add(pe);
+        }
 
         /// <summary>
         /// 絞り込み条件とデリゲートを渡して数え上げをする
@@ -77,6 +86,7 @@ namespace Ptolemy.Repository {
             private readonly string path;
             public Context(string path) => this.path = path;
             public DbSet<ResultEntity> Entities { get; set; }
+            public DbSet<ParameterEntity> ParameterEntities { get; set; }
             
             protected override void OnModelCreating(ModelBuilder modelBuilder) {
                 base.OnModelCreating(modelBuilder);
@@ -84,6 +94,7 @@ namespace Ptolemy.Repository {
 
                 modelBuilder.Entity<ResultEntity>().HasKey(e => new {e.Seed, e.Sweep, e.Time, e.Signal});
                 modelBuilder.Entity<ResultEntity>().HasIndex(e => new {e.Seed, e.Sweep, e.Time, e.Signal});
+                modelBuilder.Entity<ParameterEntity>().HasKey(e => e.Id);
             }
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {

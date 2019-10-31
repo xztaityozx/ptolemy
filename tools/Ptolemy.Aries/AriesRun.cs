@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,6 +8,7 @@ using System.Reactive.Subjects;
 using System.Threading;
 using CommandLine;
 using Kurukuru;
+using Microsoft.EntityFrameworkCore.Internal;
 using Ptolemy.Argo;
 using Ptolemy.Argo.Request;
 using Ptolemy.Logger;
@@ -108,7 +110,7 @@ namespace Ptolemy.Aries {
         /// <param name="dbs"></param>
         /// <param name="sub"></param>
         /// <returns></returns>
-        private DbContainer GetDbContainer(CancellationToken token, IEnumerable<string> dbs, IObserver<string> sub) {
+        private DbContainer GetDbContainer(CancellationToken token, IEnumerable<ParameterEntity> dbs, IObserver<string> sub) {
             log.Info("Build DbContainer...");
             log.Info("\tSearching databases...");
             DbContainer rt = null;
@@ -168,6 +170,14 @@ namespace Ptolemy.Aries {
 
         private DbContainer container;
 
+        private static ParameterEntity ConvertToParameterEntity(ArgoRequest ar) {
+            return new ParameterEntity {
+                Vtn = ar.Transistors.Vtn.ToString(), Vtp=ar.Transistors.Vtp.ToString(),
+                NetList =  ar.NetList, Time = ar.Time.ToString(), Signals = string.Join(":", ar.Signals),
+                Includes = string.Join(":", ar.Includes), Hspice = ar.HspicePath, HspiceOption = string.Join(":", ar.HspiceOptions),
+                Gnd = ar.Gnd, Vdd = ar.Vdd, IcCommand = string.Join(":", ar.IcCommands), Temperature = ar.Temperature
+            };
+        }
         public void Run(CancellationToken token) {
             log = new Logger.Logger();
             {
@@ -197,9 +207,15 @@ namespace Ptolemy.Aries {
                 Console.WriteLine();
                 var requests = GetRequests();
 
+                // log出力用Subject
                 using var logSubject = new Subject<string>();
                 logSubject.Subscribe(s => log.Info(s));
-                container = GetDbContainer(token, requests.Select(s => s.request.ResultFile), logSubject);
+
+                
+                container = GetDbContainer(token, 
+                    // ParameterEntityにしてHashでDistinctする
+                    requests.Select(s => ConvertToParameterEntity(s.request)).Distinct(new ParameterComparer()),
+                    logSubject);
 
                 log.Info($"DbContainer has {container.Count} databases");
                 log.Info($"Start simulation and write to db");
