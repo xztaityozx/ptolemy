@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +20,6 @@ namespace Ptolemy.Argo {
         }
 
         public IEnumerable<ResultEntity> Run(CancellationToken token, ArgoRequest request, IProgressBar bar = null) {
-            var rt = new List<ResultEntity>();
 
             var guid = Guid.NewGuid();
             var dir = Path.Combine(workingRoot, $"{request.GroupId}");
@@ -46,6 +46,7 @@ namespace Ptolemy.Argo {
 
             var kind = HspiceOutKind.Else;
             var sweep = request.SweepStart;
+            var records = (expect: sweep * request.Signals.Count * request.Time.ToEnumerable().Count(), actual: 0);
             string line;
             while ((line = stdout.ReadLine()) != null || !p.HasExited) {
                 token.ThrowIfCancellationRequested();
@@ -67,12 +68,16 @@ namespace Ptolemy.Argo {
                     .TryParseDecimalWithSiPrefix(out _)) continue;
 
                 foreach (var resultEntity in ResultEntity.Parse(request.Seed, sweep, line, signals)) {
+                    records.actual++;
                     yield return resultEntity;
                 }
             }
 
             p.WaitForExit();
-            if (p.ExitCode != 0) throw new ArgoException($"Failed simulation: {p.StandardError.ReadToEnd()}");
+            if (p.ExitCode != 0) 
+                throw new ArgoException($"Failed simulation: {p.StandardError.ReadToEnd()}");
+            if (records.expect != records.actual)
+                throw new ArgoException($"Record数が {records.expect} 個予期されていましたが、 {records.actual} 個しか出力されませんでした");
             File.Delete(spi);
         }
 
