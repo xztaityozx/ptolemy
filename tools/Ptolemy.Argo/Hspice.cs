@@ -46,7 +46,9 @@ namespace Ptolemy.Argo {
 
             var kind = HspiceOutKind.Else;
             var sweep = request.SweepStart;
-            var records = (expect: sweep * request.Signals.Count * request.Time.ToEnumerable().Count(), actual: 0);
+            var records = (expect: sweep * request.Signals.Count * request.PlotTimeList.Count, actual: 0);
+            var targetTimeList = request.PlotTimeList.Select(s => new ResultEntity {Time = s}).ToList();
+
             string line;
             while ((line = stdout.ReadLine()) != null || !p.HasExited) {
                 token.ThrowIfCancellationRequested();
@@ -67,7 +69,11 @@ namespace Ptolemy.Argo {
                 if (!line.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0]
                     .TryParseDecimalWithSiPrefix(out _)) continue;
 
-                foreach (var resultEntity in ResultEntity.Parse(request.Seed, sweep, line, signals)) {
+                foreach (var resultEntity in
+                    // パースして、時間がPlotTimeListに入っている奴だけ返す
+                    ResultEntity.Parse(request.Seed, sweep, line, signals)
+                        .Intersect(targetTimeList, new ResultEntityComparer())
+                ) {
                     records.actual++;
                     yield return resultEntity;
                 }
@@ -83,6 +89,16 @@ namespace Ptolemy.Argo {
 
         private enum HspiceOutKind {
             Data,Else
+        }
+    }
+
+    internal class ResultEntityComparer : IEqualityComparer<ResultEntity> {
+        public bool Equals(ResultEntity x, ResultEntity y) {
+            return x?.Time == y?.Time;
+        }
+
+        public int GetHashCode(ResultEntity obj) {
+            return obj.GetHashCode();
         }
     }
 }

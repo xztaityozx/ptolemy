@@ -59,9 +59,37 @@ namespace Ptolemy.Aries {
         [Value(0, HelpText = "NetListへのパスです", MetaName = "netlist")]
         public string NetList { get; set; }
 
+        [Option('t', "plotTime", HelpText = "Plotする時間をリストもしくは範囲で指定します", Default = "all")]
+        public string PlotTimeRequest { get; set; }
+
+        // TODO: Test
+        private IEnumerable<decimal> GeneratePlotTimeEnumerable() {
+            if(PlotTimeRequest=="all")
+                foreach (var x in new RangeParameter(TimeString).ToEnumerable())
+                    yield return x;
+            else {
+                var split = PlotTimeRequest.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var segment in split) {
+                    if (segment.Contains(':')) {
+                        // 範囲
+                        foreach (var x in new RangeParameter(segment.Replace(':', ',')).ToEnumerable()) {
+                            yield return x;
+                        }
+                    }
+                    else {
+                        // 単品
+                        yield return segment.ParseDecimalWithSiPrefix();
+                    }
+                }
+            }
+        }
+
         public void Run(CancellationToken token) {
 
             var log = new Logger.Logger();
+
+            // TimeList
+            var plotTimeList = GeneratePlotTimeEnumerable().ToList();
 
             // Configのデフォルトも見る
             var transistors = this.Bind(Config.Config.Instance.ArgoDefault.Transistors);
@@ -119,7 +147,8 @@ namespace Ptolemy.Aries {
                     Transistors = transistors,
                     Vdd = Vdd.ParseDecimalWithSiPrefix(),
                     HspiceOptions = Options.ToList(), HspicePath = HspicePath,
-                    IcCommands = IcCommands.ToList(), NetList = NetList, SweepStart = start
+                    IcCommands = IcCommands.ToList(), NetList = NetList, SweepStart = start,
+                    PlotTimeList = plotTimeList
                 };
 
                 var dbName = baseRequest.GetHashString();

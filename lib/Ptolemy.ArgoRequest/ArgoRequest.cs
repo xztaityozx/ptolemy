@@ -27,6 +27,10 @@ namespace Ptolemy.Argo.Request {
         public string ResultFile { get; set; }
         public static ArgoRequest FromJson(string json) => JsonConvert.DeserializeObject<ArgoRequest>(json);
         public string ToJson() => JsonConvert.SerializeObject(this);
+        /// <summary>
+        /// プロットする時間のリスト
+        /// </summary>
+        public List<decimal> PlotTimeList { get; set; }
 
         public static ArgoRequest FromFile(string path) {
             using var sr = new StreamReader(path);

@@ -8,7 +8,6 @@ using System.Reactive.Subjects;
 using System.Threading;
 using CommandLine;
 using Kurukuru;
-using Microsoft.EntityFrameworkCore.Internal;
 using Ptolemy.Argo;
 using Ptolemy.Argo.Request;
 using Ptolemy.Logger;
@@ -125,7 +124,7 @@ namespace Ptolemy.Aries {
         /// <param name="requests"></param>
         /// <param name="parent"></param>
         /// <returns></returns>
-        private List<string> StartSimulation(CancellationToken token, List<(ArgoRequest, string)> requests,
+        private List<string> StartSimulation(CancellationToken token, IEnumerable<(ArgoRequest, string)> requests,
             AriesRunProgressBar parent) {
             var rt = new List<string>();
             requests
@@ -226,7 +225,7 @@ namespace Ptolemy.Aries {
 
                 try {
                     totalRecords = requests.Select(s =>
-                        (int) s.request.Sweep * s.request.Signals.Count * s.request.Time.ToEnumerable().Count()).Sum();
+                        (int) s.request.Sweep * s.request.Signals.Count * s.request.PlotTimeList.Count).Sum();
                 }
                 catch (OverflowException) {
                     throw new AriesException($"一度に処理できるレコードの数が{int.MaxValue}を超えました。タスクの数を調整することを検討してください");
