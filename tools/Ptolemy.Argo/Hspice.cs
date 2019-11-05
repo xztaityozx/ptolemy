@@ -52,7 +52,6 @@ namespace Ptolemy.Argo {
             while ((line = stdout.ReadLine()) != null || !p.HasExited) {
                 token.ThrowIfCancellationRequested();
 
-
                 if (string.IsNullOrEmpty(line)) continue;
                 if (line[0] == 'y') {
                     sweep++;

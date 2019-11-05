@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\lib\Ptolemy.ArgoRequest\Ptolemy.Argo.Request.csproj" />
-    <ProjectReference Include="..\..\lib\Ptolemy.Exec\Ptolemy.Exec.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.FilePath\Ptolemy.FilePath.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Interface\Ptolemy.Interface.csproj" />
     <ProjectReference Include="..\..\lib\Ptolemy.Logger\Ptolemy.Logger.csproj" />

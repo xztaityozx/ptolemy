@@ -145,17 +145,22 @@ namespace Ptolemy.Aries {
                                 foreach (var r in hspice.Run(token, request, bar)) {
                                     container[request.ResultFile].OnNext(r);
                                 }
-
+                                log.Info($"Finished {filePath}");
                                 break;
                             }
-                            catch (Exception) {
+                            catch (Exception e) {
                                 retry++;
+                                log.Error(e);
+                                log.Warn($"task {filePath} will retry({retry})...");
                             }
                         } while (retry < MaxRetry);
 
                         // リトライ数の上限に達してないので削除対象にする
                         if (retry < MaxRetry) {
                             rt.Add(filePath);
+                        }
+                        else {
+                            log.Error($"Retry数の上限に達しました: task file -> {filePath}");
                         }
 
                         // Progress
