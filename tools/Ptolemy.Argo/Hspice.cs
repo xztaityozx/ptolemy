@@ -44,10 +44,9 @@ namespace Ptolemy.Argo {
 
             var signals = request.Signals;
 
-            var kind = HspiceOutKind.Else;
             var sweep = request.SweepStart;
             var records = (expect: sweep * request.Signals.Count * request.PlotTimeList.Count, actual: 0);
-            var targetTimeList = request.PlotTimeList.Select(s => new ResultEntity {Time = s}).ToList();
+            var targetTimeList = request.PlotTimeList.Select(s => new ResultEntity { Time = s }).ToList();
 
             string line;
             while ((line = stdout.ReadLine()) != null || !p.HasExited) {
@@ -55,25 +54,13 @@ namespace Ptolemy.Argo {
 
 
                 if (string.IsNullOrEmpty(line)) continue;
-                if (line[0] == 'x') {
-                    kind = HspiceOutKind.Data;
-                }
-                else if (line[0] == 'y') {
+                if (line[0] == 'y') {
                     sweep++;
-                    kind = HspiceOutKind.Else;
                     bar?.Tick();
                 }
-                else if (line[0] == 't') continue;
 
-                if (kind == HspiceOutKind.Else) continue;
-                if (!line.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0]
-                    .TryParseDecimalWithSiPrefix(out _)) continue;
-
-                foreach (var resultEntity in
-                    // パースして、時間がPlotTimeListに入っている奴だけ返す
-                    ResultEntity.Parse(request.Seed, sweep, line, signals)
-                        .Intersect(targetTimeList, new ResultEntityComparer())
-                ) {
+                if (!TryParseOutput(request.Seed, sweep, line, signals, out var o)) continue;
+                foreach (var resultEntity in o.Intersect(targetTimeList, new ResultEntityComparer())) {
                     records.actual++;
                     yield return resultEntity;
                 }
@@ -87,18 +74,26 @@ namespace Ptolemy.Argo {
             File.Delete(spi);
         }
 
-        private enum HspiceOutKind {
-            Data,Else
+        private static bool TryParseOutput(long seed, long sweep, string line, IEnumerable<string> signals,
+            out IEnumerable<ResultEntity> o) {
+            try {
+                o = ResultEntity.Parse(seed, sweep, line, signals);
+                return true;
+            }
+            catch (Exception) {
+                o = null;
+                return false;
+            }
         }
     }
 
     internal class ResultEntityComparer : IEqualityComparer<ResultEntity> {
         public bool Equals(ResultEntity x, ResultEntity y) {
-            return x?.Time == y?.Time;
+            return x != null && y != null && x.Time.Equals(y.Time);
         }
 
         public int GetHashCode(ResultEntity obj) {
-            return obj.GetHashCode();
+            return obj.Time.GetHashCode();
         }
     }
 }
