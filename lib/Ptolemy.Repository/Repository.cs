@@ -37,6 +37,7 @@ namespace Ptolemy.Repository {
             pe.Id = 0;
             if (context.ParameterEntities.Any()) context.ParameterEntities.Update(pe);
             else context.ParameterEntities.Add(pe);
+            context.SaveChanges();
         }
 
         /// <summary>
