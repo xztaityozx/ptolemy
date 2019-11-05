@@ -39,7 +39,7 @@ namespace Ptolemy.Aries {
         [Option('m', "maxRetry", Default = 3, HelpText = "ひとつのシミュレーションが失敗したときに再実行する回数の上限値です")]
         public int MaxRetry { get; set; }
 
-        [Option("slack", Default = true, HelpText = "シミュレーションの開始時と終了時にSlackへ投稿します")]
+        [Option("slack", Default = false, HelpText = "シミュレーションの開始時と終了時にSlackへ投稿します")]
         public bool PostToSlack { get; set; }
 
         private Logger.Logger log;
