@@ -62,13 +62,12 @@ namespace Ptolemy.Aries {
         [Option('t', "plotTime", HelpText = "Plotする時間をリストもしくは範囲で指定します", Default = "all")]
         public string PlotTimeRequest { get; set; }
 
-        // TODO: Test
-        private IEnumerable<decimal> GeneratePlotTimeEnumerable() {
-            if(PlotTimeRequest=="all")
-                foreach (var x in new RangeParameter(TimeString).ToEnumerable())
+        public static IEnumerable<decimal> GeneratePlotTimeEnumerable(string plotTimeString, string timeRange) {
+            if(plotTimeString=="all")
+                foreach (var x in new RangeParameter(timeRange).ToEnumerable())
                     yield return x;
             else {
-                var split = PlotTimeRequest.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                var split = plotTimeString.Split(',', StringSplitOptions.RemoveEmptyEntries);
                 foreach (var segment in split) {
                     if (segment.Contains(':')) {
                         // 範囲
@@ -89,12 +88,12 @@ namespace Ptolemy.Aries {
             var log = new Logger.Logger();
 
             // TimeList
-            var plotTimeList = GeneratePlotTimeEnumerable().ToList();
+            var plotTimeList = GeneratePlotTimeEnumerable(PlotTimeRequest, TimeString).ToList();
 
             // Configのデフォルトも見る
             var transistors = this.Bind(Config.Config.Instance.ArgoDefault.Transistors);
 
-            if(string.IsNullOrEmpty(NetList)||string.IsNullOrEmpty(Config.Config.Instance.ArgoDefault.NetList))
+            if (string.IsNullOrEmpty(NetList) && string.IsNullOrEmpty(Config.Config.Instance.ArgoDefault.NetList))
                 throw new AriesException("NetListを空にできません.一番目の引数もしくはコンフィグファイルのArgoDefault.NetListで指定してください");
 
             // 引数で与えたNetListが優先
