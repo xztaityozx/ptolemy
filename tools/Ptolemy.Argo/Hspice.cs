@@ -19,7 +19,7 @@ namespace Ptolemy.Argo {
             workingRoot = Path.Combine(Path.GetTempPath(), "Ptolemy.Argo");
         }
 
-        public IEnumerable<ResultEntity> Run(CancellationToken token, ArgoRequest request, IProgressBar bar = null) {
+        public IReadOnlyList<ResultEntity> Run(CancellationToken token, ArgoRequest request, IProgressBar bar = null) {
 
             var guid = Guid.NewGuid();
             var dir = Path.Combine(workingRoot, $"{request.GroupId}");
@@ -48,6 +48,7 @@ namespace Ptolemy.Argo {
             var records = (expect: sweep * request.Signals.Count * request.PlotTimeList.Count, actual: 0);
             var targetTimeList = request.PlotTimeList.Select(s => new ResultEntity { Time = s }).ToList();
 
+            var rt = new List<ResultEntity>();
             string line;
             while ((line = stdout.ReadLine()) != null || !p.HasExited) {
                 token.ThrowIfCancellationRequested();
@@ -61,7 +62,7 @@ namespace Ptolemy.Argo {
                 if (!TryParseOutput(request.Seed, sweep, line, signals, out var o)) continue;
                 foreach (var resultEntity in o.Intersect(targetTimeList, new ResultEntityComparer())) {
                     records.actual++;
-                    yield return resultEntity;
+                    rt.Add(resultEntity);
                 }
             }
 
@@ -71,6 +72,8 @@ namespace Ptolemy.Argo {
             if (records.expect != records.actual)
                 throw new ArgoException($"Record数が {records.expect} 個予期されていましたが、 {records.actual} 個しか出力されませんでした");
             File.Delete(spi);
+
+            return rt;
         }
 
         private static bool TryParseOutput(long seed, long sweep, string line, IEnumerable<string> signals,
