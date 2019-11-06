@@ -48,6 +48,8 @@ namespace Ptolemy.Argo.Request {
             ).Select(s => $"{s:X2}"));
         }
 
+        public long ExpectedRecords => Sweep * Signals.Count * PlotTimeList.Count;
+
         /// <summary>
         /// SPIスクリプトをpathに書き込む
         /// </summary>

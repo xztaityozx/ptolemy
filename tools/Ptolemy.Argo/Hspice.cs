@@ -45,7 +45,7 @@ namespace Ptolemy.Argo {
             var signals = request.Signals;
 
             var sweep = request.SweepStart;
-            var records = (expect: sweep * request.Signals.Count * request.PlotTimeList.Count, actual: 0);
+            var records = (expect: request.ExpectedRecords, actual: 0);
             var targetTimeList = request.PlotTimeList.Select(s => new ResultEntity { Time = s }).ToList();
 
             var rt = new List<ResultEntity>();

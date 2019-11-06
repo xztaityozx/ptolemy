@@ -229,8 +229,7 @@ namespace Ptolemy.Aries {
                 var totalRecords = 0;
 
                 try {
-                    totalRecords = requests.Select(s =>
-                        (int) s.request.Sweep * s.request.Signals.Count * s.request.PlotTimeList.Count).Sum();
+                    totalRecords = (int) requests.Select(s =>s.request.ExpectedRecords).Sum();
                 }
                 catch (OverflowException) {
                     throw new AriesException($"一度に処理できるレコードの数が{int.MaxValue}を超えました。タスクの数を調整することを検討してください");
