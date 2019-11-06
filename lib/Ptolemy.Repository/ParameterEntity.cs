@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Ptolemy.Repository {
-    public class ParameterComparer : IEqualityComparer<ParameterEntity> {
-        public bool Equals(ParameterEntity x, ParameterEntity y) => x?.Hash() == y?.Hash();
 
-        public int GetHashCode(ParameterEntity obj) {
-            return obj.GetHashCode();
-        }
-    }
     public class ParameterEntity {
         public long Id { get; set; }
         public string Vtn { get; set; }
@@ -32,7 +27,7 @@ namespace Ptolemy.Repository {
             using var sha = SHA256.Create();
             return string.Join("", sha.ComputeHash(Encoding.UTF8.GetBytes(string.Join("",
                 new[] {Vtn, Vtp, Includes, Time, IcCommand, $"{Gnd}{Vdd}{Temperature}", Signals, HspiceOption, NetList},
-                Hspice))));
+                Hspice))).Select(s => $"{s:X}"));
         }
     }
 }

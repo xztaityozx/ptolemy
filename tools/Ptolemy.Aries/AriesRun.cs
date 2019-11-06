@@ -100,6 +100,9 @@ namespace Ptolemy.Aries {
             }
 
             log.Info($"Total task = {tasks.Count}");
+            if (!tasks.Any()) {
+                throw new AriesException("タスクが0個でした。終了します");
+            }
             return tasks;
         }
 
@@ -220,10 +223,11 @@ namespace Ptolemy.Aries {
                 using var logSubject = new Subject<string>();
                 logSubject.Subscribe(s => log.Info(s));
 
-                
-                container = GetDbContainer(token, 
+
+                container = GetDbContainer(token,
                     // ParameterEntityにしてHashでDistinctする
-                    requests.Select(s => ConvertToParameterEntity(s.request)).Distinct(new ParameterComparer()),
+                    requests.Select(s => ConvertToParameterEntity(s.request))
+                        .Distinct(item => item.Hash()),
                     logSubject);
 
                 log.Info($"DbContainer has {container.Count} databases");
@@ -331,6 +335,22 @@ namespace Ptolemy.Aries {
             parent?.Dispose();
             sim?.Dispose();
             write?.Dispose();
+        }
+    }
+
+    internal static class DistinctExt {
+        public static IEnumerable<T> Distinct<T, TKey>(this IEnumerable<T> @this, Func<T, TKey> selector) {
+
+            if (@this == null) throw new ArgumentNullException(nameof(@this));
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
+
+            var map = new Map<TKey, bool>(false);
+            foreach (var item in @this) {
+                var key = selector(item);
+                if(map[key]) continue;
+                map[key] = true;
+                yield return item;
+            }
         }
     }
 }
