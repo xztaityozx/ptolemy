@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Ptolemy.Argo.Request;
+using Ptolemy.Map;
 using Ptolemy.Repository;
 using Ptolemy.SiMetricPrefix;
 using ShellProgressBar;
@@ -19,7 +20,7 @@ namespace Ptolemy.Argo {
             workingRoot = Path.Combine(Path.GetTempPath(), "Ptolemy.Argo");
         }
 
-        public IEnumerable<ResultEntity> Run(CancellationToken token, ArgoRequest request, IProgressBar bar = null) {
+        public IReadOnlyList<ResultEntity> Run(CancellationToken token, ArgoRequest request, IProgressBar bar = null) {
 
             var guid = Guid.NewGuid();
             var dir = Path.Combine(workingRoot, $"{request.GroupId}");
@@ -44,32 +45,24 @@ namespace Ptolemy.Argo {
 
             var signals = request.Signals;
 
-            var kind = HspiceOutKind.Else;
             var sweep = request.SweepStart;
-            var records = (expect: sweep * request.Signals.Count * request.Time.ToEnumerable().Count(), actual: 0);
+            var records = (expect: request.ExpectedRecords, actual: 0);
+
+            var rt = new List<ResultEntity>();
             string line;
             while ((line = stdout.ReadLine()) != null || !p.HasExited) {
                 token.ThrowIfCancellationRequested();
 
-
                 if (string.IsNullOrEmpty(line)) continue;
-                if (line[0] == 'x') {
-                    kind = HspiceOutKind.Data;
-                }
-                else if (line[0] == 'y') {
+                if (line[0] == 'y') {
                     sweep++;
-                    kind = HspiceOutKind.Else;
                     bar?.Tick();
                 }
-                else if (line[0] == 't') continue;
 
-                if (kind == HspiceOutKind.Else) continue;
-                if (!line.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0]
-                    .TryParseDecimalWithSiPrefix(out _)) continue;
-
-                foreach (var resultEntity in ResultEntity.Parse(request.Seed, sweep, line, signals)) {
+                if (!TryParseOutput(request.Seed, sweep, line, signals, out var o)) continue;
+                foreach (var resultEntity in o.Intersect(request.PlotTimeList, re => re.Time)) {
                     records.actual++;
-                    yield return resultEntity;
+                    rt.Add(resultEntity);
                 }
             }
 
@@ -79,10 +72,47 @@ namespace Ptolemy.Argo {
             if (records.expect != records.actual)
                 throw new ArgoException($"Record数が {records.expect} 個予期されていましたが、 {records.actual} 個しか出力されませんでした");
             File.Delete(spi);
+
+            return rt;
         }
 
-        private enum HspiceOutKind {
-            Data,Else
+        private static bool TryParseOutput(long seed, long sweep, string line, IEnumerable<string> signals,
+            out IEnumerable<ResultEntity> o) {
+            try {
+                o = ResultEntity.Parse(seed, sweep, line, signals);
+                return true;
+            }
+            catch (Exception) {
+                o = null;
+                return false;
+            }
+        }
+    }
+
+    internal static class IntersectExt {
+        public static IEnumerable<TItem> Intersect<TItem, TKey>(this IEnumerable<TItem> @this,
+            IEnumerable<TKey> second, Func<TItem, TKey> selector) {
+            if (@this == null) throw new ArgumentNullException(nameof(@this));
+            if (second == null) throw new ArgumentNullException(nameof(second));
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
+
+            var map = new Map<TKey, bool>(false);
+            foreach (var key in second) {
+                map[key] = true;
+            }
+
+            foreach (var item in @this) {
+                if (map[selector(item)]) yield return item;
+            }
+        }
+    }
+    internal class ResultEntityComparer : IEqualityComparer<ResultEntity> {
+        public bool Equals(ResultEntity x, ResultEntity y) {
+            return x != null && y != null && x.Time.Equals(y.Time);
+        }
+
+        public int GetHashCode(ResultEntity obj) {
+            return obj.Time.GetHashCode();
         }
     }
 }

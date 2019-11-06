@@ -59,14 +59,41 @@ namespace Ptolemy.Aries {
         [Value(0, HelpText = "NetListへのパスです", MetaName = "netlist")]
         public string NetList { get; set; }
 
+        [Option('t', "plotTime", HelpText = "Plotする時間をリストもしくは範囲で指定します", Default = "all")]
+        public string PlotTimeRequest { get; set; }
+
+        public static IEnumerable<decimal> GeneratePlotTimeEnumerable(string plotTimeString, string timeRange) {
+            if(plotTimeString=="all")
+                foreach (var x in new RangeParameter(timeRange).ToEnumerable())
+                    yield return x;
+            else {
+                var split = plotTimeString.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var segment in split) {
+                    if (segment.Contains(':')) {
+                        // 範囲
+                        foreach (var x in new RangeParameter(segment.Replace(':', ',')).ToEnumerable()) {
+                            yield return x;
+                        }
+                    }
+                    else {
+                        // 単品
+                        yield return segment.ParseDecimalWithSiPrefix();
+                    }
+                }
+            }
+        }
+
         public void Run(CancellationToken token) {
 
             var log = new Logger.Logger();
 
+            // TimeList
+            var plotTimeList = GeneratePlotTimeEnumerable(PlotTimeRequest, TimeString).ToList();
+
             // Configのデフォルトも見る
             var transistors = this.Bind(Config.Config.Instance.ArgoDefault.Transistors);
 
-            if(string.IsNullOrEmpty(NetList)||string.IsNullOrEmpty(Config.Config.Instance.ArgoDefault.NetList))
+            if (string.IsNullOrEmpty(NetList) && string.IsNullOrEmpty(Config.Config.Instance.ArgoDefault.NetList))
                 throw new AriesException("NetListを空にできません.一番目の引数もしくはコンフィグファイルのArgoDefault.NetListで指定してください");
 
             // 引数で与えたNetListが優先
@@ -119,11 +146,12 @@ namespace Ptolemy.Aries {
                     Transistors = transistors,
                     Vdd = Vdd.ParseDecimalWithSiPrefix(),
                     HspiceOptions = Options.ToList(), HspicePath = HspicePath,
-                    IcCommands = IcCommands.ToList(), NetList = NetList, SweepStart = start
+                    IcCommands = IcCommands.ToList(), NetList = NetList, SweepStart = start,
+                    PlotTimeList = plotTimeList
                 };
 
-                var dbName = baseRequest.GetHashString();
-                baseRequest.ResultFile = dbName;
+                //var dbName = baseRequest.GetHashString();
+                //baseRequest.ResultFile = dbName;
                 if (SplitOption == "none") {
                     WriteTaskFile(Path.Combine(baseDir, $"{guid}.json"), baseRequest);
                 }

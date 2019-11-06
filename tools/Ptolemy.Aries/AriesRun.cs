@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,6 +11,7 @@ using Kurukuru;
 using Ptolemy.Argo;
 using Ptolemy.Argo.Request;
 using Ptolemy.Logger;
+using Ptolemy.Map;
 using Ptolemy.Repository;
 using Ptolemy.SiMetricPrefix;
 using ShellProgressBar;
@@ -38,7 +40,7 @@ namespace Ptolemy.Aries {
         [Option('m', "maxRetry", Default = 3, HelpText = "ひとつのシミュレーションが失敗したときに再実行する回数の上限値です")]
         public int MaxRetry { get; set; }
 
-        [Option("slack", Default = true, HelpText = "シミュレーションの開始時と終了時にSlackへ投稿します")]
+        [Option("slack", Default = false, HelpText = "シミュレーションの開始時と終了時にSlackへ投稿します")]
         public bool PostToSlack { get; set; }
 
         private Logger.Logger log;
@@ -98,6 +100,9 @@ namespace Ptolemy.Aries {
             }
 
             log.Info($"Total task = {tasks.Count}");
+            if (!tasks.Any()) {
+                throw new AriesException("タスクが0個でした。終了します");
+            }
             return tasks;
         }
 
@@ -108,7 +113,7 @@ namespace Ptolemy.Aries {
         /// <param name="dbs"></param>
         /// <param name="sub"></param>
         /// <returns></returns>
-        private DbContainer GetDbContainer(CancellationToken token, IEnumerable<string> dbs, IObserver<string> sub) {
+        private DbContainer GetDbContainer(CancellationToken token, IEnumerable<ParameterEntity> dbs, IObserver<string> sub) {
             log.Info("Build DbContainer...");
             log.Info("\tSearching databases...");
             DbContainer rt = null;
@@ -123,7 +128,7 @@ namespace Ptolemy.Aries {
         /// <param name="requests"></param>
         /// <param name="parent"></param>
         /// <returns></returns>
-        private List<string> StartSimulation(CancellationToken token, List<(ArgoRequest, string)> requests,
+        private List<string> StartSimulation(CancellationToken token, IEnumerable<(ArgoRequest, string)> requests,
             AriesRunProgressBar parent) {
             var rt = new List<string>();
             requests
@@ -144,17 +149,22 @@ namespace Ptolemy.Aries {
                                 foreach (var r in hspice.Run(token, request, bar)) {
                                     container[request.ResultFile].OnNext(r);
                                 }
-
+                                log.Info($"Finished {filePath}");
                                 break;
                             }
-                            catch (Exception) {
+                            catch (Exception e) {
                                 retry++;
+                                log.Error(e);
+                                log.Warn($"task {filePath} will retry({retry})...");
                             }
                         } while (retry < MaxRetry);
 
                         // リトライ数の上限に達してないので削除対象にする
                         if (retry < MaxRetry) {
                             rt.Add(filePath);
+                        }
+                        else {
+                            log.Error($"Retry数の上限に達しました: task file -> {filePath}");
                         }
 
                         // Progress
@@ -168,6 +178,18 @@ namespace Ptolemy.Aries {
 
         private DbContainer container;
 
+        private static ParameterEntity ConvertToParameterEntity(ArgoRequest ar) {
+            var rt = new ParameterEntity {
+                Vtn = ar.Transistors.Vtn.ToString(), Vtp=ar.Transistors.Vtp.ToString(),
+                NetList =  ar.NetList, Time = ar.Time.ToString(), Signals = string.Join(":", ar.Signals),
+                Includes = string.Join(":", ar.Includes), Hspice = ar.HspicePath, HspiceOption = string.Join(":", ar.HspiceOptions),
+                Gnd = ar.Gnd, Vdd = ar.Vdd, IcCommand = string.Join(":", ar.IcCommands), Temperature = ar.Temperature
+            };
+
+            ar.ResultFile = rt.Hash();
+
+            return rt;
+        }
         public void Run(CancellationToken token) {
             log = new Logger.Logger();
             {
@@ -197,9 +219,16 @@ namespace Ptolemy.Aries {
                 Console.WriteLine();
                 var requests = GetRequests();
 
+                // log出力用Subject
                 using var logSubject = new Subject<string>();
                 logSubject.Subscribe(s => log.Info(s));
-                container = GetDbContainer(token, requests.Select(s => s.request.ResultFile), logSubject);
+
+
+                container = GetDbContainer(token,
+                    // ParameterEntityにしてHashでDistinctする
+                    requests.Select(s => ConvertToParameterEntity(s.request))
+                        .Distinct(item => item.Hash()),
+                    logSubject);
 
                 log.Info($"DbContainer has {container.Count} databases");
                 log.Info($"Start simulation and write to db");
@@ -209,8 +238,7 @@ namespace Ptolemy.Aries {
                 var totalRecords = 0;
 
                 try {
-                    totalRecords = requests.Select(s =>
-                        (int) s.request.Sweep * s.request.Signals.Count * s.request.Time.ToEnumerable().Count()).Sum();
+                    totalRecords = (int) requests.Select(s =>s.request.ExpectedRecords).Sum();
                 }
                 catch (OverflowException) {
                     throw new AriesException($"一度に処理できるレコードの数が{int.MaxValue}を超えました。タスクの数を調整することを検討してください");
@@ -307,6 +335,22 @@ namespace Ptolemy.Aries {
             parent?.Dispose();
             sim?.Dispose();
             write?.Dispose();
+        }
+    }
+
+    internal static class DistinctExt {
+        public static IEnumerable<T> Distinct<T, TKey>(this IEnumerable<T> @this, Func<T, TKey> selector) {
+
+            if (@this == null) throw new ArgumentNullException(nameof(@this));
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
+
+            var map = new Map<TKey, bool>(false);
+            foreach (var item in @this) {
+                var key = selector(item);
+                if(map[key]) continue;
+                map[key] = true;
+                yield return item;
+            }
         }
     }
 }
