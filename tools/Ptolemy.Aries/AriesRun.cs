@@ -11,6 +11,7 @@ using Kurukuru;
 using Ptolemy.Argo;
 using Ptolemy.Argo.Request;
 using Ptolemy.Logger;
+using Ptolemy.Map;
 using Ptolemy.Repository;
 using Ptolemy.SiMetricPrefix;
 using ShellProgressBar;

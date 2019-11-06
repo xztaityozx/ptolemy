@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Ptolemy.Argo.Request;
+using Ptolemy.Map;
 using Ptolemy.Repository;
 using Ptolemy.SiMetricPrefix;
 using ShellProgressBar;
@@ -46,7 +47,6 @@ namespace Ptolemy.Argo {
 
             var sweep = request.SweepStart;
             var records = (expect: request.ExpectedRecords, actual: 0);
-            var targetTimeList = request.PlotTimeList.Select(s => new ResultEntity { Time = s }).ToList();
 
             var rt = new List<ResultEntity>();
             string line;
@@ -60,7 +60,7 @@ namespace Ptolemy.Argo {
                 }
 
                 if (!TryParseOutput(request.Seed, sweep, line, signals, out var o)) continue;
-                foreach (var resultEntity in o.Intersect(targetTimeList, new ResultEntityComparer())) {
+                foreach (var resultEntity in o.Intersect(request.PlotTimeList, re => re.Time)) {
                     records.actual++;
                     rt.Add(resultEntity);
                 }
@@ -89,6 +89,23 @@ namespace Ptolemy.Argo {
         }
     }
 
+    internal static class IntersectExt {
+        public static IEnumerable<TItem> Intersect<TItem, TKey>(this IEnumerable<TItem> @this,
+            IEnumerable<TKey> second, Func<TItem, TKey> selector) {
+            if (@this == null) throw new ArgumentNullException(nameof(@this));
+            if (second == null) throw new ArgumentNullException(nameof(second));
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
+
+            var map = new Map<TKey, bool>(false);
+            foreach (var key in second) {
+                map[key] = true;
+            }
+
+            foreach (var item in @this) {
+                if (map[selector(item)]) yield return item;
+            }
+        }
+    }
     internal class ResultEntityComparer : IEqualityComparer<ResultEntity> {
         public bool Equals(ResultEntity x, ResultEntity y) {
             return x != null && y != null && x.Time.Equals(y.Time);
