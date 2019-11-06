@@ -34,10 +34,5 @@ namespace Ptolemy.Repository {
                 new[] {Vtn, Vtp, Includes, Time, IcCommand, $"{Gnd}{Vdd}{Temperature}", Signals, HspiceOption, NetList},
                 Hspice))));
         }
-
-
-        public int GetHashCode(ParameterEntity obj) {
-            throw new NotImplementedException();
-        }
     }
 }

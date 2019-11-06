@@ -176,12 +176,16 @@ namespace Ptolemy.Aries {
         private DbContainer container;
 
         private static ParameterEntity ConvertToParameterEntity(ArgoRequest ar) {
-            return new ParameterEntity {
+            var rt = new ParameterEntity {
                 Vtn = ar.Transistors.Vtn.ToString(), Vtp=ar.Transistors.Vtp.ToString(),
                 NetList =  ar.NetList, Time = ar.Time.ToString(), Signals = string.Join(":", ar.Signals),
                 Includes = string.Join(":", ar.Includes), Hspice = ar.HspicePath, HspiceOption = string.Join(":", ar.HspiceOptions),
                 Gnd = ar.Gnd, Vdd = ar.Vdd, IcCommand = string.Join(":", ar.IcCommands), Temperature = ar.Temperature
             };
+
+            ar.ResultFile = rt.Hash();
+
+            return rt;
         }
         public void Run(CancellationToken token) {
             log = new Logger.Logger();

@@ -150,8 +150,8 @@ namespace Ptolemy.Aries {
                     PlotTimeList = plotTimeList
                 };
 
-                var dbName = baseRequest.GetHashString();
-                baseRequest.ResultFile = dbName;
+                //var dbName = baseRequest.GetHashString();
+                //baseRequest.ResultFile = dbName;
                 if (SplitOption == "none") {
                     WriteTaskFile(Path.Combine(baseDir, $"{guid}.json"), baseRequest);
                 }
