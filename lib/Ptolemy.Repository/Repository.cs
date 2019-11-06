@@ -34,9 +34,8 @@ namespace Ptolemy.Repository {
         /// </summary>
         /// <param name="pe"></param>
         public void UpdateParameter(ParameterEntity pe) {
-            pe.Id = 0;
-            if (context.ParameterEntities.Any()) context.ParameterEntities.Update(pe);
-            else context.ParameterEntities.Add(pe);
+            pe.Id = 1;
+            if(!context.ParameterEntities.Any()) context.ParameterEntities.Add(pe);
             context.SaveChanges();
         }
 
