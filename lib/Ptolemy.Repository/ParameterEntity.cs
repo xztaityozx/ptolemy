@@ -25,9 +25,7 @@ namespace Ptolemy.Repository {
 
         public string Hash() {
             using var sha = SHA256.Create();
-            return string.Join("", sha.ComputeHash(Encoding.UTF8.GetBytes(string.Join("",
-                new[] {Vtn, Vtp, Includes, Time, IcCommand, $"{Gnd}{Vdd}{Temperature}", Signals, HspiceOption, NetList},
-                Hspice))).Select(s => $"{s:X}"));
+            return string.Join("", sha.ComputeHash(Encoding.UTF8.GetBytes(string.Join("", Vtn, Vtp, Includes, Time, IcCommand, $"{Gnd}{Vdd}{Temperature}", Signals, HspiceOption, NetList, Hspice))).Select(s => $"{s:X}"));
         }
     }
 }
