@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using CommandLine;
 using CommandLine.Text;
 using Ptolemy.Interface;
 using Ptolemy.Libra.Request;
+using Ptolemy.SiMetricPrefix;
+using Remotion.Linq.Parsing;
 
 namespace Ptolemy.Libra {
     public class LibraOption {
@@ -13,8 +17,11 @@ namespace Ptolemy.Libra {
         [Option('w', "sweep", Default = "1e7", HelpText = "合計Sweep数です")]
         public string SweepString { get; set; }
         
-        [Option('W', "sweepSplitOption", Default = "sweep", HelpText = "合計Sweepを分割する方法を指定します。sweepを指定するとseedを固定します。seedを指定するとseedを固定します")]
-        public string SweepSplitOption { get; set; }
+        [Option('e', "seed", HelpText = "Seedの値もしくは範囲([start],[end])を指定します", Default = "1")]
+        public string SeedString { get; set; }
+
+        [Option('W',"sweepStart", HelpText = "Sweepの初期値を指定します", Default = "1")]
+        public string SweepStartString { get; set; }
 
         [Value(0, Required = true, HelpText = "ターゲットのSQLiteファイルです", MetaName = "targetDB")]
         public string SqliteFile { get; set; }
@@ -29,14 +36,25 @@ namespace Ptolemy.Libra {
             if (!File.Exists(SqliteFile)) {
                 throw new LibraException($"SQLiteファイル {SqliteFile} が見つかりません");
             }
-            
-            
 
+            var seed = ParseSeedRequest(SeedString);
+
+            // TODO: ここ
             var rt = new LibraRequest(
-                Expressions, ((long) w.Start, (long) w.Stop), ((long) e.Start, (long) e.Stop),
+                Expressions, ((long) w.Start, (long) w.Stop), seed,
                 SqliteFile);
 
             return rt;
+        }
+
+        private static (long start, long end) ParseSeedRequest(string request) {
+            var split = request.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.ParseLongWithSiPrefix())
+                .ToList();
+            return split switch {
+                var x when x.Count == 2 => (split[0], split[1]),
+                var x when x.Count == 1 => (split[0], split[0]),
+                _ => throw new FormatException("Seedの指定がフォーマットに従っていません. [start],[end] or [value]")
+                };
         }
     }
 }

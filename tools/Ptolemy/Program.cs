@@ -16,7 +16,7 @@ namespace Ptolemy {
             
             db.WL();
             
-            var repo = new SqliteRepository(db);
+            using var repo = new SqliteRepository(db);
             var req = new LibraRequest("!(n1[4n]>0.7999 && n2[4n]<0.002)", (1, 1), (1, (long) 1e7), db);
 
             var f = req.BuildFilter();
