@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Ptolemy.Map;
 
 namespace Ptolemy.Repository {
@@ -68,6 +69,11 @@ namespace Ptolemy.Repository {
                 .GroupBy(e => new {e.Sweep, e.Seed})
                 .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
 
+//            targets.ForEach(s => {
+//                var str = s.Select(x => $"{x.Key}: {x.Value}").Join(",");
+//                Console.WriteLine($"count: {s.Count}, {str}");
+//            });
+            
             token.ThrowIfCancellationRequested();
             //PLinqで並列化
             delegates
