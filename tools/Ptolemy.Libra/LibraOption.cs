@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommandLine;
-using CommandLine.Text;
-using Ptolemy.Interface;
 using Ptolemy.Libra.Request;
 using Ptolemy.SiMetricPrefix;
-using Remotion.Linq.Parsing;
 
 namespace Ptolemy.Libra {
     public class LibraOption {

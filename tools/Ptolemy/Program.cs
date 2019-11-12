@@ -1,27 +1,23 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using Ptolemy.Libra.Request;
-using Ptolemy.Map;
-using Ptolemy.Parameters;
 using Ptolemy.Repository;
 
 namespace Ptolemy {
     public static class Program {
         internal static void Main(string[] args) {
-            var db = Path.Combine(Environment.GetEnvironmentVariable("HOME"), "workspace", "db","db");
+            var db = Path.Combine(Environment.GetEnvironmentVariable("HOME"), "Workspace", "db","db");
             
             db.WL();
             
             using var repo = new SqliteRepository(db);
-            var req = new LibraRequest("!(n1[4n]>0.7999 && n2[4n]<0.002)", (1, 1), (1, (long) 1e7), db);
+            var req = new LibraRequest("n1[4n]<n2[4n]", (1, 1), (1, (long) 1e7), db);
 
             var f = req.BuildFilter();
 
-            var res = repo.Aggregate(req.SignalList, (1, 1), (1, (long) 1e7), f, LibraRequest.GetKey,
+            var res = repo.Aggregate(req.SignalList, 1, (long)1e5,1, f, LibraRequest.GetKey,
                 CancellationToken.None);
             
             res.WriteLines();

@@ -2,12 +2,64 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Castle.Core.Logging;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Options;
 using Ptolemy.Map;
+using ILoggerFactory = Microsoft.Extensions.Logging.ILoggerFactory;
 
 namespace Ptolemy.Repository {
+
+    public static class RepositoryLinqExt {
+        //public static IEnumerable<T> Intersect<T, TKey>(this IEnumerable<T> @this, IEnumerable<T> second,
+        //    Func<T, TKey> keySelector) {
+        //    if (@this == null) throw new NullReferenceException(nameof(@this));
+        //    if (second == null) throw new NullReferenceException(nameof(second));
+        //    if (keySelector == null) throw new NullReferenceException(nameof(keySelector));
+
+
+        //    return @this.Intersect(second.Select(keySelector), keySelector);
+        //}
+
+        //public static IEnumerable<T> Intersect<T, TKey>(this IEnumerable<T> @this, IEnumerable<TKey> keys,
+        //    Func<T, TKey> keySelector) {
+
+        //    if (@this == null) throw new NullReferenceException(nameof(@this));
+        //    if (keys == null) throw new NullReferenceException(nameof(keys));
+        //    if (keySelector == null) throw new NullReferenceException(nameof(keySelector));
+
+        //    var map = new Map<TKey, bool>(false);
+        //    foreach (var key in keys) {
+        //        map[key] = true;
+        //    }
+
+        //    foreach (var item in @this) {
+        //        if (map[keySelector(item)]) yield return item;
+        //    }
+        //}
+
+        public static IQueryable<T> Intersect<T, TKey>(this IQueryable<T> @this, IEnumerable<TKey> keys,
+            Func<T, TKey> keySelector)
+        {
+            if (@this == null) throw new NullReferenceException(nameof(@this));
+            if (keys == null) throw new NullReferenceException(nameof(keys));
+            if (keySelector == null) throw new NullReferenceException(nameof(keySelector));
+
+            var map = new Map<TKey, bool>(false);
+            foreach (var key in keys)
+            {
+                map[key] = true;
+            }
+
+            return @this.Where(e => map[keySelector(e)]);
+        }
+    }
+
     /// <summary>
     /// Sqlite3を扱うやつ
     /// </summary>
@@ -38,6 +90,34 @@ namespace Ptolemy.Repository {
             pe.Id = 1;
             if(!context.ParameterEntities.Any()) context.ParameterEntities.Add(pe);
             context.SaveChanges();
+        }
+
+        public long[] Aggregate(
+            IReadOnlyList<string> signals,
+            long seed, long totalSweep, long sweepStart,
+            IReadOnlyList<Func<Map<string, decimal>, bool>> delegates,
+            Func<string, decimal, string> keyGenerator,
+            CancellationToken token) {
+            token.ThrowIfCancellationRequested();
+
+            var rt = new long[delegates.Count];
+
+            var targets = context.Entities
+                .Where(e => e.Seed == seed && sweepStart <= e.Sweep && e.Sweep <= totalSweep + sweepStart - 1)
+                .Intersect(signals, e => e.Signal)
+                .GroupBy(e => new {e.Sweep, e.Seed})
+                .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
+
+            foreach (var map in targets) {
+                Console.WriteLine(string.Join(",", map.Select(s => $"{s.Key}: {s.Value}")));
+            }
+
+            //delegates
+            //    .Select((d, i) => new {d, i})
+            //    .AsParallel()
+            //    .ForAll(item => rt[item.i] = targets.Count(item.d));
+
+            return rt;
         }
 
         /// <summary>
@@ -106,6 +186,11 @@ namespace Ptolemy.Repository {
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
                 base.OnConfiguring(optionsBuilder);
                 optionsBuilder.UseSqlite($"Data Source={path};");
+
+                var lf = new ServiceCollection().AddLogging(builder =>
+                        builder.AddConsole().AddFilter(DbLoggerCategory.Database.Command.Name, LogLevel.Information))
+                    .BuildServiceProvider().GetService<ILoggerFactory>();
+                optionsBuilder.UseLoggerFactory(lf);
 
                 //遅延LoadをOn
                 optionsBuilder.UseLazyLoadingProxies();
