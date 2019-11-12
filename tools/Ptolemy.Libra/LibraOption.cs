@@ -31,7 +31,12 @@ namespace Ptolemy.Libra {
 
             if(string.IsNullOrEmpty(Expressions)) throw new LibraException("Expressionsが空です");
 
-            SqliteFile = FilePath.FilePath.Expand(SqliteFile);
+            try {
+                SqliteFile = FilePath.FilePath.Expand(SqliteFile);
+            }
+            catch (NullReferenceException) {
+                throw new LibraException($"SQLiteへのパスが空です");
+            }
 
             if (!File.Exists(SqliteFile)) {
                 throw new LibraException($"SQLiteファイル {SqliteFile} が見つかりません");
@@ -39,13 +44,15 @@ namespace Ptolemy.Libra {
 
             var seed = ParseSeedRequest(SeedString);
 
-            // TODO: ここ
-            var rt = new LibraRequest(
-                Expressions, ((long) w.Start, (long) w.Stop), seed,
-                SqliteFile);
+            if (string.IsNullOrEmpty(SweepStartString)) throw new NullReferenceException(nameof(SweepStartString));
+            var sweepStart = SweepStartString.ParseLongWithSiPrefix();
 
-            return rt;
+            if (string.IsNullOrEmpty(SweepString)) throw new NullReferenceException(nameof(SweepString));
+            return new LibraRequest(
+                Expressions,  seed, (sweepStart, sweepStart + SweepString.ParseLongWithSiPrefix() - 1),
+                SqliteFile);
         }
+
 
         private static (long start, long end) ParseSeedRequest(string request) {
             var split = request.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.ParseLongWithSiPrefix())

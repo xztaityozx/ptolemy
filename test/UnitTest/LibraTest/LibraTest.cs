@@ -4,12 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using CommandLine;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ptolemy.Libra;
 using Ptolemy.Libra.Request;
 using Ptolemy.Map;
 using Ptolemy.OptionException;
 using Ptolemy.Repository;
+using Ptolemy.SiMetricPrefix;
 using Xunit;
+using Assert = Xunit.Assert;
 
 namespace UnitTest.LibraTest {
     using CAssert = Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert;
@@ -55,40 +58,60 @@ namespace UnitTest.LibraTest {
         }
 
         [Theory]
-        [InlineData("", true, new[]{""},new[]{""}, "")]
-        [InlineData("-e 1,2 -E A[10]<100 sqlite", false, new[]{"A[10]<100"}, new[]{"exp1"}, "sqlite")]
-        [InlineData("-e 1,2 -w 10,20 -E B[1p]<99,C[9n]>=5 sqlite", false, new[]{"B[1p]<99","C[9n]>=5"},new[]{"exp1","exp2"}, "sqlite")]
-        public void LibraOptionBuildRequestTest(string commandLine, bool throws, string[] conditions, string[] expressions, string sqlite) {
-            var args = commandLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (throws) {
-                Assert.Throws<ParseFailedException>(() => Parser.Default.ParseArguments<LibraOption>(args)
-                    .MapResult(o => o.BuildRequest(), e => throw new ParseFailedException()));
+        [InlineData("1")]
+        [InlineData("1,30")]
+        public void LibraOptionBuildRequestTest(string seed) {
+            var tmp = Path.Combine(Path.GetTempPath(), "Ptolemy.Libra.LibraOptionBuildRequestTest");
+            Directory.CreateDirectory(tmp);
+            try {
+                var opt = new LibraOption();
+
+                Assert.Throws<LibraException>(() => opt.BuildRequest());
+                opt.Expressions = "a[1]<=10,b[2]>=20,c[3]!=c[4],a[5] != 30 && b[6] >= c[7]";
+                Assert.Throws<LibraException>(() => opt.BuildRequest());
+                opt.SqliteFile = Path.Combine(tmp, "sqlite");
+                using (var sw = new StreamWriter(opt.SqliteFile)) sw.WriteLine("dummy sqlite");
+
+                Assert.Throws<NullReferenceException>(() => opt.BuildRequest());
+                opt.SeedString = "xyz";
+                Assert.Throws<FormatException>(() => opt.BuildRequest());
+
+                opt.SeedString = seed;
+
+                var split = seed.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => s.ParseLongWithSiPrefix()).ToArray();
+
+                var (start, end) = split switch {
+                    var x when x.Length == 2 => (split[0], split[1]),
+                    var x when x.Length == 1 => (split[0], split[0]),
+                    _ => throw new AssertFailedException()
+                    };
+
+                Assert.Throws<NullReferenceException>(() => opt.BuildRequest());
+
+                opt.SweepStartString = "x";
+                Assert.Throws<FormatException>(() => opt.BuildRequest());
+                
+                opt.SweepStartString = "1";
+
+                Assert.Throws<NullReferenceException>(() => opt.BuildRequest());
+                opt.SweepString = "x";
+                Assert.Throws<FormatException>(() => opt.BuildRequest());
+
+                opt.SweepString = "100";
+
+                var req = opt.BuildRequest();
+
+                Assert.Equal(start, req.SeedStart);
+                Assert.Equal(end, req.SeedEnd);
+                Assert.Equal(1L, req.SweepStart);
+                Assert.Equal(100L, req.SweepEnd);
+                Assert.Equal(opt.SqliteFile, req.SqliteFile);
             }
-            else {
-                var o = Parser.Default.ParseArguments<LibraOption>(args)
-                    .MapResult(x => x, e => throw new ParseFailedException());
-
-                var tmp = Path.Combine(Path.GetTempPath(), "Ptolemy.Libra.Test.BuildRequestTest");
-                var db = Path.Combine(tmp, sqlite);
-                Directory.CreateDirectory(tmp);
-                using (File.Create(db)) { }
-
-                o.SqliteFile = db;
-
-                var req = o.BuildRequest();
-
-                CAssert.AreEquivalent(
-                    conditions.Select((s, i) => new {s, i = i + 1}).ToMap(k => $"exp{k.i}", k => k.s),
-                    req.Conditions
-                );
-
-                CAssert.AreEquivalent(
-                    expressions, req.Expressions
-                );
-
-                Assert.Equal(db, req.SqliteFile);
+            finally {
                 Directory.Delete(tmp, true);
             }
         }
+        
     }
 }
