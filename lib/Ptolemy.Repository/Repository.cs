@@ -143,25 +143,30 @@ namespace Ptolemy.Repository {
             var (eStart, eEnd) = seed;
             var (wStart, wEnd) = sweep;
 
-            var targets = context.Entities
-                .Where(e => (wStart <= e.Sweep && e.Sweep <= wEnd) && (eStart <= e.Seed && e.Seed <= eEnd))
-                .Where(e => signals.Contains(e.Signal))
-                .GroupBy(e => new {e.Sweep, e.Seed})
-                .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
+            var box = new long[eEnd - eStart - 1, delegates.Count];
 
-//            targets.ForEach(s => {
-//                var str = s.Select(x => $"{x.Key}: {x.Value}").Join(",");
-//                Console.WriteLine($"count: {s.Count}, {str}");
-//            });
+            Range(eStart, eEnd).AsParallel()
+                .WithCancellation(token)
+                .ForAll(s => {
+                    var target = context.Entities
+                        .Where(e => e.Seed == s)
+                        .Where(e => wStart <= e.Sweep && e.Sweep <= wEnd)
+                        .Where(e => signals.Contains(e.Signal))
+                        .GroupBy(e => e.Sweep)
+                        .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
+
+                    token.ThrowIfCancellationRequested();
+                    delegates.Select((d, i) => new {d, i})
+                        .AsParallel()
+                        .ForAll(item => box[s, item.i] = target.Count(item.d));
+                });
+
             
-            token.ThrowIfCancellationRequested();
-            //PLinqで並列化
-            delegates
-                .Select((d, i) => new {d, i})
-                .AsParallel()
-                .ForAll(item => rt[item.i] = targets.Count(item.d));
-
             return rt;
+        }
+
+        private static IEnumerable<long> Range(long start, long end) {
+            for (var l = start; l <= end; l++) yield return l;
         }
 
 
