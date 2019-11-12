@@ -145,23 +145,21 @@ namespace Ptolemy.Repository {
 
             var box = new long[eEnd - eStart - 1, delegates.Count];
 
-            Range(eStart, eEnd).AsParallel()
-                .WithCancellation(token)
-                .ForAll(s => {
-                    var target = context.Entities
-                        .Where(e => e.Seed == s)
-                        .Where(e => wStart <= e.Sweep && e.Sweep <= wEnd)
-                        .Where(e => signals.Contains(e.Signal))
-                        .GroupBy(e => e.Sweep)
-                        .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
+            for (var s = eStart; s <= eEnd; s++) {
+                var target = context.Entities
+                    .Where(e => e.Seed == s)
+                    .Where(e => wStart <= e.Sweep && e.Sweep <= wEnd)
+                    .Where(e => signals.Contains(e.Signal))
+                    .GroupBy(e => e.Sweep)
+                    .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
 
-                    token.ThrowIfCancellationRequested();
-                    delegates.Select((d, i) => new {d, i})
-                        .AsParallel()
-                        .ForAll(item => box[s, item.i] = target.Count(item.d));
-                });
-
+                token.ThrowIfCancellationRequested();
+                for (var i = 0; i < delegates.Count; i++) {
+                    rt[i] += target.Count(delegates[i]);
+                }
+            }
             
+
             return rt;
         }
 
