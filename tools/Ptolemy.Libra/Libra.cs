@@ -31,14 +31,8 @@ namespace Ptolemy.Libra {
 
                 if (!signals.Any()) throw new LibraException("Conditions have no signals");
 
-                using var repo = new Repository.SqliteRepository(request.SqliteFile);
-                return
-                    request.Expressions.Select(s =>
-                            request.Conditions.Aggregate(s, (exp, x) => exp.Replace(x.Key, x.Value)))
-                        .Zip(
-                            repo.Aggregate(signals, (request.SeedStart, request.SeedEnd),
-                                (request.SweepStart, request.SweepEnd), delegates, LibraRequest.GetKey, token),
-                            Tuple.Create).ToArray();
+
+                return null;
             }
             catch (LibraException) {
                 throw;
