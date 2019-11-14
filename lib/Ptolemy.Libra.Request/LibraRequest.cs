@@ -35,6 +35,8 @@ namespace Ptolemy.Libra.Request
         private List<decimal> times = new List<decimal>();
         public IReadOnlyList<decimal> TimeList => times;
 
+        public bool IsSplitWithSeed => SeedStart != SeedEnd;
+
         public LibraRequest() { }
 
         /// <summary>

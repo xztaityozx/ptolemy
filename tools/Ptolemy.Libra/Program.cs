@@ -35,8 +35,8 @@ namespace Ptolemy.Libra {
                             .ParseArguments<LibraOption>(args)
                             .MapResult(o => o.BuildRequest(), e => throw new ParseFailedException());
                         log.Info("Built request");
-                        var libra = new Libra(token, request);
-                        result = libra.Run();
+                        var libra = new Libra(token);
+                        result = libra.Run(request);
                         spin.Info("Finished aggregate");
                     }
                 });

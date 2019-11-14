@@ -46,8 +46,8 @@ namespace UnitTest.LibraTest {
                     req.Conditions.Aggregate(s, (exp, x) => exp.Replace(x.Key,x.Value))
                 ), (l,s)=>Tuple.Create(s,l)).ToList();
 
-            var libra = new Libra(CancellationToken.None, req);
-            var actual = libra.Run();
+            var libra = new Libra(CancellationToken.None);
+            var actual = libra.Run(req);
 
             CAssert.AreEquivalent(expect, actual);
 

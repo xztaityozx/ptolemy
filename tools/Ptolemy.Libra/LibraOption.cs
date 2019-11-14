@@ -10,7 +10,8 @@ namespace Ptolemy.Libra {
         [Option('E', "expressions",Required = true, HelpText = "数え上げの条件式です。カンマ区切りです")]
         public string Expressions { get; set; }
         
-        [Option('w', "sweep", Default = "1e7", HelpText = "合計Sweep数です")]
+        // TODO: ここのパースを考え直せ
+        [Option('w', "sweep", Default = "1e7", HelpText = "合計Sweep数です。Seedの分割する場合は1SeedあたりのSweep数です")]
         public string SweepString { get; set; }
         
         [Option('e', "seed", HelpText = "Seedの値もしくは範囲([start],[end])を指定します", Default = "1")]
