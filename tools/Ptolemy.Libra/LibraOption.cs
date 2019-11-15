@@ -10,15 +10,14 @@ namespace Ptolemy.Libra {
         [Option('E', "expressions",Required = true, HelpText = "数え上げの条件式です。カンマ区切りです")]
         public string Expressions { get; set; }
         
-        // TODO: ここのパースを考え直せ
-        [Option('w', "sweep", Default = "1e7", HelpText = "合計Sweep数です。Seedの分割する場合は1SeedあたりのSweep数です")]
-        public string SweepString { get; set; }
+        [Option('w', "sweep", Default = "2000x5000", HelpText = "合計Sweep数です。Sweepの分割する場合は[個数]x[sweep]")]
+        public string Sweep { get; set; }
         
         [Option('e', "seed", HelpText = "Seedの値もしくは範囲([start],[end])を指定します", Default = "1")]
-        public string SeedString { get; set; }
+        public string Seed { get; set; }
 
         [Option('W',"sweepStart", HelpText = "Sweepの初期値を指定します", Default = "1")]
-        public string SweepStartString { get; set; }
+        public string SweepStart { get; set; }
 
         [Value(0, Required = true, HelpText = "ターゲットのSQLiteファイルです", MetaName = "targetDB")]
         public string SqliteFile { get; set; }
@@ -39,25 +38,23 @@ namespace Ptolemy.Libra {
                 throw new LibraException($"SQLiteファイル {SqliteFile} が見つかりません");
             }
 
-            var seed = ParseSeedRequest(SeedString);
+            var seed = ParseRangeRequest(Seed, ',');
 
-            if (string.IsNullOrEmpty(SweepStartString)) throw new NullReferenceException(nameof(SweepStartString));
-            var sweepStart = SweepStartString.ParseLongWithSiPrefix();
+            if (string.IsNullOrEmpty(SweepStart)) throw new NullReferenceException(nameof(SweepStart));
 
-            if (string.IsNullOrEmpty(SweepString)) throw new NullReferenceException(nameof(SweepString));
+            if (string.IsNullOrEmpty(Sweep)) throw new NullReferenceException(nameof(Sweep));
             return new LibraRequest(
-                Expressions,  seed, (sweepStart, sweepStart + SweepString.ParseLongWithSiPrefix() - 1),
-                SqliteFile);
+                Expressions,  seed, Sweep, SweepStart.ParseLongWithSiPrefix(), SqliteFile);
         }
 
 
-        private static (long start, long end) ParseSeedRequest(string request) {
-            var split = request.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.ParseLongWithSiPrefix())
+        private static (long first, long second) ParseRangeRequest(string request, char delimiter) {
+            var split = request.Split(delimiter, StringSplitOptions.RemoveEmptyEntries).Select(s => s.ParseLongWithSiPrefix())
                 .ToList();
             return split switch {
                 var x when x.Count == 2 => (split[0], split[1]),
                 var x when x.Count == 1 => (split[0], split[0]),
-                _ => throw new FormatException("Seedの指定がフォーマットに従っていません. [start],[end] or [value]")
+                _ => throw new FormatException($"{nameof(request)}の指定がフォーマットに従っていません. [start],[end] or [value]")
                 };
         }
     }

@@ -9,8 +9,12 @@ using Ptolemy.OptionException;
 namespace Ptolemy.Lupus {
     internal class Program {
         private static void Main(string[] args) {
+
+
             Console.Clear();
             var log = new Logger.Logger();
+            log.Info("Not Implemented Ptolemy.Lupus");
+            return;
             try {
                 Tuple<string, long>[] result = null;
                 var sw = new Stopwatch();

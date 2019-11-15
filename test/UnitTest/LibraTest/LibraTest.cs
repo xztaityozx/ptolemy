@@ -1,58 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ptolemy.Libra;
 using Ptolemy.Libra.Request;
-using Ptolemy.Repository;
 using Ptolemy.SiMetricPrefix;
 using Xunit;
 using Assert = Xunit.Assert;
 
 namespace UnitTest.LibraTest {
-    using CAssert = Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert;
     public class LibraTest {
-        [Fact]
-        public void RunTest() {
-            var box = new List<ResultEntity>();
-            var r = new Random(DateTime.Now.Millisecond);
-
-            var tmp = Path.Combine(Path.GetTempPath(), "Ptolemy.Libra.LibraTest.RunTest");
-            Directory.CreateDirectory(tmp);
-            var sqlite = Path.Combine(tmp, "sqlite");
-            for(var i =0;i<100;i++) box.Add(new ResultEntity {
-                Sweep = i, Seed = i % 3, Signal = i%2==0?"A":"B", Time = i%5,Value = r.Next()
-            });
-
-            var req = new LibraRequest {
-                SweepStart = 20, SweepEnd = 50, SeedEnd = 2, SeedStart = 1, SqliteFile = sqlite,
-                Conditions = new Dictionary<string, string> {
-                    ["a"] = $"A[1]<{r.Next()}", ["b"] = $"A[2]<={r.Next()}",
-                    ["c"] = $"B[3]>={r.Next()}", ["d"] = $"B[4]>A[1]"
-                },
-                Expressions = new List<string> {
-                    "a", "b&&c", "a||d"
-                }
-            };
-
-            var delegates = req.BuildFilter();
-
-            using var repo = new SqliteRepository(sqlite);
-            repo.BulkUpsert(box);
-            var expect = repo.Aggregate(req.SignalList, (1, 2), (20, 50), delegates, LibraRequest.GetKey,
-                CancellationToken.None).Zip(req.Expressions.Select(s => 
-                    req.Conditions.Aggregate(s, (exp, x) => exp.Replace(x.Key,x.Value))
-                ), (l,s)=>Tuple.Create(s,l)).ToList();
-
-            var libra = new Libra(CancellationToken.None);
-            var actual = libra.Run(req);
-
-            CAssert.AreEquivalent(expect, actual);
-
-            Directory.Delete(tmp, true);
-        }
 
         [Theory]
         [InlineData("1")]
@@ -70,10 +27,10 @@ namespace UnitTest.LibraTest {
                 using (var sw = new StreamWriter(opt.SqliteFile)) sw.WriteLine("dummy sqlite");
 
                 Assert.Throws<NullReferenceException>(() => opt.BuildRequest());
-                opt.SeedString = "xyz";
+                opt.Seed = "xyz";
                 Assert.Throws<FormatException>(() => opt.BuildRequest());
 
-                opt.SeedString = seed;
+                opt.Seed = seed;
 
                 var split = seed.Split(',', StringSplitOptions.RemoveEmptyEntries)
                     .Select(s => s.ParseLongWithSiPrefix()).ToArray();
@@ -86,23 +43,21 @@ namespace UnitTest.LibraTest {
 
                 Assert.Throws<NullReferenceException>(() => opt.BuildRequest());
 
-                opt.SweepStartString = "x";
-                Assert.Throws<FormatException>(() => opt.BuildRequest());
+                opt.SweepStart = "x";
+                Assert.Throws<NullReferenceException>(() => opt.BuildRequest());
                 
-                opt.SweepStartString = "1";
+                opt.SweepStart = "1";
 
                 Assert.Throws<NullReferenceException>(() => opt.BuildRequest());
-                opt.SweepString = "x";
+                opt.Sweep = "x";
                 Assert.Throws<FormatException>(() => opt.BuildRequest());
 
-                opt.SweepString = "100";
+                opt.Sweep = "100";
 
                 var req = opt.BuildRequest();
 
                 Assert.Equal(start, req.SeedStart);
                 Assert.Equal(end, req.SeedEnd);
-                Assert.Equal(1L, req.SweepStart);
-                Assert.Equal(100L, req.SweepEnd);
                 Assert.Equal(opt.SqliteFile, req.SqliteFile);
             }
             finally {

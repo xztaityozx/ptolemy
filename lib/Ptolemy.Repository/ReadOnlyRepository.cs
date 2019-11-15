@@ -19,6 +19,11 @@ namespace Ptolemy.Repository {
             return rt;
         }
 
+        public ParameterEntity GetParameter() {
+            using var c = Connect();
+            return c.ParameterEntities.First();
+        }
+
         /// <summary>
         /// Sweepの区間についてクエリを分割して数え上げをします
         /// </summary>

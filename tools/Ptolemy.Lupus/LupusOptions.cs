@@ -35,7 +35,7 @@ namespace Ptolemy.Lupus {
             var targets = Files.Select(FilePath.FilePath.Expand).ToList();
 
             return new LupusRequest {
-                LibraRequest = new LibraRequest(Expressions, (Seed, Seed), (0, targets.Count), db),
+                //LibraRequest = new LibraRequest(Expressions, (Seed, Seed), (0, targets.Count), db),
                 DracoRequests = targets.Select((s, i) => new DracoRequest {
                     Sweep = i, Seed = Seed, BufferSize = BufferSize, InputFile = s, OutputFile = db,
                     GroupId = Guid.NewGuid()

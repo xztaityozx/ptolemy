@@ -33,16 +33,18 @@ namespace Ptolemy.Libra {
 
                 var result = request.IsSplitWithSeed switch {
                     true => db.Aggregate(token, signals, delegates,
-                        Range(request.SeedStart, request.SeedEnd).ToList(),
-                        request.SweepStart, request.SweepEnd, LibraRequest.GetKey),
-                    //false => db.Aggregate(token, signals, delegates,request.SeedStart, )
+                        request.Sweeps.Repeat().ToList(),
+                        request.Sweeps.Start,
+                        request.Sweeps.Size,
+                        LibraRequest.GetKey),
+                    false => db.Aggregate(token, signals,
+                        delegates,
+                        request.SeedStart,
+                        request.Sweeps.Section().ToList(),
+                        LibraRequest.GetKey)
                     };
 
-                if (request.IsSplitWithSeed) {
-                    
-                }
-
-                return null;
+                return request.Expressions.Zip(result, Tuple.Create).ToArray();
             }
             catch (LibraException) {
                 throw;
@@ -50,10 +52,6 @@ namespace Ptolemy.Libra {
             catch (Exception e) {
                 throw new LibraException($"Unknown error has occured\n\t-->{e}");
             }
-        }
-
-        private static IEnumerable<long> Range(long start, long end) {
-            for (var l = start; l <= end; l++) yield return l;
         }
     }
 
