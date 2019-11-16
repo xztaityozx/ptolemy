@@ -23,6 +23,40 @@ namespace Ptolemy.Repository {
 
         public ParameterEntity() { }
 
+        public override string ToString() {
+            var sb=new StringBuilder();
+
+            sb.AppendLine($"Netlist: {NetList}");
+            sb.AppendLine("Transistor");
+            sb.AppendLine($"  Vtn: {Vtn}");
+            sb.AppendLine($"  Vtp: {Vtp}");
+
+            sb.AppendLine("Includes");
+            foreach (var s in Includes.Split(':')) {
+                sb.AppendLine($"  - {s}");
+            }
+
+            sb.AppendLine("Signals");
+            foreach (var signal in Signals.Split(':')) {
+                sb.AppendLine($"  - {signal}");
+            }
+
+            sb.AppendLine($"Simulation Time: {Time}");
+
+            sb.AppendLine($"Temperature: {Temperature}");
+            sb.AppendLine($"Voltage: VDD: {Vdd}, GND: {Gnd}");
+            sb.AppendLine($".IC");
+            foreach (var s in IcCommand.Split(':')) {
+                sb.AppendLine($"  - {s}");
+            }
+
+            sb.AppendLine("Hspice");
+            sb.AppendLine($"  Path:    {Hspice}");
+            sb.AppendLine($"  Options: {HspiceOption}");
+
+            return sb.ToString();
+        }
+
         public string Hash() {
             using var sha = SHA256.Create();
             return string.Join("", sha.ComputeHash(Encoding.UTF8.GetBytes(string.Join("", Vtn, Vtp, Includes, Time, IcCommand, $"{Gnd}{Vdd}{Temperature}", Signals, HspiceOption, NetList, Hspice))).Select(s => $"{s:X}"));

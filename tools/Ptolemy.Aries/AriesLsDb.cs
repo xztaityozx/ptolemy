@@ -11,7 +11,7 @@ using Ptolemy.Repository;
 
 namespace Ptolemy.Aries {
     [Verb("ls-db", HelpText = "DBをとそのパラメータをリストアップします")]
-    public class AriesLsDb{
+    public class AriesLsDb :IAriesVerb{
         [Option('d',"dir",HelpText = "DBが保存されているディレクトリへのパスです")]
         public string Dir { get; set; }
 
