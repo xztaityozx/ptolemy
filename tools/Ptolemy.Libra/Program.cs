@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
@@ -25,21 +26,16 @@ namespace Ptolemy.Libra {
                 Tuple<string, long>[] result = null;
                 var sw = new Stopwatch();
                 sw.Start();
-                Spinner.Start("Ptolemy.Libra", spin => {
-                    using (Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1))
-                        .Subscribe(s => spin.Text = $" {s}s")) {
 
-                        log.Info("Start Ptolemy.Libra");
-                        var request = Parser
-                            .Default
-                            .ParseArguments<LibraOption>(args)
-                            .MapResult(o => o.BuildRequest(), e => throw new ParseFailedException());
-                        log.Info("Built request");
-                        var libra = new Libra(token);
-                        result = libra.Run(request);
-                        spin.Info("Finished aggregate");
-                    }
-                });
+                log.Info("Start Ptolemy.Libra");
+                var request = Parser
+                    .Default
+                    .ParseArguments<LibraOption>(args)
+                    .MapResult(o => o.BuildRequest(), e => throw new ParseFailedException());
+                log.Info("Built request");
+                var libra = new Libra(token);
+                result = libra.Run(request);
+
                 sw.Stop();
                 log.Info($"Elapsed time: {sw.Elapsed}");
                 log.Info("Result: ");

@@ -23,6 +23,7 @@ namespace Ptolemy.Libra.Request
         /// Conditionsに格納した条件式を使った数え上げ条件式のリスト
         /// </summary>
         public List<string> Expressions { get; set; }
+        public List<string> ExpressionNameList { get; }
         public string SqliteFile { get; set; }
         public long SeedStart { get; set; }
         public long SeedEnd { get; set; }
@@ -52,13 +53,13 @@ namespace Ptolemy.Libra.Request
             {
                 var itr = new Interpreter();
                 foreach (var expression in Expressions) {
-                    var expr = string.Join("", expressionOperators
+                    var delegateString = string.Join("", expressionOperators
                         .Aggregate(expression, (exp, op) => exp.Replace(op, $" {op} "))
                         .Split(" ", StringSplitOptions.RemoveEmptyEntries)
                         .Select(s => map.ContainsKey(s) ? "(" + map[s] + ")" : s));
 
 
-                    rt.Add(itr.ParseAsDelegate<FilterFunc>(expr, "map"));
+                    rt.Add(itr.ParseAsDelegate<FilterFunc>(delegateString, "map"));
                 }
             }
 
@@ -69,6 +70,7 @@ namespace Ptolemy.Libra.Request
         }
 
         public LibraRequest(string expressionString, (long start, long end) seed, string sweepRequest, long sweepStart, string sqliteFile) {
+            ExpressionNameList = new List<string>(expressionString.Split(',', StringSplitOptions.RemoveEmptyEntries));
             var expressions = expressionString.Replace(" ", "")
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(s =>

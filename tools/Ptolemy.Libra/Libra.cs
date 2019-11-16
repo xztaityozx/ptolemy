@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using Ptolemy.Libra.Request;
 using Ptolemy.Repository;
+using ShellProgressBar;
 
 namespace Ptolemy.Libra {
     public class Libra {
@@ -27,7 +28,13 @@ namespace Ptolemy.Libra {
 
                 if (!signals.Any()) throw new LibraException("Conditions have no signals");
 
+                using var bar = new ProgressBar((int) request.Sweeps.Times, "Ptolemy.Libra", new ProgressBarOptions {
+                    ForegroundColor = ConsoleColor.DarkYellow, BackgroundCharacter = '-',
+                    ProgressCharacter = '>', CollapseWhenFinished = true, BackgroundColor = ConsoleColor.Gray,
+                    ForegroundColorDone = ConsoleColor.Green
+                });
                 var db = new ReadOnlyRepository(request.SqliteFile);
+                db.IntervalEvent += () => bar.Tick();
 
                 var result = request.IsSplitWithSeed switch {
                     true => db.Aggregate(token, signals, delegates,
@@ -42,7 +49,7 @@ namespace Ptolemy.Libra {
                         LibraRequest.GetKey)
                     };
 
-                return request.Expressions.Zip(result, Tuple.Create).ToArray();
+                return request.ExpressionNameList.Zip(result, Tuple.Create).ToArray();
             }
             catch (LibraException) {
                 throw;
