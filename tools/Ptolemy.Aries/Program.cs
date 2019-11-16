@@ -31,11 +31,11 @@ namespace Ptolemy.Aries {
             var token = cts.Token;
 
             try {
-                var itf = Parser.Default.ParseArguments<AriesMake, AriesRun, AriesSearch>(args)
+                var itf = Parser.Default.ParseArguments<AriesMake, AriesRun, AriesLsDb>(args)
                     .MapResult(
                         (AriesMake a) => a,
                         (AriesRun a) => a,
-                        (AriesSearch a) => (IAriesVerb)a,
+                        (AriesLsDb a) => (IAriesVerb)a,
                         e => throw new ParseFailedException());
                 
                 itf.Run(token);

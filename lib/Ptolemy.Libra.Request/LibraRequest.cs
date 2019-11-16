@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Threading.Tasks;
 using DynamicExpresso;
 using Ptolemy.Map;
 using Ptolemy.SiMetricPrefix;
@@ -22,18 +23,19 @@ namespace Ptolemy.Libra.Request
         /// Conditionsに格納した条件式を使った数え上げ条件式のリスト
         /// </summary>
         public List<string> Expressions { get; set; }
+        public List<string> ExpressionNameList { get; }
         public string SqliteFile { get; set; }
-
-        public long SweepStart { get; set; }
-        public long SweepEnd { get; set; }
         public long SeedStart { get; set; }
         public long SeedEnd { get; set; }
+        public Sweeps Sweeps { get; set; }
 
 
         private List<string> signals = new List<string>();
         public IReadOnlyList<string> SignalList => signals;
         private List<decimal> times = new List<decimal>();
         public IReadOnlyList<decimal> TimeList => times;
+
+        public bool IsSplitWithSeed => SeedStart != SeedEnd;
 
         public LibraRequest() { }
 
@@ -51,13 +53,13 @@ namespace Ptolemy.Libra.Request
             {
                 var itr = new Interpreter();
                 foreach (var expression in Expressions) {
-                    var expr = string.Join("", expressionOperators
+                    var delegateString = string.Join("", expressionOperators
                         .Aggregate(expression, (exp, op) => exp.Replace(op, $" {op} "))
                         .Split(" ", StringSplitOptions.RemoveEmptyEntries)
                         .Select(s => map.ContainsKey(s) ? "(" + map[s] + ")" : s));
 
 
-                    rt.Add(itr.ParseAsDelegate<FilterFunc>(expr, "map"));
+                    rt.Add(itr.ParseAsDelegate<FilterFunc>(delegateString, "map"));
                 }
             }
 
@@ -67,8 +69,9 @@ namespace Ptolemy.Libra.Request
             return rt;
         }
 
-        public LibraRequest(string str, (long start, long end) seed, (long start, long end) sweep, string sqliteFile) {
-            var expressions = str.Replace(" ", "")
+        public LibraRequest(string expressionString, (long start, long end) seed, string sweepRequest, long sweepStart, string sqliteFile) {
+            ExpressionNameList = new List<string>(expressionString.Split(',', StringSplitOptions.RemoveEmptyEntries));
+            var expressions = expressionString.Replace(" ", "")
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(s =>
                     expressionOperators.Aggregate(s, (exp, op) => exp.Replace(op, $" {op} ")).Replace(" ! =", "!="))
@@ -86,11 +89,10 @@ namespace Ptolemy.Libra.Request
                 Expressions.Add(Conditions.Aggregate(expression, (s, kv) => s.Replace(kv.Value, kv.Key)));
             }
 
-            (SweepStart, SweepEnd) = sweep;
+            Sweeps = new Sweeps(sweepRequest, sweepStart);
             (SeedStart, SeedEnd) = seed;
             SqliteFile = sqliteFile;
         }
-
 
         private readonly string[] operators = {"<=", ">=", "==", "!=", "<", ">"};
         private readonly string[] expressionOperators = {"&&", "||", "(", ")", "!"};

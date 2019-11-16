@@ -16,18 +16,6 @@ namespace UnitTest.LibraTest {
             Assert.Equal($"{signal}/{t:E5}", LibraRequest.GetKey(signal, t));
         }
 
-        [Fact]
-        public void ConstructorTest() {
-            const string exp = "A[1]<10, 100>=B[30], 1p != C[30n]&&A[1]<10";
-            var actual = new LibraRequest(exp, (1, 2), (3, 4), "path");
-            Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert.AreEquivalent(
-                new[] {"exp1", "exp2", "exp3 && exp1"}, actual.Expressions
-            );
-
-            Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert.AreEquivalent(
-                new Map<string, string> { ["exp1"]="A[1]<10",["exp2"]="100>=B[30]",["exp3"]="1p!=C[30n]"}, actual.Conditions
-            );
-        }
 
         [Fact]
         public void BuildFilterTest() {

@@ -39,6 +39,34 @@ namespace Ptolemy.Repository {
             context.SaveChanges();
         }
 
+        public long[] Aggregate(
+            IReadOnlyList<string> signals,
+            long seed, long totalSweep, long sweepStart,
+            IReadOnlyList<Func<Map<string, decimal>, bool>> delegates,
+            Func<string, decimal, string> keyGenerator,
+            CancellationToken token) {
+            token.ThrowIfCancellationRequested();
+
+            var rt = new long[delegates.Count];
+
+            var targets = context.Entities
+                .Where(e => e.Seed == seed && sweepStart <= e.Sweep && e.Sweep <= totalSweep + sweepStart - 1)
+                .Where(e => signals.Contains(e.Signal))
+                .GroupBy(e => new {e.Sweep, e.Seed})
+                .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
+
+            foreach (var map in targets) {
+                Console.WriteLine(string.Join(",", map.Select(s => $"{s.Key}: {s.Value}")));
+            }
+
+            //delegates
+            //    .Select((d, i) => new {d, i})
+            //    .AsParallel()
+            //    .ForAll(item => rt[item.i] = targets.Count(item.d));
+
+            return rt;
+        }
+
         /// <summary>
         /// 絞り込み条件とデリゲートを渡して数え上げをする
         /// </summary>
@@ -62,52 +90,56 @@ namespace Ptolemy.Repository {
             var (eStart, eEnd) = seed;
             var (wStart, wEnd) = sweep;
 
-            var targets = context.Entities
-                .Where(e => (wStart <= e.Sweep && e.Sweep <= wEnd) && (eStart <= e.Seed && e.Seed <= eEnd))
-                .Where(e => signals.Contains(e.Signal))
-                .GroupBy(e => new {e.Sweep, e.Seed})
-                .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
+            var box = new long[eEnd - eStart - 1, delegates.Count];
 
-            token.ThrowIfCancellationRequested();
-            //PLinqで並列化
-            delegates
-                .Select((d, i) => new {d, i})
-                .AsParallel()
-                .ForAll(item => rt[item.i] = targets.Count(item.d));
+            for (var s = eStart; s <= eEnd; s++) {
+                var target = context.Entities
+                    .Where(e => e.Seed == s)
+                    .Where(e => wStart <= e.Sweep && e.Sweep <= wEnd)
+                    .Where(e => signals.Contains(e.Signal))
+                    .GroupBy(e => e.Sweep)
+                    .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
+
+                token.ThrowIfCancellationRequested();
+                for (var i = 0; i < delegates.Count; i++) {
+                    rt[i] += target.Count(delegates[i]);
+                }
+            }
+            
 
             return rt;
-        }
-
-
-        /// <summary>
-        /// DbContext(EFCore)
-        /// </summary>
-        internal class Context : DbContext {
-            private readonly string path;
-            public Context(string path) => this.path = path;
-            public DbSet<ResultEntity> Entities { get; set; }
-            public DbSet<ParameterEntity> ParameterEntities { get; set; }
-            
-            protected override void OnModelCreating(ModelBuilder modelBuilder) {
-                base.OnModelCreating(modelBuilder);
-
-
-                modelBuilder.Entity<ResultEntity>().HasKey(e => new {e.Seed, e.Sweep, e.Time, e.Signal});
-                modelBuilder.Entity<ResultEntity>().HasIndex(e => new {e.Seed, e.Sweep, e.Time, e.Signal});
-                modelBuilder.Entity<ParameterEntity>().HasKey(e => e.Id);
-            }
-
-            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-                base.OnConfiguring(optionsBuilder);
-                optionsBuilder.UseSqlite($"Data Source={path};");
-
-                //遅延LoadをOn
-                optionsBuilder.UseLazyLoadingProxies();
-            }
         }
 
         public void Dispose() {
             context?.Dispose();
         }
     }
+
+    /// <summary>
+    /// DbContext for SqliteRepository
+    /// </summary>
+    internal class Context : DbContext {
+        private readonly string path;
+        public Context(string path) => this.path = path;
+        public DbSet<ResultEntity> Entities { get; set; }
+        public DbSet<ParameterEntity> ParameterEntities { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder) {
+            base.OnModelCreating(modelBuilder);
+
+
+            modelBuilder.Entity<ResultEntity>().HasKey(e => new {e.Seed, e.Sweep, e.Time, e.Signal});
+            modelBuilder.Entity<ResultEntity>().HasIndex(e => new {e.Seed, e.Sweep, e.Time, e.Signal});
+            modelBuilder.Entity<ParameterEntity>().HasKey(e => e.Id);
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.UseSqlite($"Data Source={path};");
+
+            //遅延LoadをOn
+            optionsBuilder.UseLazyLoadingProxies();
+        }
+    }
+
 }

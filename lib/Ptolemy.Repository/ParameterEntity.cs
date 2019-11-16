@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -22,6 +23,42 @@ namespace Ptolemy.Repository {
         public string Hspice { get; set; }
 
         public ParameterEntity() { }
+
+        public override string ToString() {
+            var sb=new StringBuilder();
+
+            sb.AppendLine($"Netlist: {NetList}");
+            sb.AppendLine("Transistor");
+            sb.AppendLine(
+                $"  Vtn: (Threshold, Sigma, Deviation) {string.Join(", ", Vtn.Split('_').Where((_, i) => i % 2 == 1).Select(x => decimal.Parse(x, NumberStyles.Float)))}");
+            sb.AppendLine(
+                $"  Vtp: (Threshold, Sigma, Deviation) {string.Join(", ", Vtp.Split('_').Where((_, i) => i % 2 == 1).Select(x => decimal.Parse(x, NumberStyles.Float)))}");
+
+            sb.AppendLine("Includes");
+            foreach (var s in Includes.Split(':')) {
+                sb.AppendLine($"  - {s}");
+            }
+
+            sb.AppendLine("Signals");
+            foreach (var signal in Signals.Split(':')) {
+                sb.AppendLine($"  - {signal}");
+            }
+
+            sb.AppendLine($"Simulation Time: {Time}");
+
+            sb.AppendLine($"Temperature: {Temperature}");
+            sb.AppendLine($"Voltage: \n  VDD: {Vdd}\n  GND: {Gnd}");
+            sb.AppendLine($".IC");
+            foreach (var s in IcCommand.Split(':')) {
+                sb.AppendLine($"  - {s}");
+            }
+
+            sb.AppendLine("Hspice");
+            sb.AppendLine($"  Path:    {Hspice}");
+            sb.AppendLine($"  Options: {HspiceOption}");
+
+            return sb.ToString();
+        }
 
         public string Hash() {
             using var sha = SHA256.Create();

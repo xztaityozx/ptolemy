@@ -1,44 +1,59 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using Ptolemy.Libra.Request;
+using Ptolemy.Repository;
+using ShellProgressBar;
 
 namespace Ptolemy.Libra {
     public class Libra {
         private readonly CancellationToken token;
-        private readonly LibraRequest request;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="token"></param>
-        /// <param name="request"></param>
-        public Libra(CancellationToken token, LibraRequest request) {
+        public Libra(CancellationToken token) {
             this.token = token;
-            this.request = request;
         }
 
         /// <summary>
         /// requestに従って数え上げる
         /// </summary>
         /// <returns>Expression,結果のペアリスト</returns>
-        public Tuple<string,long>[] Run() {
+        public Tuple<string, long>[] Run(LibraRequest request) {
             try {
                 var delegates = request.BuildFilter();
                 var signals = request.SignalList;
 
                 if (!signals.Any()) throw new LibraException("Conditions have no signals");
 
-                using var repo = new Repository.SqliteRepository(request.SqliteFile);
-                return
-                    request.Expressions.Select(s =>
-                            request.Conditions.Aggregate(s, (exp, x) => exp.Replace(x.Key, x.Value)))
-                        .Zip(
-                            repo.Aggregate(signals, (request.SeedStart, request.SeedEnd),
-                                (request.SweepStart, request.SweepEnd), delegates, LibraRequest.GetKey, token),
-                            Tuple.Create).ToArray();
+                using var bar = new ProgressBar(
+                    (int) (request.IsSplitWithSeed ? (request.SeedEnd - request.SeedStart + 1) : request.Sweeps.Times),
+                    "Ptolemy.Libra", new ProgressBarOptions {
+                        ForegroundColor = ConsoleColor.DarkYellow, BackgroundCharacter = '-',
+                        ProgressCharacter = '>', CollapseWhenFinished = true, BackgroundColor = ConsoleColor.Gray,
+                        ForegroundColorDone = ConsoleColor.Green
+                    });
+                var db = new ReadOnlyRepository(request.SqliteFile);
+                db.IntervalEvent += () => bar.Tick();
+
+                var result = request.IsSplitWithSeed switch {
+                    true => db.Aggregate(token, signals, delegates,
+                        Range(request.SeedStart, request.SeedEnd).ToList(),
+                        request.Sweeps.Size,
+                        request.Sweeps.Start,
+                        LibraRequest.GetKey),
+                    false => db.Aggregate(token, signals,
+                        delegates,
+                        request.SeedStart,
+                        request.Sweeps.Section().ToList(),
+                        LibraRequest.GetKey)
+                    };
+
+                return request.ExpressionNameList.Zip(result, Tuple.Create).ToArray();
             }
             catch (LibraException) {
                 throw;
@@ -46,6 +61,10 @@ namespace Ptolemy.Libra {
             catch (Exception e) {
                 throw new LibraException($"Unknown error has occured\n\t-->{e}");
             }
+        }
+
+        private IEnumerable<long> Range(long start, long end) {
+            for (var e = start; e <= end; e++) yield return e;
         }
     }
 

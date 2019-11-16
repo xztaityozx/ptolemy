@@ -24,6 +24,10 @@ namespace Ptolemy.Parameters {
         public RangeParameter(decimal start, decimal stop) : this(start, 1, stop) {
         }
 
+        public override string ToString() {
+            return $"Start: {Start:E}, Step: {Step:E}, Stop: {Stop:E}";
+        }
+
         public RangeParameter(string value) {
             var split = value.Split(',', StringSplitOptions.RemoveEmptyEntries)
                 .Select(x => x.ParseDecimalWithSiPrefix()).ToArray();

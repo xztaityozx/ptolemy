@@ -21,7 +21,7 @@ namespace Ptolemy.Lupus {
                 }
 
                 
-                return new Libra.Libra(token, request.LibraRequest).Run();
+                return new Libra.Libra(token).Run(request.LibraRequest);
             }
             catch (DracoException de) {
                 throw new LupusException($"Ptolemy.Draco内でエラーが起きました\n\t-->{de}");
