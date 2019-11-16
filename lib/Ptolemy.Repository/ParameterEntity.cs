@@ -44,7 +44,7 @@ namespace Ptolemy.Repository {
             sb.AppendLine($"Simulation Time: {Time}");
 
             sb.AppendLine($"Temperature: {Temperature}");
-            sb.AppendLine($"Voltage: VDD: {Vdd}, GND: {Gnd}");
+            sb.AppendLine($"Voltage: \n  VDD: {Vdd}\n  GND: {Gnd}");
             sb.AppendLine($".IC");
             foreach (var s in IcCommand.Split(':')) {
                 sb.AppendLine($"  - {s}");
