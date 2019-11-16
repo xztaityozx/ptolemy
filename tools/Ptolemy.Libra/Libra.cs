@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Ptolemy.Libra.Request;
@@ -21,24 +23,26 @@ namespace Ptolemy.Libra {
         /// requestに従って数え上げる
         /// </summary>
         /// <returns>Expression,結果のペアリスト</returns>
-        public Tuple<string,long>[] Run(LibraRequest request) {
+        public Tuple<string, long>[] Run(LibraRequest request) {
             try {
                 var delegates = request.BuildFilter();
                 var signals = request.SignalList;
 
                 if (!signals.Any()) throw new LibraException("Conditions have no signals");
 
-                using var bar = new ProgressBar((int) request.Sweeps.Times, "Ptolemy.Libra", new ProgressBarOptions {
-                    ForegroundColor = ConsoleColor.DarkYellow, BackgroundCharacter = '-',
-                    ProgressCharacter = '>', CollapseWhenFinished = true, BackgroundColor = ConsoleColor.Gray,
-                    ForegroundColorDone = ConsoleColor.Green
-                });
+                using var bar = new ProgressBar(
+                    (int) (request.IsSplitWithSeed ? (request.SeedEnd - request.SeedStart + 1) : request.Sweeps.Times),
+                    "Ptolemy.Libra", new ProgressBarOptions {
+                        ForegroundColor = ConsoleColor.DarkYellow, BackgroundCharacter = '-',
+                        ProgressCharacter = '>', CollapseWhenFinished = true, BackgroundColor = ConsoleColor.Gray,
+                        ForegroundColorDone = ConsoleColor.Green
+                    });
                 var db = new ReadOnlyRepository(request.SqliteFile);
                 db.IntervalEvent += () => bar.Tick();
 
                 var result = request.IsSplitWithSeed switch {
                     true => db.Aggregate(token, signals, delegates,
-                        request.Sweeps.Repeat().ToList(),
+                        Range(request.SeedStart, request.SeedEnd).ToList(),
                         request.Sweeps.Start,
                         request.Sweeps.Size,
                         LibraRequest.GetKey),
@@ -57,6 +61,10 @@ namespace Ptolemy.Libra {
             catch (Exception e) {
                 throw new LibraException($"Unknown error has occured\n\t-->{e}");
             }
+        }
+
+        private IEnumerable<long> Range(long start, long end) {
+            for (var e = start; e <= end; e++) yield return e;
         }
     }
 
