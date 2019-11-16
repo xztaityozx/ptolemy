@@ -32,7 +32,12 @@ namespace Ptolemy.Aries {
                 token.ThrowIfCancellationRequested();
 
                 var repo = new ReadOnlyRepository(Path.Combine(baseDir, db));
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine($"Path: {db}");
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine(repo.GetParameter());
+
+                Console.WriteLine("---------------------------------------------------------------------");
             }
         }
     }
