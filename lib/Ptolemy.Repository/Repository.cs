@@ -2,16 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Castle.Core.Logging;
 using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
-using Microsoft.Extensions.Options;
 using Ptolemy.Map;
-using ILoggerFactory = Microsoft.Extensions.Logging.ILoggerFactory;
 
 namespace Ptolemy.Repository {
     /// <summary>
@@ -143,11 +136,6 @@ namespace Ptolemy.Repository {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
             base.OnConfiguring(optionsBuilder);
             optionsBuilder.UseSqlite($"Data Source={path};");
-
-            var lf = new ServiceCollection().AddLogging(builder =>
-                    builder.AddConsole().AddFilter(DbLoggerCategory.Database.Command.Name, LogLevel.Information))
-                .BuildServiceProvider().GetService<ILoggerFactory>();
-            optionsBuilder.UseLoggerFactory(lf);
 
             //遅延LoadをOn
             optionsBuilder.UseLazyLoadingProxies();

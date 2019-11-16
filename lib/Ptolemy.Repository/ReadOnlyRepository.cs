@@ -8,9 +8,13 @@ using Ptolemy.Map;
 namespace Ptolemy.Repository {
     public class ReadOnlyRepository {
         private readonly string path;
+
+        public event Action IntervalEvent;
+
         public ReadOnlyRepository(string path) {
             this.path = path;
         }
+
 
         private Context Connect() {
             var rt = new Context(path);
@@ -66,6 +70,7 @@ namespace Ptolemy.Repository {
                     for (var i = 0; i < delegates.Count; i++) {
                         box[i].Add(target.Count(delegates[i]));
                     }
+                    IntervalEvent?.Invoke();
                 });
 
             return box.Select(bag => bag.Sum()).ToArray();
@@ -109,8 +114,8 @@ namespace Ptolemy.Repository {
                     for (var i = 0; i < delegates.Count; i++) {
                         box[i].Add(target.Count(delegates[i]));
                     }
+                    IntervalEvent?.Invoke();
                 });
-
 
             return box.Select(bag => bag.Sum()).ToArray();
         }

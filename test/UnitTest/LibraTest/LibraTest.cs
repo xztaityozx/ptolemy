@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using CommandLine;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ptolemy.Libra;
 using Ptolemy.Libra.Request;
@@ -10,6 +11,17 @@ using Assert = Xunit.Assert;
 
 namespace UnitTest.LibraTest {
     public class LibraTest {
+        [Fact]
+        public void OptionTest() {
+            var args = "-E expressions -w 1000x2000 -e 1000 -W 1e9 /path/to/sqlite".Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var o = Parser.Default.ParseArguments<LibraOption>(args).MapResult(s => s, e => throw new Exception());
+
+            Assert.Equal("expressions", o.Expressions);
+            Assert.Equal("1000x2000", o.Sweep);
+            Assert.Equal("1000", o.Seed);
+            Assert.Equal("1e9", o.SweepStart);
+            Assert.Equal("/path/to/sqlite", o.SqliteFile);
+        }
 
         [Theory]
         [InlineData("1")]
