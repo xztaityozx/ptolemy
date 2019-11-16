@@ -98,6 +98,7 @@ namespace Ptolemy.Repository {
         ) {
 
             var box = Enumerable.Range(0, delegates.Count).Select(_ => new ConcurrentBag<long>()).ToList();
+            var sweepEnd = sweepStart + sweepSize - 1;
             seeds.AsParallel()
                 .WithCancellation(token)
                 .ForAll(seed => {
@@ -105,7 +106,7 @@ namespace Ptolemy.Repository {
 
                     using var context = Connect();
                     var target = context.Entities
-                        .Where(e => sweepStart <= e.Sweep && e.Sweep <= sweepStart + sweepSize - 1)
+                        .Where(e => sweepStart <= e.Sweep && e.Sweep <= sweepEnd)
                         .Where(e => e.Seed == seed)
                         .Where(e => signals.Contains(e.Signal))
                         .GroupBy(e => e.Sweep)

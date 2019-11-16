@@ -43,8 +43,8 @@ namespace Ptolemy.Libra {
                 var result = request.IsSplitWithSeed switch {
                     true => db.Aggregate(token, signals, delegates,
                         Range(request.SeedStart, request.SeedEnd).ToList(),
-                        request.Sweeps.Start,
                         request.Sweeps.Size,
+                        request.Sweeps.Start,
                         LibraRequest.GetKey),
                     false => db.Aggregate(token, signals,
                         delegates,

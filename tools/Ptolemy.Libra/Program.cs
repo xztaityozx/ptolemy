@@ -40,6 +40,7 @@ namespace Ptolemy.Libra {
                 if (request.IsSplitWithSeed) {
                     log.Info($"\tSeed: Start: {request.SeedStart}, End: {request.SeedEnd}");
                     log.Info($"\tSweep per query: {request.Sweeps.Size}");
+                    log.Info($"\tTotal Sweeps: {(request.SeedEnd - request.SeedStart + 1) * request.Sweeps.Size}");
                 }
                 else {
                     log.Info($"\tSeed: {request.SeedStart}");
