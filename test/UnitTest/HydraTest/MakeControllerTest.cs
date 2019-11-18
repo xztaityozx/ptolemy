@@ -89,7 +89,7 @@ namespace UnitTest.HydraTest {
         public void MakeRequests_BadRequest() {
             var req = GenerateRequests().Take(5).ToArray();
             var c = new MakeController();
-            var res = c.Write(req);
+            var res = c.Make(req);
 
             var status = Assert.IsType<BadRequestObjectResult>(res);
             Assert.Equal(
@@ -108,11 +108,11 @@ namespace UnitTest.HydraTest {
 
                 Directory.CreateDirectory(Config.Instance.WorkingRoot);
                 var c = new MakeController();
-                var res = c.Write(req);
+                var res = c.Make(req);
 
                 var status = Assert.IsType<CreatedAtActionResult>(res);
                 Assert.Null(status.ControllerName);
-                Assert.Equal("Write", status.ActionName);
+                Assert.Equal("Make", status.ActionName);
                 Assert.Equal(
                     JsonConvert.SerializeObject(new {accepted = new[] {5}, rejected = new[] {0, 1, 2, 3, 4}}),
                     JsonConvert.SerializeObject(status.Value)
