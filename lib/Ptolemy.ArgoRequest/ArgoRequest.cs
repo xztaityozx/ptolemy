@@ -26,6 +26,15 @@ namespace Ptolemy.Argo.Request {
         public List<string> Signals { get; set; }
         public string ResultFile { get; set; }
         public static ArgoRequest FromJson(string json) => JsonConvert.DeserializeObject<ArgoRequest>(json);
+
+        public bool IsSimulationable() {
+            if (Vdd == Gnd) return false;
+            if (new[] {NetList,HspicePath}.Any(string.IsNullOrEmpty)) return false;
+            if (ExpectedRecords == 0) return false;
+            if (Transistors?.Vtn == null) return false;
+            return Transistors.Vtp != null;
+        }
+
         public string ToJson() => JsonConvert.SerializeObject(this);
         /// <summary>
         /// プロットする時間のリスト

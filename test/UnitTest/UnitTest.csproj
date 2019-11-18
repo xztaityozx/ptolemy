@@ -36,6 +36,7 @@
     <ProjectReference Include="..\..\tools\Ptolemy.Argo\Ptolemy.Argo.csproj" />
     <ProjectReference Include="..\..\tools\Ptolemy.Aries\Ptolemy.Aries.csproj" />
     <ProjectReference Include="..\..\tools\Ptolemy.Draco\Ptolemy.Draco.csproj" />
+    <ProjectReference Include="..\..\tools\Ptolemy.Hydra\Ptolemy.Hydra.csproj" />
     <ProjectReference Include="..\..\tools\Ptolemy.Libra\Ptolemy.Libra.csproj" />
     <ProjectReference Include="..\..\tools\Ptolemy.Lupus\Ptolemy.Lupus.csproj" />
   </ItemGroup>
