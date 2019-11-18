@@ -19,6 +19,7 @@
       <ProjectReference Include="..\..\lib\Ptolemy.ArgoRequest\Ptolemy.Argo.Request.csproj" />
       <ProjectReference Include="..\..\lib\Ptolemy.Config\Ptolemy.Config.csproj" />
       <ProjectReference Include="..\..\lib\Ptolemy.Hydra.Request\Ptolemy.Hydra.Request.csproj" />
+      <ProjectReference Include="..\..\lib\Ptolemy.Repository\Ptolemy.Repository.csproj" />
     </ItemGroup>
 
 </Project>

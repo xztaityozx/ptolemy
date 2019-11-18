@@ -113,11 +113,11 @@ namespace Ptolemy.Aries {
         /// <param name="dbs"></param>
         /// <param name="sub"></param>
         /// <returns></returns>
-        private DbContainer GetDbContainer(CancellationToken token, IEnumerable<ParameterEntity> dbs, IObserver<string> sub) {
-            log.Info("Build DbContainer...");
+        private AriesDbContainer GetDbContainer(CancellationToken token, IEnumerable<ParameterEntity> dbs, IObserver<string> sub) {
+            log.Info("Build AriesDbContainer...");
             log.Info("\tSearching databases...");
-            DbContainer rt = null;
-            Spinner.Start("Building DbContainer...", () => rt = new DbContainer(token, dbRoot, dbs, BufferSize, sub));
+            AriesDbContainer rt = null;
+            Spinner.Start("Building AriesDbContainer...", () => rt = new AriesDbContainer(token, dbRoot, dbs, BufferSize, sub));
             return rt;
         }
 
@@ -171,12 +171,12 @@ namespace Ptolemy.Aries {
                         parent.TickSimBar();
                     }
                 );
-            parent.SetTextToWriteBar("Closing DbContainer...");
+            parent.SetTextToWriteBar("Closing AriesDbContainer...");
             container.CloseAll();
             return rt;
         }
 
-        private DbContainer container;
+        private AriesDbContainer container;
 
         private static ParameterEntity ConvertToParameterEntity(ArgoRequest ar) {
             var rt = new ParameterEntity {
@@ -230,7 +230,7 @@ namespace Ptolemy.Aries {
                         .Distinct(item => item.Hash()),
                     logSubject);
 
-                log.Info($"DbContainer has {container.Count} databases");
+                log.Info($"AriesDbContainer has {container.Count} databases");
                 log.Info($"Start simulation and write to db");
                 Console.WriteLine();
 

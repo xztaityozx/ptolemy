@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
-using System.Threading.Tasks;
 using Ptolemy.Map;
 
 namespace Ptolemy.Repository {
-    public class DbContainer : IDisposable {
+    public class AriesDbContainer : IDisposable {
         private readonly Map<string, Subject<ResultEntity>> subjectMap;
         private readonly Map<string, SqliteRepository> repositories;
         private readonly Map<string, bool> isClosed;
@@ -24,7 +21,7 @@ namespace Ptolemy.Repository {
         /// <param name="parameters">Db名のリスト</param>
         /// <param name="bufferSize">1度のBulkUpsertで書き込まれるEntity数の最大値</param>
         /// <param name="logger"></param>
-        public DbContainer(
+        public AriesDbContainer(
             CancellationToken token, 
             string containerRoot, 
             IEnumerable<ParameterEntity> parameters, 
@@ -32,7 +29,7 @@ namespace Ptolemy.Repository {
             IObserver<string> logger
             ) {
             
-            if(!Directory.Exists(containerRoot)) throw new DirectoryNotFoundException($"{containerRoot} nou found");
+            if(!Directory.Exists(containerRoot)) throw new DirectoryNotFoundException($"{containerRoot} not found");
 
             subjectMap=new Map<string, Subject<ResultEntity>>();
             repositories = new Map<string, SqliteRepository>();
