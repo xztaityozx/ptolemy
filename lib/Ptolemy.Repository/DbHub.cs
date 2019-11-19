@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
@@ -12,15 +13,15 @@ using Microsoft.Extensions.Logging;
 
 // TODO: Test
 namespace Ptolemy.Repository {
-    public class HydraRepository {
+    public class DbHub : IDisposable {
         private readonly string dbRoot;
         private readonly CancellationToken token;
         private readonly int bufferSize;
         private readonly ILogger logger;
 
-        public HydraRepository(CancellationToken token, string dbRoot, int bufferSize, ILogger logger) {
+        public DbHub(CancellationToken token, string dbRoot, int bufferSize, ILogger logger) {
             if(string.IsNullOrEmpty(dbRoot)) throw new ArgumentNullException(nameof(dbRoot));
-            if (Directory.Exists(dbRoot)) throw new DirectoryNotFoundException(dbRoot);
+            if (!Directory.Exists(dbRoot)) throw new DirectoryNotFoundException(dbRoot);
 
             (this.token, this.dbRoot) = (token, dbRoot);
             this.bufferSize = bufferSize;
@@ -35,36 +36,48 @@ namespace Ptolemy.Repository {
         private readonly Dictionary<string, Subject<ResultEntity>> receiverMap;
         private bool HasRegistered(string key) => receiverMap.ContainsKey(key);
 
-        public void AddDb(ParameterEntity pe) {
+        public string AddDb(ParameterEntity pe) {
             var key = pe.Hash();
-            if(HasRegistered(key)) return;
+            if(HasRegistered(key)) return key;
 
             receiverMap.Add(key, new Subject<ResultEntity>());
             if (!SearchDb(key)) {
-                logger.LogInformation($"{key}.sqlite not found. Ptolemy.Hydra will create");
+                logger?.LogInformation($"{key}.sqlite not found. Ptolemy.Hydra will create");
             }
-            var db = new WriteOnlySqliteRepository(key);
+            var db = new WriteOnlySqliteRepository(Path.Combine(dbRoot, $"{key}.sqlite"));
             db.UpdateParameter(pe);
 
             // add upsert observer
             receiverMap[key].Synchronize().Buffer(bufferSize).Subscribe(list => {
                 if (token.IsCancellationRequested) {
-                    logger.LogError("Cancel was requested. Ptolemy.Hydra give up write entity to {key}.sqlite");
+                    logger?.LogError("Cancel was requested. Ptolemy.Hydra give up write entity to {key}.sqlite");
                 }
 
                 db.BulkUpsert(list);
-                logger.LogInformation($"{list.Count} entities upsert to {key}.sqlite");
+                logger?.LogInformation($"{list.Count} entities upsert to {key}.sqlite");
             }, token);
+
+            return key;
         }
 
-        public void CloseDb(ParameterEntity pe) {
-            var key = pe.Hash();
+        public void AddEntity(string key, ResultEntity re) {
+            
+        }
 
+        public void CloseDb(ParameterEntity pe) => CloseDb(pe.Hash());
+
+        public void CloseDb(string key) {
             if (!HasRegistered(key)) return;
 
             receiverMap[key].OnCompleted();
             receiverMap[key].Dispose();
             receiverMap.Remove(key);
+        }
+
+        public void Dispose() {
+            foreach (var key in receiverMap.Keys) {
+                CloseDb(key);
+            }
         }
     }
 

@@ -15,7 +15,7 @@
 
     <ItemGroup>
       <PackageReference Include="Kurukuru" Version="1.1.0" />
-      <PackageReference Include="System.Reactive" Version="4.1.6" />
+      <PackageReference Include="System.Reactive" Version="4.2.0" />
     </ItemGroup>
 
 </Project>
