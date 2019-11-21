@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
 using Ptolemy.Parameters;
@@ -27,7 +26,7 @@ namespace Ptolemy.Argo.Request {
         public string ResultFile { get; set; }
         public static ArgoRequest FromJson(string json) => JsonConvert.DeserializeObject<ArgoRequest>(json);
 
-        public bool IsSimulationable() {
+        public bool IsSimulatable() {
             if (Vdd == Gnd) return false;
             if (new[] {NetList,HspicePath}.Any(string.IsNullOrEmpty)) return false;
             if (ExpectedRecords == 0) return false;
@@ -44,17 +43,6 @@ namespace Ptolemy.Argo.Request {
         public static ArgoRequest FromFile(string path) {
             using var sr = new StreamReader(path);
             return FromJson(sr.ReadToEnd());
-        }
-
-        public string GetHashString() {
-            using var sha256 = SHA256.Create();
-
-            return string.Join("", sha256.ComputeHash(
-                Encoding.UTF8.GetBytes(
-                    string.Join("", new[] {$"{Transistors}", $"{Gnd}", $"{Vdd}", $"{Temperature}", NetList}
-                        .Concat(IcCommands)
-                        .Concat(Includes)))
-            ).Select(s => $"{s:X2}"));
         }
 
         public long ExpectedRecords =>

@@ -9,7 +9,7 @@ using Ptolemy.Repository;
 using Xunit;
 
 namespace UnitTest.RepositoryTest {
-    public class HydraRepositoryTest {
+    public class DbHubTest {
         public static IEnumerable<ParameterEntity> GenerateDummyParameters() {
             yield return new ParameterEntity {
                 Vtn = "vtn", Vtp = "vtp", NetList = "netlist", Signals = "a:b:c", Time = "1:2:3",
@@ -65,17 +65,17 @@ namespace UnitTest.RepositoryTest {
 
                 hub.CloseDb(key);
 
-                //var repo = new ReadOnlyRepository(Path.Combine(root, $"{key}.sqlite"));
-                //Func<Map<string, decimal>, bool> f = m => m[$"signal/{0M:E5}"] == 1;
-                //var res = repo.Aggregate(
-                //    CancellationToken.None, new[] {"signal"}, new[] {f}, 2, new (long start, long end)[] {(1, 10)},
-                //    (s, d) => $"{s}/{d:E5}"
-                //).First();
+                var repo = new ReadOnlyRepository(Path.Combine(root, $"{key}.sqlite"));
+                Func<Map<string, decimal>, bool> f = m => m[$"signal/{0M:E5}"] == 1;
+                var res = repo.Aggregate(
+                    CancellationToken.None, new[] {"signal"}, new[] {f}, 2, new (long start, long end)[] {(1, 10)},
+                    (s, d) => $"{s}/{d:E5}"
+                ).First();
 
-                //Assert.Equal(1, res);
+                Assert.Equal(1, res);
             }
             finally {
-                //Directory.Delete(tmp, true);
+                Directory.Delete(tmp, true);
             }
         }
     }

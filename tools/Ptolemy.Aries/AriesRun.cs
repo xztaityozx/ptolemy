@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -8,12 +7,12 @@ using System.Reactive.Subjects;
 using System.Threading;
 using CommandLine;
 using Kurukuru;
-using Ptolemy.Argo;
 using Ptolemy.Argo.Request;
 using Ptolemy.Logger;
 using Ptolemy.Map;
 using Ptolemy.Repository;
 using Ptolemy.SiMetricPrefix;
+using Ptolemy.Simulator;
 using ShellProgressBar;
 
 namespace Ptolemy.Aries {
@@ -146,7 +145,7 @@ namespace Ptolemy.Aries {
                         // リトライ機構
                         do {
                             try {
-                                foreach (var r in hspice.Run(token, request, bar)) {
+                                foreach (var r in hspice.Run(token, request, () => bar.Tick())) {
                                     container[request.ResultFile].OnNext(r);
                                 }
                                 log.Info($"Finished {filePath}");

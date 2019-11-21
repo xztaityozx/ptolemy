@@ -2,26 +2,20 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Ptolemy.Argo.Request;
-using Ptolemy.Map;
 using Ptolemy.Repository;
-using Ptolemy.SiMetricPrefix;
-using ShellProgressBar;
 
-namespace Ptolemy.Argo {
-    public class Hspice {
+namespace Ptolemy.Simulator {
+    public class Hspice : ISimulator {
         private readonly string workingRoot;
 
         public Hspice() {
-            workingRoot = Path.Combine(Path.GetTempPath(), "Ptolemy.Argo");
+            workingRoot = Path.Combine(Path.GetTempPath(), "Ptolemy", "Hspice");
         }
 
-        public IReadOnlyList<ResultEntity> Run(CancellationToken token, ArgoRequest request, IProgressBar bar = null) {
-
+        public IReadOnlyList<ResultEntity> Run(CancellationToken token, ArgoRequest request, Action intervalAction) {
             var guid = Guid.NewGuid();
             var dir = Path.Combine(workingRoot, $"{request.GroupId}");
             FilePath.FilePath.TryMakeDirectory(dir);
@@ -33,14 +27,14 @@ namespace Ptolemy.Argo {
             using var p = new Process {
                 StartInfo = new ProcessStartInfo {
                     UseShellExecute = false,
-                    FileName = Environment.OSVersion.Platform == PlatformID.Unix ? "bash":"powershell.exe",
+                    FileName = Environment.OSVersion.Platform == PlatformID.Unix ? "bash" : "powershell.exe",
                     ArgumentList =
                         {"-c", $"{request.HspicePath} {string.Join(" ", request.HspiceOptions)} -i {guid}.spi"},
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
                 }
             };
-            if(!p.Start()) throw new ArgoException("Failed start hspice");
+            if (!p.Start()) throw new SimulatorException("Failed start hspice");
             var stdout = p.StandardOutput;
 
             var signals = request.Signals;
@@ -56,7 +50,7 @@ namespace Ptolemy.Argo {
                 if (string.IsNullOrEmpty(line)) continue;
                 if (line[0] == 'y') {
                     sweep++;
-                    bar?.Tick();
+                    intervalAction?.Invoke();
                 }
 
                 if (!TryParseOutput(request.Seed, sweep, line, signals, out var o)) continue;
@@ -67,13 +61,14 @@ namespace Ptolemy.Argo {
             }
 
             p.WaitForExit();
-            if (p.ExitCode != 0) 
-                throw new ArgoException($"Failed simulation: {p.StandardError.ReadToEnd()}");
+            if (p.ExitCode != 0)
+                throw new SimulatorException($"Failed simulation: {p.StandardError.ReadToEnd()}");
             if (records.expect != records.actual)
-                throw new ArgoException($"Record数が {records.expect} 個予期されていましたが、 {records.actual} 個しか出力されませんでした");
+                throw new SimulatorException($"Record数が {records.expect} 個予期されていましたが、 {records.actual} 個しか出力されませんでした");
             File.Delete(spi);
 
             return rt;
+
         }
 
         private static bool TryParseOutput(long seed, long sweep, string line, IEnumerable<string> signals,
@@ -87,6 +82,7 @@ namespace Ptolemy.Argo {
                 return false;
             }
         }
+
     }
 
     internal static class IntersectExt {
@@ -96,7 +92,7 @@ namespace Ptolemy.Argo {
             if (second == null) throw new ArgumentNullException(nameof(second));
             if (selector == null) throw new ArgumentNullException(nameof(selector));
 
-            var map = new Map<TKey, bool>(false);
+            var map = new Map.Map<TKey, bool>(false);
             foreach (var key in second) {
                 map[key] = true;
             }
@@ -104,15 +100,6 @@ namespace Ptolemy.Argo {
             foreach (var item in @this) {
                 if (map[selector(item)]) yield return item;
             }
-        }
-    }
-    internal class ResultEntityComparer : IEqualityComparer<ResultEntity> {
-        public bool Equals(ResultEntity x, ResultEntity y) {
-            return x != null && y != null && x.Time.Equals(y.Time);
-        }
-
-        public int GetHashCode(ResultEntity obj) {
-            return obj.Time.GetHashCode();
         }
     }
 }

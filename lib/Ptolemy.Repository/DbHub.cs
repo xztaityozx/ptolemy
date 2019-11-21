@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
 
 
-// TODO: Test
 namespace Ptolemy.Repository {
     public class DbHub : IDisposable {
         private readonly string dbRoot;
@@ -30,8 +29,11 @@ namespace Ptolemy.Repository {
         }
 
         private bool SearchDb(string name) {
-            return File.Exists(Path.Combine(dbRoot, $"{name}.sqlite"));
+            return File.Exists(GetDbPath(name));
         }
+
+        private string GetDbPath(string name) => Path.Combine(dbRoot, $"{name}.sqlite");
+        private string GetDbPath(ParameterEntity pe) => GetDbPath(pe.Hash());
 
         private readonly Dictionary<string, Subject<ResultEntity>> receiverMap;
         private bool HasRegistered(string key) => receiverMap.ContainsKey(key);
@@ -44,7 +46,7 @@ namespace Ptolemy.Repository {
             if (!SearchDb(key)) {
                 logger?.LogInformation($"{key}.sqlite not found. Ptolemy.Hydra will create");
             }
-            var db = new WriteOnlySqliteRepository(Path.Combine(dbRoot, $"{key}.sqlite"));
+            var db = new WriteOnlySqliteRepository(GetDbPath(pe));
             db.UpdateParameter(pe);
 
             // add upsert observer
@@ -61,6 +63,9 @@ namespace Ptolemy.Repository {
         }
 
         public void AddEntity(string key, ResultEntity re) {
+            if(!HasRegistered(key)) throw new KeyNotFoundException("Dbが登録されていません");
+                
+            receiverMap[key].OnNext(re);
             
         }
 

@@ -34,7 +34,7 @@ namespace Ptolemy.Hydra.Controllers {
             var groupId = Guid.NewGuid();
 
             foreach (var item in requests.Select((request, i) => new {request, i})) {
-                if (item.request.IsSimulationable()) {
+                if (item.request.IsSimulatable()) {
                     item.request.GroupId = groupId;
                     
                     // Auto bind hspice setting

@@ -10,13 +10,16 @@ using ShellProgressBar;
 namespace Ptolemy.Libra {
     public class Libra {
         private readonly CancellationToken token;
+        private readonly Logger.Logger log;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="token"></param>
-        public Libra(CancellationToken token) {
+        /// <param name="log"></param>
+        public Libra(CancellationToken token, Logger.Logger log) {
             this.token = token;
+            this.log = log;
         }
 
         /// <summary>
@@ -39,6 +42,10 @@ namespace Ptolemy.Libra {
                     });
                 var db = new ReadOnlyRepository(request.SqliteFile);
                 db.IntervalEvent += () => bar.Tick();
+                log.Info("----Parameter Info----");
+                Console.WriteLine(db.GetParameter());
+                log.Info("----------------------");
+
 
                 var result = request.IsSplitWithSeed switch {
                     true => db.Aggregate(token, signals, delegates,
@@ -63,7 +70,7 @@ namespace Ptolemy.Libra {
             }
         }
 
-        private IEnumerable<long> Range(long start, long end) {
+        private static IEnumerable<long> Range(long start, long end) {
             for (var e = start; e <= end; e++) yield return e;
         }
     }
