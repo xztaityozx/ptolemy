@@ -177,18 +177,7 @@ namespace Ptolemy.Aries {
 
         private AriesDbContainer container;
 
-        private static ParameterEntity ConvertToParameterEntity(ArgoRequest ar) {
-            var rt = new ParameterEntity {
-                Vtn = ar.Transistors.Vtn.ToString(), Vtp=ar.Transistors.Vtp.ToString(),
-                NetList =  ar.NetList, Time = ar.Time.ToString(), Signals = string.Join(":", ar.Signals),
-                Includes = string.Join(":", ar.Includes), Hspice = ar.HspicePath, HspiceOption = string.Join(":", ar.HspiceOptions),
-                Gnd = ar.Gnd, Vdd = ar.Vdd, IcCommand = string.Join(":", ar.IcCommands), Temperature = ar.Temperature
-            };
-
-            ar.ResultFile = rt.Hash();
-
-            return rt;
-        }
+        
         public void Run(CancellationToken token) {
             log = new Logger.Logger();
             {
@@ -225,7 +214,7 @@ namespace Ptolemy.Aries {
 
                 container = GetDbContainer(token,
                     // ParameterEntityにしてHashでDistinctする
-                    requests.Select(s => ConvertToParameterEntity(s.request))
+                    requests.Select(s => SimulatorExtension.ConvertToParameterEntity(s.request))
                         .Distinct(item => item.Hash()),
                     logSubject);
 

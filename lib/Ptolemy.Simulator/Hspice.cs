@@ -8,6 +8,9 @@ using Ptolemy.Argo.Request;
 using Ptolemy.Repository;
 
 namespace Ptolemy.Simulator {
+    /// <summary>
+    /// Hspiceを直接起動するクラス
+    /// </summary>
     public class Hspice : ISimulator {
         private readonly string workingRoot;
 
