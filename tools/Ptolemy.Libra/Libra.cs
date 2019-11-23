@@ -33,6 +33,11 @@ namespace Ptolemy.Libra {
 
                 if (!signals.Any()) throw new LibraException("Conditions have no signals");
 
+                var db = new ReadOnlyRepository(request.SqliteFile);
+                log.Info("----Parameter Info----");
+                Console.WriteLine(db.GetParameter());
+                log.Info("----------------------");
+
                 using var bar = new ProgressBar(
                     (int) (request.IsSplitWithSeed ? (request.SeedEnd - request.SeedStart + 1) : request.Sweeps.Times),
                     "Ptolemy.Libra", new ProgressBarOptions {
@@ -40,11 +45,7 @@ namespace Ptolemy.Libra {
                         ProgressCharacter = '>', CollapseWhenFinished = true, BackgroundColor = ConsoleColor.Gray,
                         ForegroundColorDone = ConsoleColor.Green
                     });
-                var db = new ReadOnlyRepository(request.SqliteFile);
                 db.IntervalEvent += () => bar.Tick();
-                log.Info("----Parameter Info----");
-                Console.WriteLine(db.GetParameter());
-                log.Info("----------------------");
 
 
                 var result = request.IsSplitWithSeed switch {
