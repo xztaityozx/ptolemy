@@ -64,4 +64,17 @@ ls $TOOLS_DIR
 info ビルドを開始します
 ls $TOOLS_DIR | xargs -I@ dotnet publish -c Release -r linux-x64 -f netcoreapp3.0 $TOOLS_DIR/@/@.csproj && info 完了しました && error 失敗しました
 
-# TODO: alias を貼るかシンボリックリンクはると良さそう
+# $HOME/.local/bin にシンボリックリンクを作る
+[ -d $HOME/.local/bin ] || {
+  info make directory to $HOME/.local/bin
+  mkdir $HOME/.local/bin
+}
+ls $TOOLS_DIR | awk -F. '{print $2,$0}'|sed 's/^./\L&/'|grep -v ^\  |awk -v s=$TOOLS_DIR -v d=$HOME/.local/bin '{print s"/"$2"/bin/Release/netcoreapp3.0/linux-x64/publish/"$2,s"/"$1}'| while read L; do 
+  info $L
+  eval "$L"
+done
+
+echo $PATH|grep "$HOME/.local/bin" 2>&1 > /dev/null || {
+  warn "$PATH に $HOME/.local/bin が追加されていません"
+  warn "~/.bashrc や ~/.zshrc に export $PATH=$PATH:$HOME/.local/bin を追記するなどしてください"
+}
