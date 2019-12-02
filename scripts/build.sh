@@ -69,7 +69,7 @@ ls $TOOLS_DIR | xargs -I@ dotnet publish -c Release -r linux-x64 -f netcoreapp3.
   info make directory to $HOME/.local/bin
   mkdir $HOME/.local/bin
 }
-ls $TOOLS_DIR | awk -F. '{print $2,$0}'|sed 's/^./\L&/'|grep -v ^\  |awk -v s=$TOOLS_DIR -v d=$HOME/.local/bin '{print s"/"$2"/bin/Release/netcoreapp3.0/linux-x64/publish/"$2,s"/"$1}'| while read L; do 
+ls $TOOLS_DIR | awk -F. '{print $2,$0}'|sed 's/^./\L&/'|grep -v ^\  |awk -v s=$TOOLS_DIR -v d=$HOME/.local/bin '{print "ln -s",s"/"$2"/bin/Release/netcoreapp3.0/linux-x64/publish/"$2,d"/"$1}'| while read L; do 
   info $L
   eval "$L"
 done
