@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using Castle.Components.DictionaryAdapter;
 using Ptolemy.Argo.Request;
 using Ptolemy.Repository;
 
@@ -27,51 +28,58 @@ namespace Ptolemy.Simulator {
 
             request.WriteSpiScript(spi);
 
-            using var p = new Process {
-                StartInfo = new ProcessStartInfo {
-                    UseShellExecute = false,
-                    FileName = Environment.OSVersion.Platform == PlatformID.Unix ? "bash" : "powershell.exe",
-                    ArgumentList =
-                        {"-c", $"{request.HspicePath} {string.Join(" ", request.HspiceOptions)} -i {guid}.spi"},
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
+            try {
+                using var p = new Process {
+                    StartInfo = new ProcessStartInfo {
+                        UseShellExecute = false,
+                        FileName = Environment.OSVersion.Platform == PlatformID.Unix ? "bash" : "powershell.exe",
+                        ArgumentList =
+                            {"-c", $"{request.HspicePath} {string.Join(" ", request.HspiceOptions)} -i {guid}.spi"},
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    }
+                };
+                if (!p.Start()) throw new SimulatorException("Failed start hspice");
+                var stdout = p.StandardOutput;
+
+                var signals = request.Signals;
+
+                var sweep = request.SweepStart;
+                var records = (expect: request.ExpectedRecords, actual: 0);
+
+                var rt = new List<ResultEntity>();
+                string line;
+                while ((line = stdout.ReadLine()) != null || !p.HasExited) {
+                    token.ThrowIfCancellationRequested();
+
+                    if (string.IsNullOrEmpty(line)) continue;
+                    // 先頭にyが来るとデータの区切り
+                    if (line[0] == 'y') {
+                        sweep++;
+                        intervalAction?.Invoke();
+                    }
+
+                    // Parseできないところは飛ばす
+                    if (!TryParseOutput(request.Seed, sweep, line, signals, out var o)) continue;
+                    foreach (var resultEntity in o.Intersect(request.PlotTimeList, re => re.Time)) {
+                        records.actual++;
+                        rt.Add(resultEntity);
+                    }
                 }
-            };
-            if (!p.Start()) throw new SimulatorException("Failed start hspice");
-            var stdout = p.StandardOutput;
 
-            var signals = request.Signals;
-
-            var sweep = request.SweepStart;
-            var records = (expect: request.ExpectedRecords, actual: 0);
-
-            var rt = new List<ResultEntity>();
-            string line;
-            while ((line = stdout.ReadLine()) != null || !p.HasExited) {
-                token.ThrowIfCancellationRequested();
-
-                if (string.IsNullOrEmpty(line)) continue;
-                if (line[0] == 'y') {
-                    sweep++;
-                    intervalAction?.Invoke();
-                }
-
-                if (!TryParseOutput(request.Seed, sweep, line, signals, out var o)) continue;
-                foreach (var resultEntity in o.Intersect(request.PlotTimeList, re => re.Time)) {
-                    records.actual++;
-                    rt.Add(resultEntity);
-                }
+                p.WaitForExit();
+                if (p.ExitCode != 0)
+                    throw new SimulatorException($"Failed simulation: {p.StandardError.ReadToEnd()}");
+                if (records.expect != records.actual)
+                    throw new SimulatorException(
+                        $"Record数が {records.expect} 個予期されていましたが、 {records.actual} 個しか出力されませんでした");
+                return rt;
             }
-
-            p.WaitForExit();
-            if (p.ExitCode != 0)
-                throw new SimulatorException($"Failed simulation: {p.StandardError.ReadToEnd()}");
-            if (records.expect != records.actual)
-                throw new SimulatorException($"Record数が {records.expect} 個予期されていましたが、 {records.actual} 個しか出力されませんでした");
-            File.Delete(spi);
-
-            return rt;
-
+            finally{
+                File.Delete(spi);
+                File.Delete(Path.Combine(dir, $"{guid}.mc0"));
+                File.Delete(Path.Combine(dir, $"{guid}.st0"));
+            }
         }
 
         private static bool TryParseOutput(long seed, long sweep, string line, IEnumerable<string> signals,
