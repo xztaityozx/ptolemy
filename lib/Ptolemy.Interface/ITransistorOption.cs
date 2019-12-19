@@ -33,13 +33,13 @@ namespace Ptolemy.Interface {
                 Vtn = new Transistor(
                     Bind(VtnThreshold, vtnOpt[0], config?.Vtn?.Threshold),
                     Bind(Sigma, vtnOpt[1], (decimal?)@this.Sigma, config?.Vtn?.Sigma),
-                    Bind(NumberOfSigma, vtnOpt[2], config?.Vtn?.Deviation)
+                    Bind(NumberOfSigma, vtnOpt[2], config?.Vtn?.NumberOfSigma)
                 ),
                 
                 Vtp = new Transistor(
                     Bind(VtpThreshold, vtpOpt[0], config?.Vtp?.Threshold),
                     Bind(Sigma, vtpOpt[1], (decimal?)@this.Sigma, config?.Vtp?.Sigma),
-                    Bind(NumberOfSigma, vtpOpt[2], config?.Vtp?.Deviation)
+                    Bind(NumberOfSigma, vtpOpt[2], config?.Vtp?.NumberOfSigma)
                 ),
             };
         }
