@@ -27,10 +27,10 @@ namespace Ptolemy.Parameters
     public class Transistor {
         public decimal? Threshold { get; set; }
         public decimal? Sigma { get; set; }
-        public decimal? Deviation { get; set; }
+        public decimal? NumberOfSigma { get; set; }
 
         public Transistor() { }
-        public Transistor(decimal t, decimal s, decimal d) => (Threshold, Sigma, Deviation) = (t, s, d);
+        public Transistor(decimal t, decimal s, decimal d) => (Threshold, Sigma, NumberOfSigma) = (t, s, d);
 
         public Transistor(double t, double s, double d) : this((decimal) t, (decimal) s, (decimal) d) {}
 
@@ -42,7 +42,7 @@ namespace Ptolemy.Parameters
 
             Threshold = SiMetricPrefix.SiMetricPrefix.ParseDecimalWithSiPrefix(split[0]);
             Sigma = SiMetricPrefix.SiMetricPrefix.ParseDecimalWithSiPrefix(split[1]);
-            Deviation = SiMetricPrefix.SiMetricPrefix.ParseDecimalWithSiPrefix(split[2]);
+            NumberOfSigma = SiMetricPrefix.SiMetricPrefix.ParseDecimalWithSiPrefix(split[2]);
         }
 
         /// <summary>
@@ -52,11 +52,11 @@ namespace Ptolemy.Parameters
         public IEnumerable<string> GetParameterStrings() {
             yield return $"{nameof(Threshold)}: {Threshold}";
             yield return $"{nameof(Sigma)}: {Sigma}";
-            yield return $"{nameof(Deviation)}: {Deviation}";
+            yield return $"{nameof(NumberOfSigma)}: {NumberOfSigma}";
         }
 
         public override string ToString() {
-            return $"t_{Threshold:E5}_s_{Sigma:E5}_d_{Deviation:E5}";
+            return $"t_{Threshold:E5}_s_{Sigma:E5}_d_{NumberOfSigma:E5}";
         }
 
     }

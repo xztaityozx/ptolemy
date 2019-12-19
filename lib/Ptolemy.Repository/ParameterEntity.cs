@@ -30,9 +30,9 @@ namespace Ptolemy.Repository {
             sb.AppendLine($"Netlist: {NetList}");
             sb.AppendLine("Transistor");
             sb.AppendLine(
-                $"  Vtn: (Threshold, Sigma, Deviation) {string.Join(", ", Vtn.Split('_').Where((_, i) => i % 2 == 1).Select(x => decimal.Parse(x, NumberStyles.Float)))}");
+                $"  Vtn: (Threshold, Sigma, NumberOfSigma) {string.Join(", ", Vtn.Split('_').Where((_, i) => i % 2 == 1).Select(x => decimal.Parse(x, NumberStyles.Float)))}");
             sb.AppendLine(
-                $"  Vtp: (Threshold, Sigma, Deviation) {string.Join(", ", Vtp.Split('_').Where((_, i) => i % 2 == 1).Select(x => decimal.Parse(x, NumberStyles.Float)))}");
+                $"  Vtp: (Threshold, Sigma, NumberOfSigma) {string.Join(", ", Vtp.Split('_').Where((_, i) => i % 2 == 1).Select(x => decimal.Parse(x, NumberStyles.Float)))}");
 
             sb.AppendLine("Includes");
             foreach (var s in Includes.Split(':')) {

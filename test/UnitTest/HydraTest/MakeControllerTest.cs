@@ -36,7 +36,7 @@ namespace UnitTest.HydraTest {
                     Vdd = 10, Gnd = 2,
                 },
                 ArgoRequest.FromJson(
-                    "{\"Seed\":2, \"Sweep\":200, \"SweepStart\":1, \"Temperature\": 25.0, \"Transistors\":{ \"Vtn\":{ \"Threshold\":0.6,\"Sigma\":0.046, \"Deviation\":1.0}, \"Vtp\":{ \"Threshold\":-0.6, \"Sigma\": 0.046, \"Deviation\":1.0} },\"Time\":{ \"Start\":0, \"Step\":0.00001, \"Stop\":0.04}, \"IcCommands\": [\"V(N1)\", \"V(N2\"], \"NetList\":\"Netlist\",\"Includes\":[\"modelFile\"], \"Vdd\":0.8, \"Gnd\":0, \"Signals\":[\"N1\", \"N2\"], \"HspicePath\": \"/path/to/hspice\",\"PlotTimeList\":[0.04]}")
+                    "{\"Seed\":2, \"Sweep\":200, \"SweepStart\":1, \"Temperature\": 25.0, \"Transistors\":{ \"Vtn\":{ \"Threshold\":0.6,\"Sigma\":0.046, \"NumberOfSigma\":1.0}, \"Vtp\":{ \"Threshold\":-0.6, \"Sigma\": 0.046, \"NumberOfSigma\":1.0} },\"Time\":{ \"Start\":0, \"Step\":0.00001, \"Stop\":0.04}, \"IcCommands\": [\"V(N1)\", \"V(N2\"], \"NetList\":\"Netlist\",\"Includes\":[\"modelFile\"], \"Vdd\":0.8, \"Gnd\":0, \"Signals\":[\"N1\", \"N2\"], \"HspicePath\": \"/path/to/hspice\",\"PlotTimeList\":[0.04]}")
             };
         }
 

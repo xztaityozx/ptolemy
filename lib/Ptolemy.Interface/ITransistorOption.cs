@@ -8,7 +8,7 @@ namespace Ptolemy.Interface {
     public static partial class OptionDefault {
         private const decimal VtnThreshold = 0.6M;
         private const decimal Sigma = 0.046M;
-        private const decimal Deviation = 1M;
+        private const decimal NumberOfSigma = 1M;
         private const decimal VtpThreshold = -0.6M;
 
 
@@ -33,13 +33,13 @@ namespace Ptolemy.Interface {
                 Vtn = new Transistor(
                     Bind(VtnThreshold, vtnOpt[0], config?.Vtn?.Threshold),
                     Bind(Sigma, vtnOpt[1], (decimal?)@this.Sigma, config?.Vtn?.Sigma),
-                    Bind(Deviation, vtnOpt[2], config?.Vtn?.Deviation)
+                    Bind(NumberOfSigma, vtnOpt[2], config?.Vtn?.Deviation)
                 ),
                 
                 Vtp = new Transistor(
                     Bind(VtpThreshold, vtpOpt[0], config?.Vtp?.Threshold),
                     Bind(Sigma, vtpOpt[1], (decimal?)@this.Sigma, config?.Vtp?.Sigma),
-                    Bind(Deviation, vtpOpt[2], config?.Vtp?.Deviation)
+                    Bind(NumberOfSigma, vtpOpt[2], config?.Vtp?.Deviation)
                 ),
             };
         }

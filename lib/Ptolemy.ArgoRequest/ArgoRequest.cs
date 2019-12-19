@@ -62,7 +62,7 @@ namespace Ptolemy.Argo.Request {
 
             // Parameters
             sb.AppendLine(
-                $".param vtn=AGAUSS({Transistors.Vtn.Threshold},{Transistors.Vtn.Sigma},{Transistors.Vtn.Deviation}) vtp=AGAUSS({Transistors.Vtp.Threshold},{Transistors.Vtp.Sigma},{Transistors.Vtp.Deviation})");
+                $".param vtn=AGAUSS({Transistors.Vtn.Threshold},{Transistors.Vtn.Sigma},{Transistors.Vtn.NumberOfSigma}) vtp=AGAUSS({Transistors.Vtp.Threshold},{Transistors.Vtp.Sigma},{Transistors.Vtp.NumberOfSigma})");
             sb.AppendLine(".option PARHIER=LOCAL");
             sb.AppendLine($".option SEED={Seed}");
             sb.AppendLine($".temp {Temperature}");
