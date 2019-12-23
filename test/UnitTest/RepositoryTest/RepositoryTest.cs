@@ -44,6 +44,7 @@ namespace UnitTest.RepositoryTest {
             var filtered = entities.Where(s => s.Signal == "A" || s.Signal == "B")
                 .Where(s => 1 <= s.Seed && s.Seed <= 2)
                 .Where(s => 20 <= s.Sweep && s.Sweep <= 50)
+                .AsEnumerable()
                 .GroupBy(x => new {x.Sweep, x.Seed})
                 .Select(g => g.ToMap(k => LibraRequest.GetKey(k.Signal, k.Time), v => v.Value))
                 .ToList();

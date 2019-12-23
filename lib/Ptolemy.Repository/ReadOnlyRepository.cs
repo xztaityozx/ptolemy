@@ -3,9 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.EntityFrameworkCore;
 using Ptolemy.Map;
 
 namespace Ptolemy.Repository {
+
     public class ReadOnlyRepository {
         private readonly string path;
 
@@ -63,6 +65,7 @@ namespace Ptolemy.Repository {
                         .Where(e => e.Seed == seed)
                         // signalがリスト内にあるものだけ。 SQLなら IN とか
                         .Where(e=> signals.Contains(e.Signal))
+                        .AsEnumerable()
                         .GroupBy(e => e.Sweep)
                         // GroupをMapにする
                         .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
@@ -109,6 +112,7 @@ namespace Ptolemy.Repository {
                         .Where(e => sweepStart <= e.Sweep && e.Sweep <= sweepEnd)
                         .Where(e => e.Seed == seed)
                         .Where(e => signals.Contains(e.Signal))
+                        .AsEnumerable()
                         .GroupBy(e => e.Sweep)
                         .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
 

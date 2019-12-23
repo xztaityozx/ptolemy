@@ -47,7 +47,7 @@ namespace Ptolemy.Libra {
                     log.Info($"\tSweep: Start: {request.Sweeps.Start}, End: {request.Sweeps.Total}");
                 }
 
-                var libra = new Libra(token);
+                var libra = new Libra(token, log);
                 result = libra.Run(request);
 
                 sw.Stop();

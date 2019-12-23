@@ -52,12 +52,12 @@ namespace UnitTest.InterfaceTest {
                 Vtn = new Transistor {
                     Threshold = aBox[0],
                     Sigma = aBox[1],
-                    Deviation = aBox[2]
+                    NumberOfSigma = aBox[2]
                 },
                 Vtp = new Transistor {
                     Threshold = bBox[0],
                     Sigma = bBox[1],
-                    Deviation = bBox[2]
+                    NumberOfSigma = bBox[2]
                 }
             };
             var opt = new Opt {

@@ -35,11 +35,11 @@ namespace Ptolemy.Argo {
                 log.Info("\tVtn:");
                 log.Info($"\t\tThreshold: {req.Transistors.Vtn.Threshold}");
                 log.Info($"\t\tSigma: {req.Transistors.Vtn.Sigma}");
-                log.Info($"\t\tDeviation: {req.Transistors.Vtn.Deviation}");
+                log.Info($"\t\tNumberOfSigma: {req.Transistors.Vtn.NumberOfSigma}");
                 log.Info("\tVtp:");
                 log.Info($"\t\tThreshold: {req.Transistors.Vtp.Threshold}");
                 log.Info($"\t\tSigma: {req.Transistors.Vtp.Sigma}");
-                log.Info($"\t\tDeviation: {req.Transistors.Vtp.Deviation}");
+                log.Info($"\t\tNumberOfSigma: {req.Transistors.Vtp.NumberOfSigma}");
                 log.Info($"\tSweeps: {req.SweepStart:E} to {req.Sweep + req.SweepStart - 1:E}");
                 log.Info($"\tSeed: {req.Seed:E}");
                 log.Info($"\tTemperature: {req.Temperature}");

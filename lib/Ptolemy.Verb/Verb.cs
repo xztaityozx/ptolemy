@@ -22,8 +22,8 @@ namespace Ptolemy.Verb {
             if(!string.IsNullOrEmpty(logFile)) Logger.AddHook(new FileHook(logFile));
 
             // Bind
-            Vtn = new Transistor(Bind(VtnString, (VtnThreshold, VtnSigma, VtnDeviation), Sigma));
-            Vtp = new Transistor(Bind(VtpString, (VtpThreshold, VtpSigma, VtpDeviation), Sigma));
+            Vtn = new Transistor(Bind(VtnString, (VtnThreshold, VtnSigma, VtnNumberOfSigma), Sigma));
+            Vtp = new Transistor(Bind(VtpString, (VtpThreshold, VtpSigma, VtpNumberOfSigma), Sigma));
 
             var rt = Do(token);
             OnFinish?.Invoke();
@@ -54,11 +54,11 @@ namespace Ptolemy.Verb {
         public string VtnString { get; set; }
         public double VtnThreshold { get; set; }
         public double VtnSigma { get; set; }
-        public double VtnDeviation { get; set; }
+        public double VtnNumberOfSigma { get; set; }
         public string VtpString { get; set; }
         public double VtpThreshold { get; set; }
         public double VtpSigma { get; set; }
-        public double VtpDeviation { get; set; }
+        public double VtpNumberOfSigma { get; set; }
         public double Sigma { get; set; }
     }
 
@@ -78,8 +78,8 @@ namespace Ptolemy.Verb {
         [Option("vtnSigma", Default = -1.0, HelpText = "Vtnのシグマです。優先されます")]
         double VtnSigma { get; set; }
 
-        [Option("vtnDeviation", Default = 1.0, HelpText = "Vtnの偏差です。優先されます")]
-        double VtnDeviation { get; set; }
+        [Option("vtnNumberOfSigma", Default = 1.0, HelpText = "Vtnの偏差です。優先されます")]
+        double VtnNumberOfSigma { get; set; }
 
         [Option('P', "vtp", Default = ",,", HelpText = "Vtpを[閾値],[シグマ],[偏差]で指定します")]
         string VtpString { get; set; }
@@ -90,8 +90,8 @@ namespace Ptolemy.Verb {
         [Option("vtpSigma", Default = -1, HelpText = "Vtpのシグマです。優先されます")]
         double VtpSigma { get; set; }
 
-        [Option("vtpDeviation", Default = 1.0, HelpText = "Vtpの偏差です。優先されます")]
-        double VtpDeviation { get; set; }
+        [Option("vtpNumberOfSigma", Default = 1.0, HelpText = "Vtpの偏差です。優先されます")]
+        double VtpNumberOfSigma { get; set; }
 
         [Option('s', "sigma", HelpText = "vtn,vtpのシグマです。個別設定が優先されます", Default = 0.046)]
         double Sigma { get; set; }

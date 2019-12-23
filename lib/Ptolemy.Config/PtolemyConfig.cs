@@ -25,6 +25,7 @@ namespace Ptolemy.Config {
         [YamlIgnore]
         public static string ConfigFile { get; set; } = Path.Combine(FilePath.FilePath.DotConfig, "config.yaml");
 
+        public static void Assign(Config config) => instance = config;
 
         /// <summary>
         /// Load config file

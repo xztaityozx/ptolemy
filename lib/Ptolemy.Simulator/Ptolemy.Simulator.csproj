@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ptolemy.ArgoRequest\Ptolemy.Argo.Request.csproj" />
+    <ProjectReference Include="..\Ptolemy.FilePath\Ptolemy.FilePath.csproj" />
+    <ProjectReference Include="..\Ptolemy.Map\Ptolemy.Map.csproj" />
+    <ProjectReference Include="..\Ptolemy.Repository\Ptolemy.Repository.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -8,12 +7,12 @@ using System.Reactive.Subjects;
 using System.Threading;
 using CommandLine;
 using Kurukuru;
-using Ptolemy.Argo;
 using Ptolemy.Argo.Request;
 using Ptolemy.Logger;
 using Ptolemy.Map;
 using Ptolemy.Repository;
 using Ptolemy.SiMetricPrefix;
+using Ptolemy.Simulator;
 using ShellProgressBar;
 
 namespace Ptolemy.Aries {
@@ -113,11 +112,11 @@ namespace Ptolemy.Aries {
         /// <param name="dbs"></param>
         /// <param name="sub"></param>
         /// <returns></returns>
-        private DbContainer GetDbContainer(CancellationToken token, IEnumerable<ParameterEntity> dbs, IObserver<string> sub) {
-            log.Info("Build DbContainer...");
+        private AriesDbContainer GetDbContainer(CancellationToken token, IEnumerable<ParameterEntity> dbs, IObserver<string> sub) {
+            log.Info("Build AriesDbContainer...");
             log.Info("\tSearching databases...");
-            DbContainer rt = null;
-            Spinner.Start("Building DbContainer...", () => rt = new DbContainer(token, dbRoot, dbs, BufferSize, sub));
+            AriesDbContainer rt = null;
+            Spinner.Start("Building AriesDbContainer...", () => rt = new AriesDbContainer(token, dbRoot, dbs, BufferSize, sub));
             return rt;
         }
 
@@ -146,7 +145,7 @@ namespace Ptolemy.Aries {
                         // リトライ機構
                         do {
                             try {
-                                foreach (var r in hspice.Run(token, request, bar)) {
+                                foreach (var r in hspice.Run(token, request, () => bar.Tick())) {
                                     container[request.ResultFile].OnNext(r);
                                 }
                                 log.Info($"Finished {filePath}");
@@ -171,25 +170,14 @@ namespace Ptolemy.Aries {
                         parent.TickSimBar();
                     }
                 );
-            parent.SetTextToWriteBar("Closing DbContainer...");
+            parent.SetTextToWriteBar("Closing AriesDbContainer...");
             container.CloseAll();
             return rt;
         }
 
-        private DbContainer container;
+        private AriesDbContainer container;
 
-        private static ParameterEntity ConvertToParameterEntity(ArgoRequest ar) {
-            var rt = new ParameterEntity {
-                Vtn = ar.Transistors.Vtn.ToString(), Vtp=ar.Transistors.Vtp.ToString(),
-                NetList =  ar.NetList, Time = ar.Time.ToString(), Signals = string.Join(":", ar.Signals),
-                Includes = string.Join(":", ar.Includes), Hspice = ar.HspicePath, HspiceOption = string.Join(":", ar.HspiceOptions),
-                Gnd = ar.Gnd, Vdd = ar.Vdd, IcCommand = string.Join(":", ar.IcCommands), Temperature = ar.Temperature
-            };
-
-            ar.ResultFile = rt.Hash();
-
-            return rt;
-        }
+        
         public void Run(CancellationToken token) {
             log = new Logger.Logger();
             {
@@ -226,11 +214,11 @@ namespace Ptolemy.Aries {
 
                 container = GetDbContainer(token,
                     // ParameterEntityにしてHashでDistinctする
-                    requests.Select(s => ConvertToParameterEntity(s.request))
+                    requests.Select(s => SimulatorExtension.ConvertToParameterEntity(s.request))
                         .Distinct(item => item.Hash()),
                     logSubject);
 
-                log.Info($"DbContainer has {container.Count} databases");
+                log.Info($"AriesDbContainer has {container.Count} databases");
                 log.Info($"Start simulation and write to db");
                 Console.WriteLine();
 

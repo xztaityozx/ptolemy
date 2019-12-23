@@ -103,7 +103,7 @@ namespace UnitTest.LibTest {
                     vtp = new Transistor(-0.6, 0.046, 1.0)
                 },
                 new {
-                    param = "--vtnDeviation 8",
+                    param = "--vtnNumberOfSigma 8",
                     vtn = new Transistor(0.6, 0.046, 8),
                     vtp = new Transistor(-0.6, 0.046, 1.0)
                 },
@@ -118,28 +118,28 @@ namespace UnitTest.LibTest {
                     vtp = new Transistor(-0.6, 1, 1.0)
                 },
                 new {
-                    param = "--vtpDeviation 8",
+                    param = "--vtpNumberOfSigma 8",
                     vtn = new Transistor(0.6, 0.046, 1.0),
                     vtp = new Transistor(-0.6, 0.046, 8)
                 },
 
                 new {
-                    param="--vtnThreshold 1.0 --vtnSigma 2.0 --vtnDeviation 3.0 --vtpThreshold 4.0 --vtpSigma 5.0 --vtpDeviation 6.0",
+                    param="--vtnThreshold 1.0 --vtnSigma 2.0 --vtnNumberOfSigma 3.0 --vtpThreshold 4.0 --vtpSigma 5.0 --vtpNumberOfSigma 6.0",
                     vtn = new Transistor(1.0, 2.0, 3.0),
                     vtp = new Transistor(4.0, 5.0, 6.0)
                 },
                 new {
-                    param="--vtn 1,2,3 --vtnThreshold 7 --vtnSigma 8 --vtnDeviation 9 --vtpThreshold 4.0 --vtpSigma 5.0 --vtpDeviation 6.0",
+                    param="--vtn 1,2,3 --vtnThreshold 7 --vtnSigma 8 --vtnNumberOfSigma 9 --vtpThreshold 4.0 --vtpSigma 5.0 --vtpNumberOfSigma 6.0",
                     vtn = new Transistor(1.0, 2.0, 3.0),
                     vtp = new Transistor(4.0, 5.0, 6.0)
                 },
                 new {
-                    param="--vtp 7,8,9 --vtnThreshold 1 --vtnSigma 2 --vtnDeviation 3 --vtpThreshold 4.0 --vtpSigma 5.0 --vtpDeviation 6.0",
+                    param="--vtp 7,8,9 --vtnThreshold 1 --vtnSigma 2 --vtnNumberOfSigma 3 --vtpThreshold 4.0 --vtpSigma 5.0 --vtpNumberOfSigma 6.0",
                     vtn = new Transistor(1.0, 2.0, 3.0),
                     vtp = new Transistor(7.0, 8.0, 9.0)
                 },
                 new {
-                    param="--vtn 1,2, --vtnDeviation 9",
+                    param="--vtn 1,2, --vtnNumberOfSigma 9",
                     vtn = new Transistor(1.0, 2.0, 9.0),
                     vtp = new Transistor(-0.6, 0.046, 1.0)
                 },
@@ -154,7 +154,7 @@ namespace UnitTest.LibTest {
                     vtp = new Transistor(-0.6,0.046, 1.0)
                 },
                 new {
-                    param="--vtp 1,2, --vtpDeviation 9",
+                    param="--vtp 1,2, --vtpNumberOfSigma 9",
                     vtn = new Transistor(0.6, 0.046, 1.0),
                     vtp = new Transistor(1, 2, 9.0)
                 },

@@ -10,7 +10,7 @@ namespace UnitTest.LibTest {
             var transistor = new Transistor(t, s, d);
             Assert.Equal((decimal)t, transistor.Threshold);
             Assert.Equal((decimal)s, transistor.Sigma);
-            Assert.Equal((decimal) d, transistor.Deviation);
+            Assert.Equal((decimal) d, transistor.NumberOfSigma);
         }
 
         [Fact]
@@ -19,7 +19,7 @@ namespace UnitTest.LibTest {
             var transistor = new Transistor(t, s, d);
             Assert.Equal(t, transistor.Threshold);
             Assert.Equal(s, transistor.Sigma);
-            Assert.Equal(d, transistor.Deviation);
+            Assert.Equal(d, transistor.NumberOfSigma);
         }
         [Fact]
         public void ConstructorTest3() {
@@ -27,7 +27,7 @@ namespace UnitTest.LibTest {
             var transistor = new Transistor((t, s, d));
             Assert.Equal(t, transistor.Threshold);
             Assert.Equal(s, transistor.Sigma);
-            Assert.Equal(d, transistor.Deviation);
+            Assert.Equal(d, transistor.NumberOfSigma);
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace UnitTest.LibTest {
             var expect = new[] {
                 $"Threshold: {0.6M}",
                 $"Sigma: {0.046M}",
-                $"Deviation: {1.0M}"
+                $"NumberOfSigma: {1.0M}"
             };
             
             foreach (var item in t.GetParameterStrings().Zip(expect, (s, k) => new{s,k} )) {
