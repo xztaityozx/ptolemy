@@ -97,6 +97,7 @@ namespace Ptolemy.Repository {
                     .Where(e => e.Seed == s)
                     .Where(e => wStart <= e.Sweep && e.Sweep <= wEnd)
                     .Where(e => signals.Contains(e.Signal))
+                    .AsEnumerable()
                     .GroupBy(e => e.Sweep)
                     .Select(g => g.ToMap(k => keyGenerator(k.Signal, k.Time), v => v.Value)).ToList();
 
