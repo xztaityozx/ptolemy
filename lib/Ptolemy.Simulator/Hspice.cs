@@ -65,7 +65,7 @@ namespace Ptolemy.Simulator {
                         records.actual++;
                         rt.Add(resultEntity);
                     }
-                }
+                }   
 
                 p.WaitForExit();
                 if (p.ExitCode != 0)
