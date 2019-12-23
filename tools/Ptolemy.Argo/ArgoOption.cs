@@ -75,6 +75,8 @@ namespace Ptolemy.Argo {
             if(!File.Exists(hspice)) throw new ArgoException($"cannot find {hspice}");
             if (string.IsNullOrEmpty(TargetNetList)) throw new ArgoException($"TargetNetList netlist not set");
 
+            var time = new RangeParameter(TimeString, (0, 100E-12M, 20E-9M));
+
             return new ArgoRequest {
                 GroupId = Guid.Empty,
                 HspicePath = FilePath.FilePath.Expand(hspice),
@@ -84,14 +86,15 @@ namespace Ptolemy.Argo {
                 SweepStart = SweepStart,
                 Temperature = (decimal)Temperature,
                 Transistors = this.Bind(null),
-                Time = new RangeParameter(TimeString, (0,100E-12M,20E-9M)),
+                Time = time,
                 NetList =  FilePath.FilePath.Expand(TargetNetList),
                 Includes = Includes.ToList(),
                 Vdd = (decimal)Vdd,
                 Gnd = (decimal)Gnd,
                 Signals = Signals.ToList(),
                 ResultFile = FilePath.FilePath.Expand(ResultFile),
-                IcCommands = IcCommands.ToList()
+                IcCommands = IcCommands.ToList(),
+                PlotTimeList = time.ToEnumerable().ToList()
             };
         }
     }
