@@ -69,7 +69,7 @@ namespace Ptolemy.Verb {
     public interface IVerb {
         Exception Run(CancellationToken token, string logFile);
 
-        [Option('N', "vtn", Default = ",,", HelpText = "Vtnを[閾値],[シグマ],[偏差]で指定します")]
+        [Option('N', "vtn", Default = ",,", HelpText = "Vtnを[閾値],[シグマ],[倍率]で指定します")]
         string VtnString { get; set; }
 
         [Option("vtnThreshold", Default = 0.6, HelpText = "Vtnの閾値です。優先されます")]
@@ -78,10 +78,10 @@ namespace Ptolemy.Verb {
         [Option("vtnSigma", Default = -1.0, HelpText = "Vtnのシグマです。優先されます")]
         double VtnSigma { get; set; }
 
-        [Option("vtnNumberOfSigma", Default = 1.0, HelpText = "Vtnの偏差です。優先されます")]
+        [Option("vtnNumberOfSigma", Default = 1.0, HelpText = "Vtnの倍率です。優先されます")]
         double VtnNumberOfSigma { get; set; }
 
-        [Option('P', "vtp", Default = ",,", HelpText = "Vtpを[閾値],[シグマ],[偏差]で指定します")]
+        [Option('P', "vtp", Default = ",,", HelpText = "Vtpを[閾値],[シグマ],[倍率]で指定します")]
         string VtpString { get; set; }
 
         [Option("vtpThreshold", Default = -0.6, HelpText = "Vtpの閾値です。優先されます")]
@@ -90,7 +90,7 @@ namespace Ptolemy.Verb {
         [Option("vtpSigma", Default = -1, HelpText = "Vtpのシグマです。優先されます")]
         double VtpSigma { get; set; }
 
-        [Option("vtpNumberOfSigma", Default = 1.0, HelpText = "Vtpの偏差です。優先されます")]
+        [Option("vtpNumberOfSigma", Default = 1.0, HelpText = "Vtpの倍率です。優先されます")]
         double VtpNumberOfSigma { get; set; }
 
         [Option('s', "sigma", HelpText = "vtn,vtpのシグマです。個別設定が優先されます", Default = 0.046)]

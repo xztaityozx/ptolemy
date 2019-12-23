@@ -50,10 +50,10 @@ namespace Ptolemy.Interface {
     /// </summary>
     public interface ITransistorOption {
 
-        [Option('N', "vtn", Default = new[]{"0.6","0.046","1.0"}, HelpText = "Vtnの値を[閾値],[シグマ],[偏差]で指定します", Separator = ',')]
+        [Option('N', "vtn", Default = new[]{"0.6","0.046","1.0"}, HelpText = "Vtnの値を[閾値],[シグマ],[倍率]で指定します", Separator = ',')]
         IEnumerable<string> VtnStrings { get; set; }
 
-        [Option('P', "vtp", Default = new[]{"-0.6","0.046","1.0"}, HelpText = "Vtpの値を[閾値],[シグマ],[偏差]で指定します", Separator = ',')]
+        [Option('P', "vtp", Default = new[]{"-0.6","0.046","1.0"}, HelpText = "Vtpの値を[閾値],[シグマ],[倍率]で指定します", Separator = ',')]
         IEnumerable<string> VtpStrings { get; set; }
 
         [Option('S', "sigma", Default = null, HelpText = "Vtn,Vtp両方のSigmaを指定します。個別設定が優先されます")]
