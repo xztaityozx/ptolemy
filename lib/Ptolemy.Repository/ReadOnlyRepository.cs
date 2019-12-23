@@ -109,7 +109,7 @@ namespace Ptolemy.Repository {
 
                     using var context = Connect();
                     var target = context.Entities
-                        .Where(e => sweepStart <= e.Sweep && e.Sweep <= sweepEnd)
+                        .Where(e => sweepStart <= e.Sweep && e.Sweep <= sweepEnd+sweepStart)
                         .Where(e => e.Seed == seed)
                         .Where(e => signals.Contains(e.Signal))
                         .AsEnumerable()

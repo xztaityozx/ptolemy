@@ -44,7 +44,7 @@ namespace Ptolemy.Libra {
                 }
                 else {
                     log.Info($"\tSeed: {request.SeedStart}");
-                    log.Info($"\tSweep: Start: {request.Sweeps.Start}, End: {request.Sweeps.Total}");
+                    log.Info($"\tSweep: Start: {request.Sweeps.Start}, End: {request.Sweeps.Total+request.Sweeps.Start}");
                 }
 
                 var libra = new Libra(token, log);
