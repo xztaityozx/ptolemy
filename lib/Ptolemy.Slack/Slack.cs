@@ -5,6 +5,9 @@ using System.Runtime.InteropServices;
 using Slack.Webhooks;
 
 namespace Ptolemy.Slack {
+    /// <summary>
+    /// Slackへの通知をするクラス
+    /// </summary>
     public class Slack {
         public const string 進捗 = "#進捗";
 

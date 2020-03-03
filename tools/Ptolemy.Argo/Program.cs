@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Text.Json;
 using System.Threading;
 using CommandLine;
 using Kurukuru;
@@ -19,6 +17,8 @@ namespace Ptolemy.Argo {
                 var req = Parser.Default.ParseArguments<ArgoOption>(args)
                     .MapResult(o => {
                         if (!o.Clean) return o.BuildRequest();
+
+                        // --clean
                         var path = Path.Combine(Path.GetTempPath(), "Ptolemy.Argo");
                         Spinner.Start("Cleanup...", spin => {
                             if (Directory.Exists(path)) Directory.Delete(path, true);
@@ -66,6 +66,7 @@ namespace Ptolemy.Argo {
                 log.Info("Finished simulation");
                 log.Info($"Elapsed: {sw.Elapsed}");
                 log.Info($"{res.Count} result records");
+                // 結果をSTDOUTに出す
                 if (string.IsNullOrEmpty(req.ResultFile)) {
                     log.Warn("result file not set. print to stdout");
                     Console.WriteLine("[");
@@ -74,6 +75,7 @@ namespace Ptolemy.Argo {
                     }
                     Console.WriteLine("]");
                 }
+                // 結果をファイルに書く
                 else {
                     log.Info($"Write to {req.ResultFile}");
                     using var writer = new StreamWriter(req.ResultFile);

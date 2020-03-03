@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
-using System.Text;
 using System.Threading;
 using Ptolemy.Argo.Request;
 using Ptolemy.Repository;
-using Ptolemy.SiMetricPrefix;
 using Ptolemy.Simulator;
 using ShellProgressBar;
 
@@ -16,6 +12,12 @@ namespace Ptolemy.Argo {
         public const string EnvArgoHspice = "ARGO_HSPICE";
         public const string EnvArgoIncludes = "ARGO_INCLUDES";
 
+        /// <summary>
+        /// パラメータに従ってシミュレーションを実行する
+        /// </summary>
+        /// <param name="token">キャンセル用のToken</param>
+        /// <param name="request">パラメータ情報</param>
+        /// <returns></returns>
         public static List<ResultEntity> Run(CancellationToken token, ArgoRequest request) {
             var hspice = new Hspice();
             using var bar = new ProgressBar((int) request.Sweep, "Ptolemy.Argo", new ProgressBarOptions {

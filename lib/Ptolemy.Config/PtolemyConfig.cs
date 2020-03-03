@@ -10,6 +10,9 @@ using Ptolemy.Slack;
 using YamlDotNet.Serialization;
 
 namespace Ptolemy.Config {
+    /// <summary>
+    /// Ptolemy全体のコンフィグクラス
+    /// </summary>
     public class Config {
         [YamlMember] public ArgoRequest ArgoDefault { get; set; }
         [YamlMember] public DracoRequest DracoDefault { get; set; }

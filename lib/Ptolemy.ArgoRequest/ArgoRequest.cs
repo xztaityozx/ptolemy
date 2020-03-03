@@ -8,43 +8,101 @@ using Ptolemy.Parameters;
 
 namespace Ptolemy.Argo.Request {
     public class ArgoRequest {
+        /// <summary>
+        /// このリクエストを一意に表すID
+        /// </summary>
         public Guid GroupId { get; set; }
+        /// <summary>
+        /// HSPICEへのパス
+        /// </summary>
         public string HspicePath { get; set; }
+        /// <summary>
+        /// HSPICEへ渡したいオプションのリスト
+        /// </summary>
         public List<string> HspiceOptions { get; set; }
+        /// <summary>
+        /// SEED値
+        /// </summary>
         public long Seed { get; set; }
+        /// <summary>
+        /// Sweep回数
+        /// </summary>
         public long Sweep { get; set; }
+        /// <summary>
+        /// Sweepの開始値
+        /// </summary>
         public long SweepStart { get; set; }
+        /// <summary>
+        /// 温度
+        /// </summary>
         public decimal Temperature { get; set; }
+        /// <summary>
+        /// トランジスタ情報
+        /// </summary>
         public TransistorPair Transistors { get; set; }
+        /// <summary>
+        /// シミュレーション時間
+        /// </summary>
         public RangeParameter Time { get; set; }
+        /// <summary>
+        /// .ICコマンド
+        /// </summary>
         public List<string> IcCommands { get; set; }
+        /// <summary>
+        /// NetListへのパス
+        /// </summary>
         public string NetList { get; set; }
+        /// <summary>
+        /// Includeするファイルのリスト
+        /// </summary>
         public List<string> Includes { get; set; }
+        /// <summary>
+        /// 電源電圧
+        /// </summary>
         public decimal Vdd { get; set; }
+        /// <summary>
+        /// グランド電圧
+        /// </summary>
         public decimal Gnd { get; set; }
+        /// <summary>
+        /// プロットする信号線のリスト
+        /// </summary>
         public List<string> Signals { get; set; }
+        /// <summary>
+        /// 出力ファイルへのパス
+        /// </summary>
         public string ResultFile { get; set; }
+
+        /// <summary>
+        /// ArgoRequestをJsonから作る
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
         public static ArgoRequest FromJson(string json) => JsonConvert.DeserializeObject<ArgoRequest>(json);
 
-        public bool IsSimulatable() {
-            if (Vdd == Gnd) return false;
-            if (new[] {NetList,HspicePath}.Any(string.IsNullOrEmpty)) return false;
-            if (ExpectedRecords == 0) return false;
-            if (Transistors?.Vtn == null) return false;
-            return Transistors.Vtp != null;
-        }
-
+        /// <summary>
+        /// JsonをArgoRequestから作る
+        /// </summary>
+        /// <returns></returns>
         public string ToJson() => JsonConvert.SerializeObject(this);
         /// <summary>
         /// プロットする時間のリスト
         /// </summary>
         public List<decimal> PlotTimeList { get; set; }
 
+        /// <summary>
+        /// Jsonファイルを読んでArgoRequestを作る
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public static ArgoRequest FromFile(string path) {
             using var sr = new StreamReader(path);
             return FromJson(sr.ReadToEnd());
         }
 
+        /// <summary>
+        /// 予期されるレコード数を返す
+        /// </summary>
         public long ExpectedRecords =>
             Signals != null && PlotTimeList != null ? Sweep * Signals.Count * PlotTimeList.Count : 0;
 

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Ptolemy.Parameters
 {
+    /// <summary>
+    /// Vtn,Vtp
+    /// </summary>
     public class TransistorPair {
         public Transistor Vtn { get; set; }
         public Transistor Vtp { get; set; }
@@ -23,10 +26,21 @@ namespace Ptolemy.Parameters
         }
     }
 
-
+    /// <summary>
+    /// トランジスタを表すクラス
+    /// </summary>
     public class Transistor {
+        /// <summary>
+        /// 閾値電圧
+        /// </summary>
         public decimal? Threshold { get; set; }
+        /// <summary>
+        /// シグマ
+        /// </summary>
         public decimal? Sigma { get; set; }
+        /// <summary>
+        /// シグマの倍率
+        /// </summary>
         public decimal? NumberOfSigma { get; set; }
 
         public Transistor() { }

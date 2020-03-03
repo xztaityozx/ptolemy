@@ -10,6 +10,9 @@ using Ptolemy.Interface;
 using Ptolemy.Parameters;
 
 namespace Ptolemy.Argo {
+    /// <summary>
+    /// CLIオプション解析用クラス
+    /// </summary>
     public class ArgoOption : ITransistorOption, ISignalOption {
         [Option("clean", Default = false, HelpText = "Ptolemy.Argoの作業用ディレクトリ削除して終了します")]
         public bool Clean { get; set; }
@@ -65,7 +68,10 @@ namespace Ptolemy.Argo {
         public IEnumerable<string> IcCommands { get; set; }
 
         
-
+        /// <summary>
+        /// InstanceからArgoRequestを作る
+        /// </summary>
+        /// <returns></returns>
         public ArgoRequest BuildRequest() {
             var hspice = string.IsNullOrEmpty(HspicePath)
                 ? Environment.GetEnvironmentVariable(Argo.EnvArgoHspice)
